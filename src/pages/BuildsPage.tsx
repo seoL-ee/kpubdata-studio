@@ -43,6 +43,7 @@ import { EventTimeline } from "@/features/runs/components/EventTimeline";
 import { KubiRunAnalysis } from "@/features/runs/components/KubiRunAnalysis";
 import { useKubiStore } from "@/features/kubi/useKubiSession";
 import { useAssistConfig } from "@/features/assistant/config";
+import { useTranslation } from "react-i18next";
 import { useUIStore } from "@/shared/hooks/useUIStore";
 import { isRealBuilderEnabled } from "@/shared/lib/builderApi";
 import type {
@@ -78,14 +79,16 @@ export type AsyncState<T> =
   | { status: "loaded"; data: T }
   | { status: "error"; error: string; notFound?: boolean; permissionDenied?: boolean };
 
-const STATUS_FILTERS: { value: RunStatusFilter; label: string }[] = [
-  { value: "all", label: "전체 상태" },
-  { value: "succeeded", label: "성공" },
-  { value: "failed", label: "실패" },
-  { value: "running", label: "실행 중" },
-  { value: "queued", label: "대기 중" },
-  { value: "cancelled", label: "취소됨" },
-];
+function buildStatusFilters(t: (key: string) => string): { value: RunStatusFilter; label: string }[] {
+  return [
+    { value: "all", label: t("builds.statusFilter.all") },
+    { value: "succeeded", label: t("builds.statusFilter.succeeded") },
+    { value: "failed", label: t("builds.statusFilter.failed") },
+    { value: "running", label: t("builds.statusFilter.running") },
+    { value: "queued", label: t("builds.statusFilter.queued") },
+    { value: "cancelled", label: t("builds.statusFilter.cancelled") },
+  ];
+}
 
 function useAsync<T>(
   load: (signal: AbortSignal) => Promise<T>,
@@ -166,6 +169,7 @@ export function normalizeBuildContextSearch(
 }
 
 export function BuildsPage() {
+  const { t } = useTranslation();
   const { buildId: legacyRunId } = useParams<{ buildId?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -185,7 +189,7 @@ export function BuildsPage() {
         if (controller.signal.aborted) return;
         setListState({
           status: "error",
-          error: cause instanceof Error ? cause.message : "빌드 목록을 불러오지 못했습니다.",
+          error: cause instanceof Error ? cause.message : t("builds.errors.loadListFallback"),
         });
       });
     return () => controller.abort();
@@ -233,17 +237,17 @@ export function BuildsPage() {
   const stagesState = useAsync<RunStagesResponse>(
     (signal) => (selectedRunId ? listBuildStages(selectedRunId, signal) : Promise.reject(new Error("no run"))),
     [selectedRunId],
-    "Stage 상태를 불러오지 못했습니다.",
+    t("builds.errors.loadStage"),
   );
   const qualityState = useAsync<BuildQualityResponse>(
     (signal) => (selectedRunId ? getBuildQuality(selectedRunId, signal) : Promise.reject(new Error("no run"))),
     [selectedRunId],
-    "Quality 결과를 불러오지 못했습니다.",
+    t("builds.errors.loadQuality"),
   );
   const specState = useAsync<BuildSpecSnapshotResponse>(
     (signal) => (selectedRunId ? getBuildSpecSnapshot(selectedRunId, signal) : Promise.reject(new Error("no run"))),
     [selectedRunId],
-    "BuildSpec snapshot을 불러오지 못했습니다.",
+    t("builds.errors.loadSpec"),
   );
 
   // Selected Run live(job registry) polling은 실제로 상태가 불확실한 경우에만 켠다(#286 후속
@@ -302,7 +306,7 @@ export function BuildsPage() {
           추가하지 않는다. */}
       <PageHeader
         eyebrow="Builds / Runs"
-        title="빌드 실행 이력"
+        title={t("builds.page.title")}
         description={<span><strong>Build</strong>는 데이터를 수집·처리하는 작업이고 <strong>Run</strong>은 그 Build가 실제로 한 번 실행된 기록입니다. <TermHelp term="build" /> <TermHelp term="run" /></span>}
       />
 
@@ -325,33 +329,30 @@ export function BuildsPage() {
         {selectedRunId ? (
           runNotFound ? (
             <Card variant="error" role="alert">
-              <p className="font-semibold">Run을 찾을 수 없습니다: {selectedRunId}</p>
+              <p className="font-semibold">{t("builds.run.notFoundTitle", { id: selectedRunId })}</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                목록 조회 범위(최대 {LIST_LIMIT}건)에도 없고 stage 정보 조회도 404입니다. 삭제되었거나
-                존재한 적 없는 run_id일 수 있습니다.
+                {t("builds.run.notFoundDesc", { limit: LIST_LIMIT })}
               </p>
               <button
                 type="button"
                 className="mt-4 text-sm font-medium text-accent-subtle-foreground underline"
                 onClick={clearSelection}
               >
-                선택 해제
+                {t("builds.run.clearSelection")}
               </button>
             </Card>
           ) : runPermissionDenied ? (
             <Card variant="error" role="alert">
-              <p className="font-semibold">이 Run을 조회할 권한이 없습니다: {selectedRunId}</p>
+              <p className="font-semibold">{t("builds.run.forbiddenTitle", { id: selectedRunId })}</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                목록 조회 범위(최대 {LIST_LIMIT}건)에도 없어 존재 여부를 판단할 다른 근거가 없고, stage 정보
-                조회는 403(권한 없음)입니다. Run이 없는 것인지 접근 권한이 없는 것인지는 Studio가 추측하지
-                않습니다.
+                {t("builds.run.forbiddenDesc", { limit: LIST_LIMIT })}
               </p>
               <button
                 type="button"
                 className="mt-4 text-sm font-medium text-accent-subtle-foreground underline"
                 onClick={clearSelection}
               >
-                선택 해제
+                {t("builds.run.clearSelection")}
               </button>
             </Card>
           ) : (
@@ -368,7 +369,7 @@ export function BuildsPage() {
           )
         ) : (
           <Card className="flex min-h-64 items-center justify-center">
-            <EmptyState title="Run을 선택하세요" description="왼쪽 목록에서 확인할 Run을 선택하면 상세 정보가 표시됩니다." />
+            <EmptyState title={t("builds.run.selectPrompt")} description={t("builds.run.selectPromptDesc")} />
           </Card>
         )}
       </div>
@@ -390,29 +391,37 @@ function KpiTile({ label, value, hint }: { label: string; value: string; hint?: 
  * Running KPI는 running+queued(+cancelling) 합계를 값으로 유지하되(기존 정책), hint에는
  * 실제 조회 scope에서 센 status별 breakdown만 보여준다 — 값을 추측하지 않는다(#286 후속 보완 §3).
  */
-function runningBreakdownHint(kpi: ReturnType<typeof computeBuildKpi>): string {
-  if (kpi.running === 0) return "조회 범위 기준";
+function runningBreakdownHint(
+  kpi: ReturnType<typeof computeBuildKpi>,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string {
+  if (kpi.running === 0) return t("builds.kpi.scope");
   const parts: string[] = [];
-  if (kpi.runningOnly > 0) parts.push(`실행 중 ${kpi.runningOnly}`);
-  if (kpi.cancellingOnly > 0) parts.push(`취소 중 ${kpi.cancellingOnly}`);
-  if (kpi.queuedOnly > 0) parts.push(`대기 ${kpi.queuedOnly}`);
+  if (kpi.runningOnly > 0) parts.push(t("builds.kpi.running", { count: kpi.runningOnly }));
+  if (kpi.cancellingOnly > 0) parts.push(t("builds.kpi.cancelling", { count: kpi.cancellingOnly }));
+  if (kpi.queuedOnly > 0) parts.push(t("builds.kpi.queued", { count: kpi.queuedOnly }));
   return parts.join(" · ");
 }
 
 function KpiRow({ kpi }: { kpi: ReturnType<typeof computeBuildKpi> }) {
-  const scopeHint = `조회된 ${kpi.scopeCount}건 · limit ${kpi.scopeLimit}${kpi.scopeCount >= kpi.scopeLimit ? " (더 있을 수 있음)" : ""}`;
+  const { t } = useTranslation();
+  const scopeHint = t("builds.kpi.scopeHint", {
+    count: kpi.scopeCount,
+    limit: kpi.scopeLimit,
+    more: kpi.scopeCount >= kpi.scopeLimit ? t("builds.kpi.maybeMore") : "",
+  });
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-      <KpiTile label="Builds (조회 범위)" value={String(kpi.scopeCount)} hint={scopeHint} />
-      <KpiTile label="Success" value={String(kpi.succeeded)} hint="조회 범위 기준" />
-      <KpiTile label="Failed" value={String(kpi.failed)} hint="조회 범위 기준" />
+      <KpiTile label={t("builds.kpi.buildsScope")} value={String(kpi.scopeCount)} hint={scopeHint} />
+      <KpiTile label="Success" value={String(kpi.succeeded)} hint={t("builds.kpi.scope")} />
+      <KpiTile label="Failed" value={String(kpi.failed)} hint={t("builds.kpi.scope")} />
       <KpiTile
         label="Running"
         value={kpi.runningAvailable ? String(kpi.running) : "N/A"}
         hint={
           kpi.runningAvailable
-            ? runningBreakdownHint(kpi)
-            : "Builder GET /builds는 완료된 이력만 반환합니다 (실행 중 job은 포함되지 않음)"
+            ? runningBreakdownHint(kpi, t)
+            : t("builds.kpi.completedOnlyHint")
         }
       />
     </div>
@@ -442,23 +451,24 @@ function RunListPanel({
   onRetry: () => void;
   hiddenByFilter: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <Card className="flex min-w-0 flex-col gap-3 p-4">
       <div className="flex flex-col gap-2 sm:flex-row">
         <TextInput
-          aria-label="Run 검색"
-          placeholder="run id 또는 제목 검색"
+          aria-label={t("builds.search.aria")}
+          placeholder={t("builds.search.placeholder")}
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
           className="flex-1"
         />
         <Select
-          aria-label="상태 필터"
+          aria-label={t("builds.search.filterAria")}
           value={statusFilter}
           onChange={(event) => onStatusFilterChange(event.target.value as RunStatusFilter)}
           className="sm:w-36"
         >
-          {STATUS_FILTERS.map((option) => (
+          {buildStatusFilters(t).map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
@@ -468,16 +478,16 @@ function RunListPanel({
 
       {hiddenByFilter ? (
         <p className="rounded-md bg-amber-100 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">
-          선택한 Run은 현재 검색/필터 조건 밖에 있어 목록에는 보이지 않지만, 오른쪽 상세는 계속 표시됩니다.
+          {t("builds.search.outOfScope")}
         </p>
       ) : null}
 
       {listState.status === "loading" ? (
         <SkeletonTable rows={6} />
       ) : listState.status === "error" ? (
-        <ErrorState title="빌드 목록을 불러오지 못했습니다" message={listState.error} onRetry={onRetry} />
+        <ErrorState title={t("builds.errors.loadList")} message={listState.error} onRetry={onRetry} />
       ) : visible.length === 0 ? (
-        <EmptyState title="표시할 Run이 없습니다" description="검색어나 상태 필터를 조정해 보세요." />
+        <EmptyState title={t("builds.search.emptyTitle")} description={t("builds.search.emptyDesc")} />
       ) : (
         <ul className="flex flex-col gap-1 overflow-y-auto" style={{ maxHeight: "70vh" }}>
           {visible.map((item) => (
@@ -528,6 +538,7 @@ function RunDetailPanel({
   eventsState: RunEventsState;
   live: ReturnType<typeof useSelectedRunPolling>;
 }) {
+  const { t } = useTranslation();
   const openKubiDrawer = useUIStore((state) => state.openKubiDrawer);
   const seedKubiQuestion = useKubiStore((state) => state.seedQuestion);
   const { isConfigured } = useAssistConfig();
@@ -546,7 +557,7 @@ function RunDetailPanel({
     setAnalyzePending(false);
   }, [runId]);
 
-  const analyzeQuestion = `Run ${runId}의 상태와 실패 원인을 분석해줘.`;
+  const analyzeQuestion = t("builds.detail.analyzeQuestion", { id: runId });
 
   // "context가 canonical하다" = 현재 URL이 이미 normalizeBuildContextSearch의 고정점이다.
   // BuildsPage의 정규화 effect와 정확히 같은 helper·같은 동등성 판정을 재사용한다(로직 복제 금지).
@@ -614,43 +625,43 @@ function RunDetailPanel({
       <Card className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <h2 className="text-lg font-semibold tracking-tight">{listItem?.title ?? runId}</h2>
-          {runStatus ? <StatusBadge status={runStatus} /> : <span className="text-xs text-muted-foreground">상태 불명</span>}
+          {runStatus ? <StatusBadge status={runStatus} /> : <span className="text-xs text-muted-foreground">{t("builds.detail.statusUnknown")}</span>}
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <span className="font-mono text-xs text-muted-foreground">{runId}</span>
           {live.kind === "job" && (live.job.status === "queued" || live.job.status === "running" || live.job.status === "cancelling") ? (
-            <span className="text-xs text-muted-foreground">실시간 갱신 중…</span>
+            <span className="text-xs text-muted-foreground">{t("builds.detail.refreshing")}</span>
           ) : null}
           {live.kind === "error" ? (
             <span className="text-xs text-amber-700 dark:text-amber-400">
-              실시간 상태 갱신 실패(일시적) — 마지막 확인된 상태를 유지합니다.
+              {t("builds.detail.refreshFailed")}
             </span>
           ) : null}
           {live.kind === "permission_denied" ? (
             <span className="text-xs text-red-700 dark:text-red-400">
-              이 Run의 실시간 상태를 조회할 권한이 없습니다 — 목록에서 확인된 상태를 대신 표시합니다.
+              {t("builds.detail.refreshForbidden")}
             </span>
           ) : null}
           {outOfListScope ? (
             <span className="text-xs text-muted-foreground">
-              이 Run은 현재 목록 조회 범위(limit) 밖입니다. stage/quality는 run_id로 직접 조회했습니다.
+              {t("builds.detail.outOfScopeDetail")}
             </span>
           ) : null}
-          {listItem?.startedAt ? <span className="text-xs text-muted-foreground">시작: {formatDateTime(listItem.startedAt)}</span> : null}
-          {listItem?.finishedAt ? <span className="text-xs text-muted-foreground">완료: {formatDateTime(listItem.finishedAt)}</span> : null}
+          {listItem?.startedAt ? <span className="text-xs text-muted-foreground">{t("builds.detail.startedAt", { time: formatDateTime(listItem.startedAt) })}</span> : null}
+          {listItem?.finishedAt ? <span className="text-xs text-muted-foreground">{t("builds.detail.finishedAt", { time: formatDateTime(listItem.finishedAt) })}</span> : null}
         </div>
         <div className="flex flex-wrap gap-3">
           <Link className="text-xs font-medium text-accent-subtle-foreground underline" to={`/builds/${encodeURIComponent(runId)}/edit`}>
-            편집
+            {t("builds.detail.edit")}
           </Link>
           <Link className="text-xs font-medium text-accent-subtle-foreground underline" to={`/builds/${encodeURIComponent(runId)}/run`}>
-            실행
+            {t("builds.detail.run")}
           </Link>
           <Link className="text-xs font-medium text-accent-subtle-foreground underline" to={`/builds/${encodeURIComponent(runId)}/artifacts`}>
-            결과물
+            {t("builds.detail.artifacts")}
           </Link>
           <Link className="text-xs font-medium text-accent-subtle-foreground underline" to={`/builds/${encodeURIComponent(runId)}/publish`}>
-            게시
+            {t("builds.detail.publish")}
           </Link>
           <Button
             variant="secondary"
@@ -669,7 +680,7 @@ function RunDetailPanel({
               setAnalyzePending(true);
             }}
           >
-            이 Run 분석
+            {t("builds.detail.analyze")}
           </Button>
         </div>
       </Card>
@@ -695,11 +706,11 @@ function RunDetailPanel({
         ) : stagesState.status === "error" ? (
           <p className="mt-3 text-sm text-red-700 dark:text-red-300">
             {stagesState.permissionDenied
-              ? "이 Run의 Stage Progress를 조회할 권한이 없습니다."
+              ? t("builds.stage.forbidden")
               : stagesState.error}
           </p>
         ) : sources.length === 0 ? (
-          <EmptyState title="Stage 정보가 없습니다" description="이 run에 알려진 source가 없습니다." />
+          <EmptyState title={t("builds.stage.noneTitle")} description={t("builds.stage.noneDesc")} />
         ) : (
           <div className="mt-4 flex flex-col gap-3">
             {/* multi-source면 source별로 각자의 pipeline row를 보여준다 — 첫 source를 전체
@@ -718,7 +729,7 @@ function RunDetailPanel({
             <QualityStateBadge state={qualityStatus ?? "NOT_EVALUATED"} />
             <span>
               {qualityChecksPassed.evaluated === 0
-                ? "평가된 check 없음"
+                ? t("builds.stage.noEvaluated")
                 : `${qualityChecksPassed.pass}/${qualityChecksPassed.evaluated} PASS · WARN ${qualityChecksPassed.warn} · FAIL ${qualityChecksPassed.fail}`}
             </span>
           </div>
@@ -742,21 +753,21 @@ function RunDetailPanel({
           // 않는다(#255 후속 보완 §5). UNAVAILABLE badge를 표시하지 않고, 403/404/network·5xx에
           // 맞는 오류 메시지만 보여준다.
           <div className="mt-3">
-            <p className="text-sm font-semibold text-red-700 dark:text-red-300">Quality 조회 실패</p>
+            <p className="text-sm font-semibold text-red-700 dark:text-red-300">{t("builds.quality.failedTitle")}</p>
             <p className="mt-1 text-sm text-red-700 dark:text-red-300">
               {qualityState.permissionDenied
-                ? "이 Run의 Quality 결과를 조회할 권한이 없습니다(403)."
+                ? t("builds.quality.forbidden")
                 : qualityState.notFound
-                  ? "이 Run의 Quality 결과를 찾을 수 없습니다(404)."
-                  : `Quality를 불러오지 못했습니다: ${qualityState.error}`}
+                  ? t("builds.quality.notFound")
+                  : t("builds.quality.loadError", { error: qualityState.error })}
             </p>
           </div>
         ) : qualityState.data.availability === "unavailable" ? (
           // (A) 정상 응답 + availability=unavailable — Builder가 명시적으로 "결과 없음"이라고
           // 답한 것이지 조회 실패가 아니다.
-          <EmptyState title="Quality 결과 없음 (unavailable)" description="legacy run이거나 quality가 계산되지 않았습니다(N/A ≠ PASS)." />
+          <EmptyState title={t("builds.quality.unavailableTitle")} description={t("builds.quality.unavailableDesc")} />
         ) : qualityState.data.evaluated_checks === 0 ? (
-          <EmptyState title="평가된 check가 없습니다" description="availability는 available이지만 evaluated_checks=0입니다." />
+          <EmptyState title={t("builds.quality.noChecksTitle")} description={t("builds.quality.noChecksDesc")} />
         ) : (
           <div className="mt-3 flex flex-col gap-4">
             {qualityChecksPassed ? (
@@ -764,19 +775,19 @@ function RunDetailPanel({
                 <span className="font-medium text-emerald-700 dark:text-emerald-400">{qualityChecksPassed.pass} PASS</span>
                 <span className="font-medium text-amber-700 dark:text-amber-400">{qualityChecksPassed.warn} WARN</span>
                 <span className="font-medium text-red-700 dark:text-red-400">{qualityChecksPassed.fail} FAIL</span>
-                <span className="text-xs text-muted-foreground">evaluated {qualityChecksPassed.evaluated}건</span>
+                <span className="text-xs text-muted-foreground">{t("builds.quality.evaluated", { count: qualityChecksPassed.evaluated })}</span>
               </div>
             ) : null}
 
             {qualitySourceBreakdown.length > 1 ? (
               <div className="flex flex-col gap-1">
-                <p className="text-xs font-semibold text-muted-foreground">Source별 평가 현황</p>
+                <p className="text-xs font-semibold text-muted-foreground">{t("builds.quality.perSource")}</p>
                 {qualitySourceBreakdown.map(({ sourceKey, summary }) => (
                   <div key={sourceKey} className="flex flex-wrap items-center justify-between gap-2 text-xs">
                     <span className="font-mono">{sourceKey}</span>
                     <span className="text-muted-foreground">
                       {summary.evaluated === 0
-                        ? "평가된 결과 없음 (N/A)"
+                        ? t("builds.quality.noEvalResult")
                         : `${summary.pass}/${summary.evaluated} PASS · WARN ${summary.warn} · FAIL ${summary.fail}`}
                     </span>
                   </div>
@@ -808,17 +819,20 @@ function RunDetailPanel({
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-muted-foreground">WARN/FAIL 결과가 없습니다.</p>
+              <p className="text-xs text-muted-foreground">{t("builds.quality.noWarnFail")}</p>
             )}
 
             {qualityDrift.length > 0 ? (
               <p className="text-xs text-amber-700 dark:text-amber-400">
-                Schema drift {qualityDrift.length}건: {qualityDrift.map((finding) => finding.kind).join(", ")}
+                {t("builds.quality.drift", {
+                  count: qualityDrift.length,
+                  kinds: qualityDrift.map((finding) => finding.kind).join(", "),
+                })}
               </p>
             ) : null}
 
             <Link className="text-xs font-medium text-accent-subtle-foreground underline" to={qualityCenterHref}>
-              Quality Center에서 상세 보기
+              {t("builds.quality.viewCenter")}
             </Link>
           </div>
         )}
@@ -861,14 +875,14 @@ function RunDetailPanel({
               Run Events{eventsState.status === "loaded" ? ` (${events.length})` : ""}
               {failedEvents.length > 0 ? (
                 <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-950/50 dark:text-red-300">
-                  {failedEvents.length}건 실패
+                  {t("builds.events.failedCount", { count: failedEvents.length })}
                 </span>
               ) : null}
             </span>
           }
         >
           <p className="text-xs text-muted-foreground">
-            Stage Progress(#488)/Quality(#486)의 판정을 대체하지 않는 append-only evidence입니다.
+            {t("builds.events.note")}
           </p>
           {eventsState.status === "loading" || eventsState.status === "idle" ? (
             <Skeleton className="mt-4 h-24 w-full" />
@@ -877,10 +891,10 @@ function RunDetailPanel({
               {eventsState.mockUnsupported
                 ? eventsState.error
                 : eventsState.notFound
-                  ? "이 Run의 event timeline을 찾을 수 없습니다(404)."
+                  ? t("builds.events.notFound")
                   : eventsState.permissionDenied
-                    ? "이 Run의 event timeline을 조회할 권한이 없습니다."
-                    : `Event timeline을 불러오지 못했습니다: ${eventsState.error}`}
+                    ? t("builds.events.forbidden")
+                    : t("builds.events.loadError", { error: eventsState.error })}
             </p>
           ) : (
             <EventTimeline events={events} />
@@ -896,7 +910,7 @@ function RunDetailPanel({
           {specState.status === "error" ? (
             <p className="text-sm text-muted-foreground">
               {specState.permissionDenied
-                ? "이 Run의 BuildSpec snapshot을 조회할 권한이 없습니다."
+                ? t("builds.spec.forbidden")
                 : specState.error}
             </p>
           ) : specState.status === "loaded" ? (
@@ -907,12 +921,11 @@ function RunDetailPanel({
                   className="mt-2 inline-block text-xs font-medium text-accent-subtle-foreground underline"
                   to={`/datasets/${encodeURIComponent(datasetId)}`}
                 >
-                  Dataset 상세 보기 ({datasetId})
+                  {t("builds.spec.viewDataset", { id: datasetId })}
                 </Link>
               ) : null}
               <p className="mt-2 text-xs text-muted-foreground">
-                편집/재실행 연동은 Add Data Workbench(#250)가 main에 merge된 뒤 제공됩니다 — 현재는 snapshot
-                조회만 지원합니다.
+                {t("builds.spec.note")}
               </p>
             </div>
           ) : null}
@@ -947,12 +960,15 @@ function mapLiveStatus(status: "queued" | "running" | "cancelling" | "succeeded"
   return status;
 }
 
-function MultiSourceOutcomeBadge({ outcome }: { outcome: ReturnType<typeof summarizeMultiSourceOutcome> }) {
+function MultiSourceOutcomeBadge({
+  outcome,
+}: { outcome: ReturnType<typeof summarizeMultiSourceOutcome> }) {
+  const { t } = useTranslation();
   if (outcome === "unavailable") return null;
   const meta = {
-    all_succeeded: { label: "모든 source 성공", className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" },
-    partial: { label: "부분 실패(partial)", className: "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300" },
-    all_failed: { label: "모든 source 실패", className: "bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300" },
+    all_succeeded: { label: t("builds.outcome.allSucceeded"), className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" },
+    partial: { label: t("builds.outcome.partial"), className: "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300" },
+    all_failed: { label: t("builds.outcome.allFailed"), className: "bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300" },
   }[outcome];
   return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${meta.className}`}>{meta.label}</span>;
 }
@@ -1050,11 +1066,15 @@ function PipelineArrow() {
   );
 }
 
-function formatRecordCount(value: number | null): string {
-  return value === null ? "N/A" : `${value.toLocaleString("ko-KR")}행`;
+function formatRecordCount(
+  value: number | null,
+  t: (key: string) => string,
+): string {
+  return value === null ? "N/A" : `${value.toLocaleString("ko-KR")}${t("builds.data.rowsUnit")}`;
 }
 
 function BronzeStageBox({ state, detail }: { state: RunStageEntry["bronze"]; detail: StageDetailEntry | undefined }) {
+  const { t } = useTranslation();
   const data = pickStageDetail(detail, "bronze");
   return (
     <div className="flex min-w-32 flex-col gap-1 rounded-md border border-border p-2">
@@ -1062,7 +1082,7 @@ function BronzeStageBox({ state, detail }: { state: RunStageEntry["bronze"]; det
       <StageBadge status={state.status} />
       {data ? (
         <span className="text-[11px] text-muted-foreground">
-          {formatRecordCount(data.record_count)}
+          {formatRecordCount(data.record_count, t)}
           {data.fetched_at ? ` · ${formatDateTime(data.fetched_at)}` : ""}
         </span>
       ) : null}
@@ -1070,7 +1090,11 @@ function BronzeStageBox({ state, detail }: { state: RunStageEntry["bronze"]; det
   );
 }
 
-function SilverStageBox({ state, detail }: { state: RunStageEntry["silver"]; detail: StageDetailEntry | undefined }) {
+function SilverStageBox({
+  state,
+  detail,
+}: { state: RunStageEntry["silver"]; detail: StageDetailEntry | undefined }) {
+  const { t } = useTranslation();
   const data = pickStageDetail(detail, "silver");
   return (
     <div className="flex min-w-32 flex-col gap-1 rounded-md border border-border p-2">
@@ -1078,15 +1102,19 @@ function SilverStageBox({ state, detail }: { state: RunStageEntry["silver"]; det
       <StageBadge status={state.status} />
       {data ? (
         <span className="text-[11px] text-muted-foreground">
-          {formatRecordCount(data.row_count)} · 컬럼 {data.schema.length}개
-          {data.validation ? ` · ${data.validation.ok ? "검증 통과" : `문제 ${data.validation.problems.length}건`}` : ""}
+          {formatRecordCount(data.row_count, t)} · {t("builds.data.cols", { count: data.schema.length })}
+          {data.validation ? ` · ${data.validation.ok ? t("builds.data.validationOk") : t("builds.data.problems", { count: data.validation.problems.length })}` : ""}
         </span>
       ) : null}
     </div>
   );
 }
 
-function GoldStageBox({ state, detail }: { state: RunStageEntry["gold"]; detail: StageDetailEntry | undefined }) {
+function GoldStageBox({
+  state,
+  detail,
+}: { state: RunStageEntry["gold"]; detail: StageDetailEntry | undefined }) {
+  const { t } = useTranslation();
   const data = pickStageDetail(detail, "gold");
   return (
     <div className="flex min-w-32 flex-col gap-1 rounded-md border border-border p-2">
@@ -1094,8 +1122,8 @@ function GoldStageBox({ state, detail }: { state: RunStageEntry["gold"]; detail:
       <StageBadge status={state.status} />
       {data ? (
         <span className="text-[11px] text-muted-foreground">
-          {formatRecordCount(data.row_count)} · 컬럼 {data.columns.length}개
-          {data.splits ? ` · split ${Object.keys(data.splits).length}개` : ""}
+          {formatRecordCount(data.row_count, t)} · {t("builds.data.cols", { count: data.columns.length })}
+          {data.splits ? t("builds.data.splits", { count: Object.keys(data.splits).length }) : ""}
         </span>
       ) : null}
     </div>
@@ -1120,6 +1148,7 @@ function OutputBox({ detail }: { detail: StageDetailEntry | undefined }) {
 }
 
 function SourcePipelineRow({ source, details }: { source: RunStageEntry; details: Record<string, StageDetailEntry> }) {
+  const { t } = useTranslation();
   const unreached: Record<StageName, boolean> = {
     bronze: isUnreachedStage(source, "bronze"),
     silver: isUnreachedStage(source, "silver"),
@@ -1134,17 +1163,17 @@ function SourcePipelineRow({ source, details }: { source: RunStageEntry; details
       <div className="mt-2 flex flex-wrap items-start gap-1">
         <div className={source.bronze.status === "failed" ? "rounded-md ring-2 ring-red-400 dark:ring-red-500" : undefined}>
           <BronzeStageBox state={source.bronze} detail={details[stageDetailKey(source.source_key, "bronze")]} />
-          {unreached.bronze ? <p className="mt-1 text-[11px] text-muted-foreground">미도달</p> : null}
+          {unreached.bronze ? <p className="mt-1 text-[11px] text-muted-foreground">{t("builds.data.unreached")}</p> : null}
         </div>
         <PipelineArrow />
         <div className={source.silver.status === "failed" ? "rounded-md ring-2 ring-red-400 dark:ring-red-500" : undefined}>
           <SilverStageBox state={source.silver} detail={details[stageDetailKey(source.source_key, "silver")]} />
-          {unreached.silver ? <p className="mt-1 text-[11px] text-muted-foreground">미도달</p> : null}
+          {unreached.silver ? <p className="mt-1 text-[11px] text-muted-foreground">{t("builds.data.unreached")}</p> : null}
         </div>
         <PipelineArrow />
         <div className={source.gold.status === "failed" ? "rounded-md ring-2 ring-red-400 dark:ring-red-500" : undefined}>
           <GoldStageBox state={source.gold} detail={details[stageDetailKey(source.source_key, "gold")]} />
-          {unreached.gold ? <p className="mt-1 text-[11px] text-muted-foreground">미도달</p> : null}
+          {unreached.gold ? <p className="mt-1 text-[11px] text-muted-foreground">{t("builds.data.unreached")}</p> : null}
         </div>
         <PipelineArrow />
         <OutputBox detail={details[stageDetailKey(source.source_key, "gold")]} />

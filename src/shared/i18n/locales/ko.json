@@ -38,5 +38,115 @@
   },
   "languageSwitcher": {
     "toggle": "언어 전환"
+  },
+  "builds": {
+    "statusFilter": {
+      "all": "전체 상태",
+      "succeeded": "성공",
+      "failed": "실패",
+      "running": "실행 중",
+      "queued": "대기 중",
+      "cancelled": "취소됨"
+    },
+    "errors": {
+      "loadList": "빌드 목록을 불러오지 못했습니다",
+      "loadStage": "Stage 상태를 불러오지 못했습니다.",
+      "loadQuality": "Quality 결과를 불러오지 못했습니다.",
+      "loadSpec": "BuildSpec snapshot을 불러오지 못했습니다.",
+      "loadListFallback": "빌드 목록을 불러오지 못했습니다."
+    },
+    "page": {
+      "title": "빌드 실행 이력"
+    },
+    "run": {
+      "notFoundTitle": "Run을 찾을 수 없습니다: {{id}}",
+      "notFoundDesc": "목록 조회 범위(최대 {{limit}}건)에도 없고 stage 정보 조회도 404입니다. 삭제되었거나 존재한 적 없는 run_id일 수 있습니다.",
+      "clearSelection": "선택 해제",
+      "forbiddenTitle": "이 Run을 조회할 권한이 없습니다: {{id}}",
+      "forbiddenDesc": "목록 조회 범위(최대 {{limit}}건)에도 없어 존재 여부를 판단할 다른 근거가 없고, stage 정보 조회는 403(권한 없음)입니다. Run이 없는 것인지 접근 권한이 없는 것인지는 Studio가 추측하지 않습니다.",
+      "selectPrompt": "Run을 선택하세요",
+      "selectPromptDesc": "왼쪽 목록에서 확인할 Run을 선택하면 상세 정보가 표시됩니다."
+    },
+    "kpi": {
+      "scope": "조회 범위 기준",
+      "running": "실행 중 {{count}}",
+      "cancelling": "취소 중 {{count}}",
+      "queued": "대기 {{count}}",
+      "buildsScope": "Builds (조회 범위)",
+      "scopeHint": "조회된 {{count}}건 · limit {{limit}}{{more}}",
+      "maybeMore": " (더 있을 수 있음)",
+      "completedOnlyHint": "Builder GET /builds는 완료된 이력만 반환합니다 (실행 중 job은 포함되지 않음)"
+    },
+    "search": {
+      "aria": "Run 검색",
+      "placeholder": "run id 또는 제목 검색",
+      "filterAria": "상태 필터",
+      "outOfScope": "선택한 Run은 현재 검색/필터 조건 밖에 있어 목록에는 보이지 않지만, 오른쪽 상세는 계속 표시됩니다.",
+      "emptyTitle": "표시할 Run이 없습니다",
+      "emptyDesc": "검색어나 상태 필터를 조정해 보세요."
+    },
+    "detail": {
+      "analyzeQuestion": "Run {{id}}의 상태와 실패 원인을 분석해줘.",
+      "statusUnknown": "상태 불명",
+      "refreshing": "실시간 갱신 중…",
+      "refreshFailed": "실시간 상태 갱신 실패(일시적) — 마지막 확인된 상태를 유지합니다.",
+      "refreshForbidden": "이 Run의 실시간 상태를 조회할 권한이 없습니다 — 목록에서 확인된 상태를 대신 표시합니다.",
+      "outOfScopeDetail": "이 Run은 현재 목록 조회 범위(limit) 밖입니다. stage/quality는 run_id로 직접 조회했습니다.",
+      "startedAt": "시작: {{time}}",
+      "finishedAt": "완료: {{time}}",
+      "edit": "편집",
+      "run": "실행",
+      "artifacts": "결과물",
+      "publish": "게시",
+      "analyze": "이 Run 분석"
+    },
+    "stage": {
+      "forbidden": "이 Run의 Stage Progress를 조회할 권한이 없습니다.",
+      "noneTitle": "Stage 정보가 없습니다",
+      "noneDesc": "이 run에 알려진 source가 없습니다.",
+      "noEvaluated": "평가된 check 없음"
+    },
+    "quality": {
+      "failedTitle": "Quality 조회 실패",
+      "forbidden": "이 Run의 Quality 결과를 조회할 권한이 없습니다(403).",
+      "notFound": "이 Run의 Quality 결과를 찾을 수 없습니다(404).",
+      "loadError": "Quality를 불러오지 못했습니다: {{error}}",
+      "unavailableTitle": "Quality 결과 없음 (unavailable)",
+      "unavailableDesc": "legacy run이거나 quality가 계산되지 않았습니다(N/A ≠ PASS).",
+      "noChecksTitle": "평가된 check가 없습니다",
+      "noChecksDesc": "availability는 available이지만 evaluated_checks=0입니다.",
+      "evaluated": "evaluated {{count}}건",
+      "perSource": "Source별 평가 현황",
+      "noEvalResult": "평가된 결과 없음 (N/A)",
+      "noWarnFail": "WARN/FAIL 결과가 없습니다.",
+      "drift": "Schema drift {{count}}건: {{kinds}}",
+      "viewCenter": "Quality Center에서 상세 보기"
+    },
+    "events": {
+      "failedCount": "{{count}}건 실패",
+      "note": "Stage Progress(#488)/Quality(#486)의 판정을 대체하지 않는 append-only evidence입니다.",
+      "notFound": "이 Run의 event timeline을 찾을 수 없습니다(404).",
+      "forbidden": "이 Run의 event timeline을 조회할 권한이 없습니다.",
+      "loadError": "Event timeline을 불러오지 못했습니다: {{error}}"
+    },
+    "spec": {
+      "forbidden": "이 Run의 BuildSpec snapshot을 조회할 권한이 없습니다.",
+      "viewDataset": "Dataset 상세 보기 ({{id}})",
+      "note": "편집/재실행 연동은 Add Data Workbench(#250)가 main에 merge된 뒤 제공됩니다 — 현재는 snapshot 조회만 지원합니다."
+    },
+    "outcome": {
+      "allSucceeded": "모든 source 성공",
+      "partial": "부분 실패(partial)",
+      "allFailed": "모든 source 실패"
+    },
+    "data": {
+      "rows": "{{count}}행",
+      "cols": "컬럼 {{count}}개",
+      "validationOk": "검증 통과",
+      "problems": "문제 {{count}}건",
+      "splits": "split {{count}}개",
+      "unreached": "미도달",
+      "rowsUnit": "행"
+    }
   }
 }
