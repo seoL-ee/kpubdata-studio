@@ -38,5 +38,115 @@
   },
   "languageSwitcher": {
     "toggle": "Switch language"
+  },
+  "builds": {
+    "statusFilter": {
+      "all": "All statuses",
+      "succeeded": "Succeeded",
+      "failed": "Failed",
+      "running": "Running",
+      "queued": "Queued",
+      "cancelled": "Cancelled"
+    },
+    "errors": {
+      "loadList": "Failed to load builds",
+      "loadStage": "Failed to load stage status.",
+      "loadQuality": "Failed to load quality results.",
+      "loadSpec": "Failed to load BuildSpec snapshot.",
+      "loadListFallback": "Failed to load builds."
+    },
+    "page": {
+      "title": "Build History"
+    },
+    "run": {
+      "notFoundTitle": "Run not found: {{id}}",
+      "notFoundDesc": "Not within the list scope (max {{limit}}) and stage lookup returned 404. It may have been deleted or never existed.",
+      "clearSelection": "Clear selection",
+      "forbiddenTitle": "No permission to view this run: {{id}}",
+      "forbiddenDesc": "Not within the list scope (max {{limit}}) and stage lookup returned 403. Studio does not guess whether the run does not exist or access is denied.",
+      "selectPrompt": "Select a run",
+      "selectPromptDesc": "Pick a run from the list to see its details."
+    },
+    "kpi": {
+      "scope": "within fetched scope",
+      "running": "Running {{count}}",
+      "cancelling": "Cancelling {{count}}",
+      "queued": "Queued {{count}}",
+      "buildsScope": "Builds (fetched scope)",
+      "scopeHint": "{{count}} fetched · limit {{limit}}{{more}}",
+      "maybeMore": " (more may exist)",
+      "completedOnlyHint": "Builder GET /builds returns only completed history (running jobs excluded)"
+    },
+    "search": {
+      "aria": "Search runs",
+      "placeholder": "Search by run id or title",
+      "filterAria": "Status filter",
+      "outOfScope": "The selected run is outside the current search/filter conditions, so it is not visible in the list, but details remain shown on the right.",
+      "emptyTitle": "No runs to show",
+      "emptyDesc": "Try adjusting the search or status filter."
+    },
+    "detail": {
+      "analyzeQuestion": "Analyze the status and failure cause of run {{id}}.",
+      "statusUnknown": "Unknown status",
+      "refreshing": "Refreshing live…",
+      "refreshFailed": "Live status refresh failed (transient) — showing the last known status.",
+      "refreshForbidden": "No permission to poll live status for this run — showing the status from the list instead.",
+      "outOfScopeDetail": "This run is outside the current list scope (limit). Stage/quality were fetched directly by run_id.",
+      "startedAt": "Started: {{time}}",
+      "finishedAt": "Finished: {{time}}",
+      "edit": "Edit",
+      "run": "Run",
+      "artifacts": "Artifacts",
+      "publish": "Publish",
+      "analyze": "Analyze run"
+    },
+    "stage": {
+      "forbidden": "No permission to view stage progress for this run.",
+      "noneTitle": "No stage information",
+      "noneDesc": "No known source for this run.",
+      "noEvaluated": "No evaluated checks"
+    },
+    "quality": {
+      "failedTitle": "Failed to load quality",
+      "forbidden": "No permission to view quality results for this run (403).",
+      "notFound": "Quality results for this run not found (404).",
+      "loadError": "Failed to load quality: {{error}}",
+      "unavailableTitle": "No quality results (unavailable)",
+      "unavailableDesc": "Legacy run or quality was not computed (N/A ≠ PASS).",
+      "noChecksTitle": "No evaluated checks",
+      "noChecksDesc": "Availability is available but evaluated_checks=0.",
+      "evaluated": "evaluated {{count}}",
+      "perSource": "Per-source evaluation",
+      "noEvalResult": "No evaluated result (N/A)",
+      "noWarnFail": "No WARN/FAIL findings.",
+      "drift": "Schema drift {{count}}: {{kinds}}",
+      "viewCenter": "View details in Quality Center"
+    },
+    "events": {
+      "failedCount": "{{count}} failed",
+      "note": "Append-only evidence; does not replace Stage Progress (#488) / Quality (#486) verdicts.",
+      "notFound": "Event timeline for this run not found (404).",
+      "forbidden": "No permission to view the event timeline for this run.",
+      "loadError": "Failed to load event timeline: {{error}}"
+    },
+    "spec": {
+      "forbidden": "No permission to view the BuildSpec snapshot for this run.",
+      "viewDataset": "View dataset ({{id}})",
+      "note": "Edit/re-run integration arrives after Add Data Workbench (#250) merges — only snapshot viewing is supported for now."
+    },
+    "outcome": {
+      "allSucceeded": "All sources succeeded",
+      "partial": "Partial failure",
+      "allFailed": "All sources failed"
+    },
+    "data": {
+      "rows": "{{count}} rows",
+      "cols": "{{count}} columns",
+      "validationOk": "Validation passed",
+      "problems": "{{count}} issues",
+      "splits": "{{count}} splits",
+      "unreached": "Not reached",
+      "rowsUnit": " rows"
+    }
   }
 }
