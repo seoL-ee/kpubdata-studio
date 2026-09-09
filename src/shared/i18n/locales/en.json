@@ -1,0 +1,42 @@
+{
+  "nav": {
+    "groupWorkspace": "WORKSPACE",
+    "groupData": "DATA",
+    "groupAi": "AI",
+    "groupSystem": "SYSTEM",
+    "home": "Home",
+    "discover": "Discover",
+    "workspace": "Workspace",
+    "addData": "Add Data",
+    "datasets": "Dataset Catalog",
+    "builds": "Builds / Runs",
+    "quality": "Quality",
+    "kubi": "Kubi",
+    "reports": "Reports",
+    "provider": "Provider / API",
+    "monitoring": "Monitoring",
+    "settings": "Settings"
+  },
+  "navDescription": {
+    "home": "Recent activity summary and quick start",
+    "discover": "Explore providers and datasets",
+    "workspace": "Recent work and saved BuildSpecs",
+    "addData": "Add data via Public API, File, or URL",
+    "datasets": "Search built datasets",
+    "builds": "Build and run history",
+    "quality": "Build and dataset quality results",
+    "kubi": "Context-aware AI assistant",
+    "reports": "Create and view analysis reports",
+    "provider": "API keys and credentials",
+    "monitoring": "Run and system monitoring",
+    "settings": "Studio settings"
+  },
+  "header": {
+    "newBuild": "New Build",
+    "buildList": "Builds",
+    "viewArtifacts": "View Artifacts"
+  },
+  "languageSwitcher": {
+    "toggle": "Switch language"
+  }
+}

@@ -6,7 +6,9 @@
  * 메뉴 구성은 `kpubdata_ui_prototype_v1.html` IA(WORKSPACE/DATA/AI/SYSTEM)를 따른다(#247).
  */
 import { useEffect, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { LanguageSwitcher } from "@/shared/i18n/LanguageSwitcher";
 import { useAuthStore } from "@/features/auth/store";
 import { KubiDrawer } from "@/features/kubi/KubiDrawer";
 import { KubiSearchInput } from "@/features/kubi/KubiSearchInput";
@@ -25,11 +27,14 @@ const sidebarSymbolUrl = new URL("../../assets/logo/kpubdata-brand-assets/svg/si
  * @param pathname - 현재 경로.
  * @returns 헤더 CTA의 라벨과 이동 경로.
  */
-function headerCtaFor(pathname: string): { to: string; label: string } {
-  if (pathname === "/builds/new") return { to: "/builds", label: "빌드 목록" };
+function headerCtaFor(
+  pathname: string,
+  t: (key: string) => string,
+): { to: string; label: string } {
+  if (pathname === "/builds/new") return { to: "/builds", label: t("header.buildList") };
   if (pathname.startsWith("/builds/") && pathname.endsWith("/run"))
-    return { to: pathname.replace(/\/run$/, "/artifacts"), label: "결과물 보기" };
-  return { to: "/builds/new", label: "새 빌드 만들기" };
+    return { to: pathname.replace(/\/run$/, "/artifacts"), label: t("header.viewArtifacts") };
+  return { to: "/builds/new", label: t("header.newBuild") };
 }
 
 interface NavItem {
@@ -84,14 +89,15 @@ interface NavGroup {
 // 최종 IA(WORKSPACE/DATA/AI/SYSTEM)를 그대로 반영한 grouped nav model이다(#247).
 // New Build Wizard(`/builds/new`)는 메뉴에서 제거됐지만 route와 헤더 CTA에서는 계속 쓰인다 —
 // Add Data Workbench(#250)가 이를 흡수하기 전까지는 유일한 실제 빌드 생성 흐름이기 때문이다.
-const navGroups: NavGroup[] = [
+function buildNavGroups(t: (key: string) => string): NavGroup[] {
+  return [
   {
-    label: "WORKSPACE",
+    label: t("nav.groupWorkspace"),
     items: [
       {
         to: "/",
-        label: "Home (홈)",
-        description: "최근 작업 요약과 빠른 시작",
+        label: t("nav.home"),
+        description: t("navDescription.home"),
         end: true,
         icon: (
           <SidebarIcon name="home">
@@ -102,8 +108,8 @@ const navGroups: NavGroup[] = [
       },
       {
         to: "/discover",
-        label: "Discover (탐색)",
-        description: "Provider·데이터셋 탐색",
+        label: t("nav.discover"),
+        description: t("navDescription.discover"),
         icon: (
           <SidebarIcon name="discover">
             <circle cx="12" cy="12" r="9" />
@@ -113,8 +119,8 @@ const navGroups: NavGroup[] = [
       },
       {
         to: "/workspace",
-        label: "Workspace (작업대)",
-        description: "최근 작업과 저장한 BuildSpec",
+        label: t("nav.workspace"),
+        description: t("navDescription.workspace"),
         icon: (
           <SidebarIcon name="workspace">
             <rect width="16" height="14" x="4" y="6" rx="2" />
@@ -125,12 +131,12 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: "DATA",
+    label: t("nav.groupData"),
     items: [
       {
         to: "/add",
-        label: "Add Data (데이터 추가)",
-        description: "Public API·File·URL로 데이터 추가",
+        label: t("nav.addData"),
+        description: t("navDescription.addData"),
         icon: (
           <SidebarIcon name="add">
             <circle cx="12" cy="12" r="9" />
@@ -140,8 +146,8 @@ const navGroups: NavGroup[] = [
       },
       {
         to: "/datasets",
-        label: "Dataset Catalog (데이터셋)",
-        description: "빌드된 데이터셋 검색",
+        label: t("nav.datasets"),
+        description: t("navDescription.datasets"),
         icon: (
           <SidebarIcon name="datasets">
             <ellipse cx="12" cy="5" rx="7" ry="3" />
@@ -151,8 +157,8 @@ const navGroups: NavGroup[] = [
       },
       {
         to: "/builds",
-        label: "Builds / Runs (빌드)",
-        description: "빌드와 실행 이력",
+        label: t("nav.builds"),
+        description: t("navDescription.builds"),
         icon: (
           <SidebarIcon name="builds">
             <circle cx="12" cy="12" r="9" />
@@ -162,8 +168,8 @@ const navGroups: NavGroup[] = [
       },
       {
         to: "/quality",
-        label: "Quality (품질)",
-        description: "빌드·데이터셋 품질 결과",
+        label: t("nav.quality"),
+        description: t("navDescription.quality"),
         icon: (
           <SidebarIcon name="quality">
             <circle cx="12" cy="12" r="9" />
@@ -174,12 +180,12 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: "AI",
+    label: t("nav.groupAi"),
     items: [
       {
         to: "/kubi",
-        label: "Kubi",
-        description: "Context-aware AI 어시스턴트",
+        label: t("nav.kubi"),
+        description: t("navDescription.kubi"),
         icon: (
           <SidebarIcon name="kubi">
             <rect width="14" height="12" x="5" y="7" rx="3" />
@@ -189,8 +195,8 @@ const navGroups: NavGroup[] = [
       },
       {
         to: "/reports",
-        label: "Reports (리포트)",
-        description: "분석 리포트 생성·열람",
+        label: t("nav.reports"),
+        description: t("navDescription.reports"),
         icon: (
           <SidebarIcon name="reports">
             <path d="M6 3h9l3 3v15H6V3Z" />
@@ -201,12 +207,12 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: "SYSTEM",
+    label: t("nav.groupSystem"),
     items: [
       {
         to: "/provider",
-        label: "Provider / API 연결",
-        description: "API Key·자격 증명 등록",
+        label: t("nav.provider"),
+        description: t("navDescription.provider"),
         icon: (
           <SidebarIcon name="provider">
             <path d="M4 21V7l8-4 8 4v14M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01" />
@@ -215,8 +221,8 @@ const navGroups: NavGroup[] = [
       },
       {
         to: "/monitoring",
-        label: "Monitoring (모니터링)",
-        description: "실행·시스템 모니터링",
+        label: t("nav.monitoring"),
+        description: t("navDescription.monitoring"),
         icon: (
           <SidebarIcon name="monitoring">
             <path d="M3 12h4l2-5 4 10 2-5h6" />
@@ -225,7 +231,8 @@ const navGroups: NavGroup[] = [
       },
     ],
   },
-];
+  ];
+}
 
 /**
  * 현재 테마 모드에 대응하는 DOM 테마 값.
@@ -280,6 +287,8 @@ function avatarInitial(email: string | null): string {
  * @returns 사이드바, 헤더, 본문 슬롯, 전역 Kubi drawer를 포함한 전체 레이아웃.
  */
 export function Layout() {
+  const { t } = useTranslation();
+  const navGroups = buildNavGroups(t);
   const closeMobileSidebar = useUIStore((state) => state.closeMobileSidebar);
   const isMobileSidebarOpen = useUIStore((state) => state.isMobileSidebarOpen);
   const isDesktopSidebarCollapsed = useUIStore((state) => state.isDesktopSidebarCollapsed);
@@ -292,7 +301,7 @@ export function Layout() {
   );
   const email = useAuthStore((state) => state.email);
   const { pathname } = useLocation();
-  const headerCta = headerCtaFor(pathname);
+  const headerCta = headerCtaFor(pathname, t);
 
   useEffect(() => {
     document.documentElement.dataset.theme = getResolvedTheme(theme);
@@ -408,7 +417,7 @@ export function Layout() {
               <NavLink
                 className={navigationClassName}
                 onClick={closeMobileSidebar}
-                title="Studio 환경설정"
+                title={t("navDescription.settings")}
                 to="/settings"
               >
                 <SidebarIcon name="settings">
@@ -416,7 +425,7 @@ export function Layout() {
                   <path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.3 1A7 7 0 0 0 15 6l-.3-2.5h-4L10.4 6a7 7 0 0 0-1.7 1L6.5 6 4.5 9.5 6.5 11a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.3-1A7 7 0 0 0 10.4 18l.3 2.5h4L15 18a7 7 0 0 0 1.7-1l2.3 1 2-3.4-2-1.5a7 7 0 0 0 .1-1Z" />
                 </SidebarIcon>
                 <span className={isDesktopSidebarCollapsed ? "lg:sr-only" : undefined}>
-                  Settings (설정)
+                  {t("nav.settings")}
                 </span>
               </NavLink>
             </div>
@@ -485,6 +494,8 @@ export function Layout() {
                   <span aria-hidden="true">✨</span>
                   <span className="hidden sm:inline">Kubi</span>
                 </button>
+
+                <LanguageSwitcher />
 
                 <Link
                   className="hidden rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground shadow-sm transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background md:inline-flex"
