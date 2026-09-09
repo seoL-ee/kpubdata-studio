@@ -8,6 +8,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "@/app/App";
 import { initAuth } from "@/features/auth/init";
+import "@/shared/i18n"; // 다국어 초기화(사이드 이펙트 — App보다 먼저)
 import "./globals.css";
 
 const faviconUrl = new URL("../assets/logo/kpubdata-brand-assets/svg/favicon.svg", import.meta.url).href;

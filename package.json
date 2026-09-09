@@ -12,13 +12,17 @@
     "test:watch": "vitest",
     "screenshots": "node scripts/capture-screenshots.mjs",
     "test:e2e": "playwright test",
-    "test:e2e:real": "node scripts/run-real-e2e.mjs"
+    "test:e2e:real": "node scripts/run-real-e2e.mjs",
+    "i18n:coverage": "node scripts/i18n-coverage.mjs"
   },
   "dependencies": {
+    "i18next": "^26.4.2",
+    "i18next-browser-languagedetector": "^8.2.1",
     "keycloak-js": "^26.2.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-hook-form": "^7.86.0",
+    "react-i18next": "^17.0.13",
     "react-router-dom": "^7.18.3",
     "yaml": "^2.9.0",
     "zod": "^4.5.4",

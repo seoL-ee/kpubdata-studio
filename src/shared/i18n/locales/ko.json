@@ -1,0 +1,42 @@
+{
+  "nav": {
+    "groupWorkspace": "WORKSPACE",
+    "groupData": "DATA",
+    "groupAi": "AI",
+    "groupSystem": "SYSTEM",
+    "home": "Home (홈)",
+    "discover": "Discover (탐색)",
+    "workspace": "Workspace (작업대)",
+    "addData": "Add Data (데이터 추가)",
+    "datasets": "Dataset Catalog (데이터셋)",
+    "builds": "Builds / Runs (빌드)",
+    "quality": "Quality (품질)",
+    "kubi": "Kubi",
+    "reports": "Reports (리포트)",
+    "provider": "Provider / API 연결",
+    "monitoring": "Monitoring (모니터링)",
+    "settings": "Settings (설정)"
+  },
+  "navDescription": {
+    "home": "최근 작업 요약과 빠른 시작",
+    "discover": "Provider·데이터셋 탐색",
+    "workspace": "최근 작업과 저장한 BuildSpec",
+    "addData": "Public API·File·URL로 데이터 추가",
+    "datasets": "빌드된 데이터셋 검색",
+    "builds": "빌드와 실행 이력",
+    "quality": "빌드·데이터셋 품질 결과",
+    "kubi": "Context-aware AI 어시스턴트",
+    "reports": "분석 리포트 생성·열람",
+    "provider": "API Key·자격 증명 등록",
+    "monitoring": "실행·시스템 모니터링",
+    "settings": "Studio 환경설정"
+  },
+  "header": {
+    "newBuild": "새 빌드 만들기",
+    "buildList": "빌드 목록",
+    "viewArtifacts": "결과물 보기"
+  },
+  "languageSwitcher": {
+    "toggle": "언어 전환"
+  }
+}
