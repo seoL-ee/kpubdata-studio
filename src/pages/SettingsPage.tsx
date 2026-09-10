@@ -23,7 +23,7 @@ import type { ProviderSummary } from "@/shared/lib/builderApi.schema";
 import { keycloakLogout } from "@/features/auth/keycloak";
 import { useAuthStore } from "@/features/auth/store";
 import { useAssistConfig } from "@/features/assistant/config";
-import { Card, PageHeader, StatusBadge } from "@/shared/ui";
+import { Card, PageHeader, StatusBadge, Button } from "@/shared/ui";
 
 interface ConnectionState {
   status: "idle" | "checking" | "ok" | "error";
@@ -189,13 +189,9 @@ function AccountSection({
         {email ? (
           <div className="flex items-center justify-between gap-2">
             <span className="text-foreground">{email}</span>
-            <button
-              type="button"
-              onClick={() => onLogout()}
-              className="rounded-lg border border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted"
-            >
+            <Button variant="secondary" size="sm" onClick={() => onLogout()}>
               로그아웃
-            </button>
+            </Button>
           </div>
         ) : realEnabled ? (
           <div className="flex items-center justify-between gap-2">
