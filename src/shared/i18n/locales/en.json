@@ -148,5 +148,31 @@
       "unreached": "Not reached",
       "rowsUnit": " rows"
     }
+  },
+  "api": {
+    "timeout": "Builder API did not respond in time.",
+    "connFail": "Could not connect to the Builder API.",
+    "badJson": "Failed to parse the response JSON.",
+    "schemaMismatch": "Builder API response does not match the expected shape: {{details}}",
+    "schemaDefault": "response shape",
+    "schemaIssueDefault": "shape mismatch",
+    "uploadMismatch": "Builder upload response does not match the expected shape.",
+    "http": {
+      "400": "The request format is invalid.",
+      "401": "Login required or the session has expired. Please sign in again.",
+      "403": "Access denied. Ask an administrator for permission (re-login will not fix this).",
+      "404": "The requested resource was not found.",
+      "408": "The request timed out.",
+      "429": "Too many requests. Please try again shortly.",
+      "500": "Internal server error occurred.",
+      "502": "An error occurred at the data source.",
+      "503": "The auth service is temporarily unavailable. Please try again shortly.",
+      "fallback": "Builder API error (HTTP {{status}})"
+    },
+    "ctx": {
+      "build": "{{base}} (build ID: {{id}})",
+      "dataset": "{{base}} (dataset ID: {{id}})",
+      "source": "{{base}} (source: {{id}})"
+    }
   }
 }

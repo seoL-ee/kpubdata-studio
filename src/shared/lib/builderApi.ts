@@ -1,3 +1,4 @@
+import { i18n } from "@/shared/i18n";
 /**
  * Builder HTTP API 클라이언트 (#29).
  *
@@ -229,14 +230,14 @@ export async function apiFetch<T>(
           await delay(500 * 2 ** attempt);
           continue;
         }
-        throw new ApiError(TIMEOUT_STATUS, "Builder API 응답이 시간 내에 오지 않았습니다.", cause);
+        throw new ApiError(TIMEOUT_STATUS, i18n.t("api.timeout"), cause);
       }
       // 네트워크 오류: 남은 재시도가 있으면 백오프 후 다시 시도한다.
       if (attempt < retries) {
         await delay(500 * 2 ** attempt);
         continue;
       }
-      throw new ApiError(0, "Builder API에 연결하지 못했습니다.", cause);
+      throw new ApiError(0, i18n.t("api.connFail"), cause);
     }
     cleanup();
 
@@ -250,7 +251,7 @@ export async function apiFetch<T>(
   }
 
   if (!response) {
-    throw new ApiError(0, "Builder API에 연결하지 못했습니다.");
+    throw new ApiError(0, i18n.t("api.connFail"));
   }
 
   const text = await response.text();
@@ -260,7 +261,7 @@ export async function apiFetch<T>(
       parsed = JSON.parse(text);
     } catch {
       if (!response.ok) throw new ApiError(response.status, text);
-      throw new ApiError(response.status, "응답 JSON을 파싱하지 못했습니다.");
+      throw new ApiError(response.status, i18n.t("api.badJson"));
     }
   }
 
@@ -278,14 +279,14 @@ export async function apiFetch<T>(
     if (!result.success) {
       // 스키마 불일치 시 사용자에게 표시 가능한 명시적 에러 (#159)
       const errorDetails = result.error.issues.map((issue) => {
-        const path = issue.path.length > 0 ? `\`${issue.path.join(".")}\`` : "응답 구조";
-        const message = issue.message || "형식 불일치";
+        const path = issue.path.length > 0 ? `\`${issue.path.join(".")}\`` : i18n.t("api.schemaDefault");
+        const message = issue.message || i18n.t("api.schemaIssueDefault");
         return `${path}: ${message}`;
       }).join(", ");
 
       throw new ApiError(
         500,
-        `Builder API 응답이 예상된 형식과 일치하지 않습니다: ${errorDetails}`,
+        i18n.t("api.schemaMismatch", { details: errorDetails }),
         parsed,
       );
     }
@@ -342,32 +343,32 @@ export function formatApiErrorMessage(status: number, parsed: unknown): string {
 
   // 상태 코드별 기본 메시지
   const statusMessages: Record<number, string> = {
-    400: "요청 형식이 올바르지 않습니다.",
-    401: "로그인이 필요하거나 세션이 만료되었습니다. 다시 로그인해주세요.",
-    403: "접근 권한이 없습니다. 관리자에게 권한을 요청하세요. (재로그인으로 해결되지 않습니다)",
-    404: "요청한 리소스를 찾을 수 없습니다.",
+    400: i18n.t("api.http.400"),
+    401: i18n.t("api.http.401"),
+    403: i18n.t("api.http.403"),
+    404: i18n.t("api.http.404"),
     405: "Method Not Allowed",
-    408: "요청 시간이 초과되었습니다.",
-    429: "너무 많은 요청을 보냈습니다. 잠시 후 다시 시도해주세요.",
-    500: "서버 내부 오류가 발생했습니다.",
-    502: "데이터 소스에서 오류가 발생했습니다.",
-    503: "인증 서비스에 일시적 장애가 있습니다. 잠시 후 다시 시도해주세요.",
+    408: i18n.t("api.http.408"),
+    429: i18n.t("api.http.429"),
+    500: i18n.t("api.http.500"),
+    502: i18n.t("api.http.502"),
+    503: i18n.t("api.http.503"),
     504: "Gateway Timeout",
   };
 
-  const baseMessage = statusMessages[status] ?? `Builder API 오류 (HTTP ${status})`;
+  const baseMessage = statusMessages[status] ?? i18n.t("api.http.fallback", { status });
 
   // 응답에 추가 정보가 있는 경우 덧붙임
   if (parsed && typeof parsed === "object") {
     const record = parsed as Record<string, unknown>;
     if (record.run_id) {
-      return `${baseMessage} (빌드 ID: ${record.run_id})`;
+      return i18n.t("api.ctx.build", { base: baseMessage, id: record.run_id });
     }
     if (record.dataset_id) {
-      return `${baseMessage} (데이터셋 ID: ${record.dataset_id})`;
+      return i18n.t("api.ctx.dataset", { base: baseMessage, id: record.dataset_id });
     }
     if (record.source_key) {
-      return `${baseMessage} (소스: ${record.source_key})`;
+      return i18n.t("api.ctx.source", { base: baseMessage, id: record.source_key });
     }
   }
 
@@ -827,7 +828,7 @@ export async function uploadFile(
       signal,
     });
   } catch (cause) {
-    throw new ApiError(0, "Builder API에 연결하지 못했습니다.", cause);
+    throw new ApiError(0, i18n.t("api.connFail"), cause);
   }
 
   const text = await response.text();
@@ -835,7 +836,7 @@ export async function uploadFile(
   try {
     parsed = text ? JSON.parse(text) : undefined;
   } catch {
-    throw new ApiError(response.status, "응답 JSON을 파싱하지 못했습니다.");
+    throw new ApiError(response.status, i18n.t("api.badJson"));
   }
 
   if (!response.ok) {
@@ -845,7 +846,7 @@ export async function uploadFile(
 
   const result = schemas.uploadMetadataSchema.safeParse(parsed);
   if (!result.success) {
-    throw new ApiError(500, "Builder 업로드 응답이 예상된 형식과 일치하지 않습니다.", parsed);
+    throw new ApiError(500, i18n.t("api.uploadMismatch"), parsed);
   }
   return result.data;
 }
@@ -904,7 +905,7 @@ export async function downloadArtifactFile(
     });
   } catch (cause) {
     if (signal?.aborted) throw cause;
-    throw new ApiError(0, "Builder API에 연결하지 못했습니다.", cause);
+    throw new ApiError(0, i18n.t("api.connFail"), cause);
   }
 
   if (!response.ok) {
