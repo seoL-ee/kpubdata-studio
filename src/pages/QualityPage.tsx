@@ -475,9 +475,9 @@ function ValidationTrend({ state }: { state: AsyncState<DatasetQualityHistoryRes
                     <td className="py-2 pr-3">
                       {total === 0 ? <span className="text-xs text-muted-foreground">N/A</span> : (
                         <div className="flex h-2 w-32 overflow-hidden rounded-full bg-muted" aria-hidden="true">
-                          <span className="h-full bg-emerald-500" style={{ width: `${(run.pass_count / total) * 100}%` }} />
-                          <span className="h-full bg-amber-500" style={{ width: `${(run.warn_count / total) * 100}%` }} />
-                          <span className="h-full bg-red-500" style={{ width: `${(run.fail_count / total) * 100}%` }} />
+                          <span className="h-full bg-emerald-500 dark:bg-emerald-600" style={{ width: `${(run.pass_count / total) * 100}%` }} />
+                          <span className="h-full bg-amber-500 dark:bg-amber-600" style={{ width: `${(run.warn_count / total) * 100}%` }} />
+                          <span className="h-full bg-red-500 dark:bg-red-600" style={{ width: `${(run.fail_count / total) * 100}%` }} />
                         </div>
                       )}
                       <div className="mt-1 text-xs text-muted-foreground">PASS {run.pass_count} · WARN {run.warn_count} · FAIL {run.fail_count}</div>
