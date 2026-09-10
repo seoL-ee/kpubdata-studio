@@ -10,7 +10,7 @@
  * - 401/403은 "권한 없음" 상태로 구분한다(ApiError.status 기반).
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Card, PageHeader, Button } from "@/shared/ui";
+import { Card, PageHeader, Button, ErrorState } from "@/shared/ui";
 import { ApiError, builderApi, isRealBuilderEnabled } from "@/shared/lib/builderApi";
 import type {
   MonitoringData,
@@ -106,12 +106,10 @@ export function MonitoringPage() {
           title="시스템 모니터링"
           description="실행 이력과 시스템 리소스 상태를 실시간으로 확인합니다."
         />
-        <Card variant="error">
-          <p className="font-semibold">권한이 없습니다</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            모니터링 데이터를 조회하려면 로그인이 필요합니다.
-          </p>
-        </Card>
+        <ErrorState
+          title="권한이 없습니다"
+          message="모니터링 데이터를 조회하려면 로그인이 필요합니다."
+        />
       </main>
     );
   }

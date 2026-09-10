@@ -228,7 +228,7 @@ export function BuildPublishPage() {
       {!confirmation ? (
         <Button className="self-start" disabled={!canReview} onClick={() => setConfirmation(request)}>최종 확인</Button>
       ) : (
-        <Card className="border-emerald-300" aria-label="게시 최종 확인">
+        <Card className="border-emerald-300 dark:border-emerald-900" aria-label="게시 최종 확인">
           <h2 className="text-sm font-semibold">게시 최종 확인</h2>
           <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
             <div><dt className="text-muted-foreground">Run ID</dt><dd className="font-mono">{runId}</dd></div>
