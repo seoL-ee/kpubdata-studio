@@ -38,18 +38,18 @@ describe("grouped sidebar navigation (#247)", () => {
     const nav = screen.getByRole("navigation");
 
     const expectedLinks: Record<string, string> = {
-      "Home (홈)": "/",
-      "Discover (탐색)": "/discover",
-      "Workspace (작업대)": "/workspace",
-      "Add Data (데이터 추가)": "/add",
-      "Dataset Catalog (데이터셋)": "/datasets",
-      "Builds / Runs (빌드)": "/builds",
-      "Quality (품질)": "/quality",
+      "홈": "/",
+      "탐색": "/discover",
+      "작업대": "/workspace",
+      "데이터 추가": "/add",
+      "데이터셋 카탈로그": "/datasets",
+      "빌드 / 실행": "/builds",
+      "품질": "/quality",
       Kubi: "/kubi",
-      "Reports (리포트)": "/reports",
+      "리포트": "/reports",
       "Provider / API 연결": "/provider",
-      "Monitoring (모니터링)": "/monitoring",
-      "Settings (설정)": "/settings",
+      "모니터링": "/monitoring",
+      "설정": "/settings",
     };
 
     for (const [label, href] of Object.entries(expectedLinks)) {
@@ -61,11 +61,11 @@ describe("grouped sidebar navigation (#247)", () => {
     renderLayoutAt("/quality");
     const nav = screen.getByRole("navigation");
 
-    expect(within(nav).getByRole("link", { name: "Quality (품질)" })).toHaveAttribute(
+    expect(within(nav).getByRole("link", { name: "품질" })).toHaveAttribute(
       "aria-current",
       "page",
     );
-    expect(within(nav).getByRole("link", { name: "Home (홈)" })).not.toHaveAttribute(
+    expect(within(nav).getByRole("link", { name: "홈" })).not.toHaveAttribute(
       "aria-current",
     );
   });
@@ -74,7 +74,7 @@ describe("grouped sidebar navigation (#247)", () => {
     renderLayoutAt("/");
     const nav = screen.getByRole("navigation");
 
-    expect(within(nav).getByRole("link", { name: "Home (홈)" })).toHaveAttribute(
+    expect(within(nav).getByRole("link", { name: "홈" })).toHaveAttribute(
       "aria-current",
       "page",
     );
@@ -86,7 +86,7 @@ describe("grouped sidebar navigation (#247)", () => {
     expect(useUIStore.getState().isMobileSidebarOpen).toBe(true);
 
     const nav = screen.getByRole("navigation");
-    fireEvent.click(within(nav).getByRole("link", { name: "Discover (탐색)" }));
+    fireEvent.click(within(nav).getByRole("link", { name: "탐색" }));
 
     expect(useUIStore.getState().isMobileSidebarOpen).toBe(false);
   });
@@ -108,8 +108,8 @@ describe("grouped sidebar navigation (#247)", () => {
     renderLayoutAt("/");
     const nav = screen.getByRole("navigation");
 
-    expect(within(nav).getByRole("link", { name: "Home (홈)" })).toHaveAttribute("href", "/");
-    expect(within(nav).getByRole("link", { name: "Quality (품질)" })).toHaveAttribute(
+    expect(within(nav).getByRole("link", { name: "홈" })).toHaveAttribute("href", "/");
+    expect(within(nav).getByRole("link", { name: "품질" })).toHaveAttribute(
       "href",
       "/quality",
     );
