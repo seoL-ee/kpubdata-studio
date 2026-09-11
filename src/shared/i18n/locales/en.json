@@ -174,5 +174,134 @@
       "dataset": "{{base}} (dataset ID: {{id}})",
       "source": "{{base}} (source: {{id}})"
     }
+  },
+  "newBuild": {
+    "templates": {
+      "blank": "Start from scratch",
+      "blankDesc": "Configure everything yourself with no preset values.",
+      "air": "Air Quality Info",
+      "airDesc": "Start with data.go.kr air quality measurement data.",
+      "airTitle": "Air Quality Info",
+      "airSourceDesc": "data.go.kr air quality dataset",
+      "rate": "Base Rate Trend",
+      "rateDesc": "Start with Bank of Korea ECOS base rate time series.",
+      "rateTitle": "Base Rate Trend",
+      "rateSourceDesc": "Bank of Korea ECOS base rate time series dataset",
+      "pop": "Population Statistics",
+      "popDesc": "Start with KOSIS population statistics.",
+      "popTitle": "Population Statistics",
+      "popSourceDesc": "KOSIS population statistics dataset",
+      "unavailableCount": "{{count}} templates coming soon"
+    },
+    "steps": {
+      "template": "Template",
+      "identity": "Basics",
+      "source": "Data Source",
+      "params": "Parameters",
+      "preview": "Preview",
+      "output": "Output",
+      "review": "Validate & Run"
+    },
+    "errors": {
+      "draftSecretRemoved": "Secret-bearing parameter values were removed from the saved draft. Please re-enter the parameters.",
+      "specSecretRemoved": "Secret values were removed from the saved spec. Please re-enter the credential.",
+      "specInvalid": "The build spec is invalid.",
+      "catalogFail": "Failed to load the Builder catalog.",
+      "unknownSource": "This source is not in the current Builder catalog.",
+      "previewFail": "Preview failed.",
+      "specError": "Spec error",
+      "validateFail": "Validation request failed.",
+      "datasetIdRequired": "Enter a dataset ID. Example: kma-daily-observations",
+      "titleRequired": "Enter a title.",
+      "descriptionRequired": "Enter a description.",
+      "providerRequired": "Select a provider.",
+      "datasetRequired": "Enter a dataset.",
+      "paramsRequired": "Enter parameters.",
+      "outputRequired": "Select at least one output format.",
+      "outputPathRequired": "Enter an output path."
+    },
+    "page": {
+      "eyebrowEdit": "Edit Build",
+      "eyebrowNew": "New Build",
+      "titleEdit": "Edit {{title}}",
+      "titleNew": "Create a New Public Data Build",
+      "descEdit": "Loaded the existing spec. Edits are recorded as a new run.",
+      "descNew": "Configure data source, parameters, and output format step by step.",
+      "loadingSpec": "Loading the existing spec...",
+      "specNotFound": "Could not find the spec for build {{id}}. Builder does not keep specs, so builds not run in this browser cannot be loaded. The input below starts a new build.",
+      "specEditing": "Editing the spec of build {{id}}. Builder never overwrites previous runs — running records a new build with the modified spec.",
+      "savedSpecLoaded": "Loaded saved BuildSpec {{name}}. Press \"Save this spec\" again to apply changes to the Workspace — merely opening it does not modify the original.",
+      "draftExists": "A saved draft exists. Continue editing it?",
+      "load": "Load",
+      "delete": "Delete"
+    },
+    "template": {
+      "selectTitle": "Choose a Template",
+      "selectDesc": "Start with a common public data combination or configure from scratch.",
+      "catalogLoading": "Loading the Builder catalog...",
+      "catalogError": "Builder catalog fetch failed: {{error}}"
+    },
+    "identity": {
+      "title": "Basics",
+      "datasetIdLabel": "Dataset ID",
+      "datasetIdHelp": "Lowercase letters, digits, and hyphens only. Example: kma-daily-observations",
+      "titleLabel": "Title",
+      "titlePlaceholder": "KMA daily observations",
+      "descLabel": "Description",
+      "descHelp": "Describe what this build collects and how it will be used."
+    },
+    "source": {
+      "title": "Data Source",
+      "providerLabel": "Provider",
+      "providerSelect": "Select a provider…",
+      "datasetLabel": "Dataset",
+      "datasetHelp": "Dataset code within the provider from the Builder catalog.",
+      "datasetSelect": "Select a dataset…",
+      "catalogLoading": "Loading the Builder catalog..."
+    },
+    "params": {
+      "title": "Parameters",
+      "label": "Request Parameters (Advanced JSON)",
+      "help": "Enter request parameters such as region or period as a JSON object. Example: {\"region\": \"gangnam\"}"
+    },
+    "preview": {
+      "title": "Preview",
+      "refresh": "Refresh Preview",
+      "guideTitle": "Check sample data with the current settings",
+      "guideDesc": "Press 'Refresh Preview' to see sample rows and the schema returned by Builder.",
+      "failTitle": "Could not load the preview",
+      "failDesc": "Check the parameters and try again.",
+      "emptyTitle": "No data matches the conditions",
+      "emptyDesc": "Adjust date range or region conditions and press 'Refresh Preview' again.",
+      "rowsCols": "{{rows}} sample rows · {{cols}} columns"
+    },
+    "output": {
+      "title": "Output",
+      "formatsLabel": "Artifact formats (at least 1)",
+      "pathLabel": "Output path"
+    },
+    "review": {
+      "title": "Validate & Run",
+      "revalidate": "Re-validate",
+      "guide": "Press 'Re-validate' to check your inputs and build settings.",
+      "passed": "Validation passed. The build is ready to run.",
+      "run": "Run Build",
+      "cancel": "Cancel",
+      "success": "Build succeeded (run {{id}})",
+      "cancelled": "The run was cancelled.",
+      "aborted": "The request was aborted. The server build result was not confirmed.",
+      "saveSpec": "Save this spec (Workspace)",
+      "saveSpecDesc": "Save with a name in this browser — not sent to Builder.",
+      "savePrompt": "Enter a name to save",
+      "unnamed": "Untitled BuildSpec",
+      "savedAs": "Saved to the Workspace as \"{{name}}\"."
+    },
+    "nav": {
+      "prev": "Previous",
+      "next": "Next",
+      "saved": "Saved ✓",
+      "saveDraft": "Save draft",
+      "specTitle": "Generated spec"
+    }
   }
 }

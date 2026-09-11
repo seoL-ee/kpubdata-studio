@@ -133,7 +133,8 @@ describe("?savedSpecId= 로 열기", () => {
 
     renderAt(`/builds/new?savedSpecId=${entry.id}`);
 
-    expect(await screen.findByText("저장된 인구 스펙")).toBeInTheDocument();
+    await screen.findByText(/불러왔습니다/);
+      expect(document.body.textContent).toContain("저장된 인구 스펙");
     expect(screen.getByText(/불러왔습니다/)).toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "기본 정보" })).toBeInTheDocument();
     expect(screen.getByLabelText(/제목/)).toHaveValue("인구 통계");
