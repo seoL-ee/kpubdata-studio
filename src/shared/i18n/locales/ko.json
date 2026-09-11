@@ -414,5 +414,96 @@
       "relatedHintNoQ": "질문을 보내 evidence를 불러오면 같은 provider의 다른 데이터셋 후보를 확인할 수 있습니다.",
       "relatedHintNoDs": "Dataset을 선택하면 실제 catalog와 대조한 관련 데이터셋 후보를 확인할 수 있습니다."
     }
+  },
+  "quality": {
+    "rows": "{{count}}행",
+    "noRules": "평가된 규칙 없음",
+    "errors": {
+      "datasets": "데이터셋 목록을 불러오지 못했습니다",
+      "runs": "실행 이력을 불러오지 못했습니다.",
+      "history": "Quality 이력을 불러오지 못했습니다.",
+      "stages": "Stage 상태를 불러오지 못했습니다.",
+      "quality": "Quality 결과를 불러오지 못했습니다."
+    },
+    "allSources": "전체 소스",
+    "loading": "데이터셋 목록을 불러오는 중입니다.",
+    "empty": {
+      "title": "데이터셋이 없습니다",
+      "desc": "Quality 결과를 보려면 먼저 데이터셋을 빌드해야 합니다.",
+      "action": "Add Data로 이동"
+    },
+    "wrongDataset": {
+      "title": "선택한 데이터셋에 접근할 수 없습니다.",
+      "desc": "URL의 dataset `{{id}}`는 접근 가능한 데이터셋 목록에 없습니다.",
+      "back": "첫 데이터셋 보기"
+    },
+    "wrongRun": {
+      "title": "선택한 run에 접근할 수 없습니다.",
+      "desc": "URL의 run `{{id}}`은 이 데이터셋의 접근 가능한 실행 이력에 없습니다. latest run으로 자동 변경하지 않았습니다.",
+      "back": "latest run 보기"
+    },
+    "header": {
+      "desc": "점수 대신 실제 검증 통과 여부(PASS/WARN/FAIL)와 규칙별 이슈를 보여줍니다."
+    },
+    "kubiAnalyze": "Kubi 분석",
+    "selectors": {
+      "dataset": "Dataset 선택",
+      "run": "Run 선택",
+      "source": "Source 선택",
+      "stage": "Stage 선택",
+      "stageOption": "(문맥용)"
+    },
+    "scope": {
+      "desc": "현재 선택한 Dataset · Run · Source · Stage 범위의 Builder 평가 결과입니다.",
+      "viewDetail": "Dataset Detail에서 보기"
+    },
+    "failed": {
+      "title": "Quality 결과를 불러오지 못했습니다"
+    },
+    "wrongSource": {
+      "title": "잘못된 source 필터입니다",
+      "desc": "URL의 source `{{id}}`는 선택한 run에 존재하지 않습니다. 유효한 source를 선택할 때까지 결과를 표시하지 않습니다.",
+      "reset": "전체 소스로 초기화"
+    },
+    "metrics": {
+      "noRulesSub": "평가된 규칙 없음",
+      "scopeBase": "{{scope}} 기준",
+      "schemaSub": "규칙 평가 {{evaluated}}건 · Drift {{drift}}건"
+    },
+    "kubiQuestion": "\"{{category}} · {{rule}}\" 규칙이 {{status}}인 이유와 조치 방법을 분석해줘.",
+    "perSource": {
+      "title": "Source별 검사 현황",
+      "desc": "\"전체 소스\" 합계가 일부 source만 검사된 결과를 가리지 않도록 source별로 보여줍니다.",
+      "noResult": "평가된 결과 없음 (N/A)"
+    },
+    "history": {
+      "fail": "이력을 불러오지 못했습니다: {{error}}",
+      "empty": "이 데이터셋에 대해 조회 가능한 품질 이력이 없습니다.",
+      "cols": {
+        "run": "Run",
+        "time": "시각",
+        "distribution": "분포",
+        "evaluated": "Evaluated",
+        "rows": "검사 행 수",
+        "passRate": "Pass rate"
+      },
+      "buildFailed": " · Build 실패",
+      "note": "Run마다 평가되는 규칙 구성이 다를 수 있어 단순 점수 비교로 취급하지 않습니다."
+    },
+    "rules": {
+      "context": "현재 문맥: {{context}}",
+      "noRules": "평가된 규칙이 없습니다(N/A).",
+      "contextWarnFail": "현재 문맥: {{context}} · WARN/FAIL만 표시(PASS 숨김)",
+      "emptyTitle": "평가된 quality check가 없습니다",
+      "emptyDesc": "evaluated_checks = 0 입니다. 규칙이 구성되지 않았거나 아직 평가되지 않았을 수 있습니다.",
+      "allPassTitle": "WARN/FAIL이 없습니다",
+      "allPassDesc": "현재 문맥의 모든 평가 결과가 PASS입니다.",
+      "viewBuild": "Build 보기"
+    },
+    "drift": {
+      "context": "현재 문맥: {{context}} · 일반 Quality rule과 별개로 표시합니다.",
+      "empty": "비교 기준 없음 또는 검사하지 않음 — 관찰된 schema drift가 없습니다(PASS로 간주하지 않습니다)."
+    },
+    "rowsUnit": "행"
   }
 }

@@ -414,5 +414,96 @@
       "relatedHintNoQ": "Send a question to load evidence and see other dataset candidates from the same provider.",
       "relatedHintNoDs": "Select a dataset to see related dataset candidates verified against the actual catalog."
     }
+  },
+  "quality": {
+    "rows": "{{count}} rows",
+    "noRules": "No evaluated rules",
+    "errors": {
+      "datasets": "Failed to load datasets",
+      "runs": "Failed to load runs.",
+      "history": "Failed to load quality history.",
+      "stages": "Failed to load stage status.",
+      "quality": "Failed to load quality results."
+    },
+    "allSources": "All sources",
+    "loading": "Loading datasets...",
+    "empty": {
+      "title": "No datasets",
+      "desc": "Build a dataset first to see quality results.",
+      "action": "Go to Add Data"
+    },
+    "wrongDataset": {
+      "title": "Cannot access the selected dataset.",
+      "desc": "Dataset `{{id}}` in the URL is not in the accessible dataset list.",
+      "back": "View first dataset"
+    },
+    "wrongRun": {
+      "title": "Cannot access the selected run.",
+      "desc": "Run `{{id}}` in the URL is not in this dataset's accessible run history. Did not auto-switch to latest run.",
+      "back": "View latest run"
+    },
+    "header": {
+      "desc": "Shows actual validation outcomes (PASS/WARN/FAIL) and per-rule issues instead of scores."
+    },
+    "kubiAnalyze": "Analyze with Kubi",
+    "selectors": {
+      "dataset": "Select dataset",
+      "run": "Select run",
+      "source": "Select source",
+      "stage": "Select stage",
+      "stageOption": "(context)"
+    },
+    "scope": {
+      "desc": "Builder evaluation results for the currently selected Dataset · Run · Source · Stage scope.",
+      "viewDetail": "View in Dataset Detail"
+    },
+    "failed": {
+      "title": "Failed to load quality results"
+    },
+    "wrongSource": {
+      "title": "Invalid source filter",
+      "desc": "Source `{{id}}` in the URL does not exist in the selected run. Results are not shown until a valid source is selected.",
+      "reset": "Reset to all sources"
+    },
+    "metrics": {
+      "noRulesSub": "No evaluated rules",
+      "scopeBase": "within {{scope}}",
+      "schemaSub": "{{evaluated}} rules evaluated · {{drift}} drift"
+    },
+    "kubiQuestion": "Analyze why the \"{{category}} · {{rule}}\" rule is {{status}} and how to fix it.",
+    "perSource": {
+      "title": "Per-source checks",
+      "desc": "Shown per source so the \"All sources\" total does not mask partially evaluated sources.",
+      "noResult": "No evaluated result (N/A)"
+    },
+    "history": {
+      "fail": "Failed to load history: {{error}}",
+      "empty": "No quality history available for this dataset.",
+      "cols": {
+        "run": "Run",
+        "time": "Time",
+        "distribution": "Distribution",
+        "evaluated": "Evaluated",
+        "rows": "Rows checked",
+        "passRate": "Pass rate"
+      },
+      "buildFailed": " · Build failed",
+      "note": "Rule composition may differ per run — do not compare as simple scores."
+    },
+    "rules": {
+      "context": "Current context: {{context}}",
+      "noRules": "No evaluated rules (N/A).",
+      "contextWarnFail": "Current context: {{context}} · WARN/FAIL only (PASS hidden)",
+      "emptyTitle": "No evaluated quality checks",
+      "emptyDesc": "evaluated_checks = 0. Rules may not be configured or not yet evaluated.",
+      "allPassTitle": "No WARN/FAIL",
+      "allPassDesc": "All evaluated results in the current context are PASS.",
+      "viewBuild": "View Build"
+    },
+    "drift": {
+      "context": "Current context: {{context}} · Shown separately from general quality rules.",
+      "empty": "No baseline or not checked — no schema drift observed (not treated as PASS)."
+    },
+    "rowsUnit": " rows"
   }
 }
