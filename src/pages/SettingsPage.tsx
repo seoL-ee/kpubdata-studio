@@ -9,6 +9,8 @@
  *
  * 구현되지 않은 team/project backend를 있는 것처럼 표시하지 않는다(#292 회귀 금지).
  */
+import { useTranslation } from "react-i18next";
+import { i18n } from "@/shared/i18n";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { API_BASE } from "@/shared/config/env";
@@ -37,6 +39,7 @@ type ProvidersState =
   | { status: "ok"; providers: ProviderSummary[] };
 
 export function SettingsPage() {
+  const { t } = useTranslation();
   const realEnabled = isRealBuilderEnabled();
   const { email, clear } = useAuthStore();
   const oidcStatus = useAuthStore((state) => state.oidcStatus);
@@ -63,7 +66,7 @@ export function SettingsPage() {
         if (controller.signal.aborted) return;
         setConnection({
           status: "error",
-          error: cause instanceof ApiError ? cause.message : "연결 확인에 실패했습니다.",
+          error: cause instanceof ApiError ? cause.message : i18n.t("settings.conn.connFail"),
         });
       });
     return () => controller.abort();
@@ -80,7 +83,7 @@ export function SettingsPage() {
         if (controller.signal.aborted) return;
         setProviders({
           status: "error",
-          message: cause instanceof ApiError ? cause.message : "조회에 실패했습니다.",
+          message: cause instanceof ApiError ? cause.message : i18n.t("settings.conn.fetchFail"),
         });
       });
     return () => controller.abort();
@@ -89,9 +92,9 @@ export function SettingsPage() {
   return (
     <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
       <PageHeader
-        eyebrow="설정"
-        title="환경 설정"
-        description="계정, Builder 연결, 데이터 Provider 자격 증명, Kubi BYOK를 관리합니다."
+        eyebrow={t("settings.page.eyebrow")}
+        title={t("settings.page.title")}
+        description={t("settings.page.desc")}
       />
 
       <AccountSection realEnabled={realEnabled} email={email} onLogout={handleLogout} />
@@ -99,7 +102,7 @@ export function SettingsPage() {
       <Card>
         <div className="flex items-center justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            연결 상태
+            {t("settings.conn.title")}
           </p>
           <span className="text-xs text-muted-foreground">
             필요한 Builder API 최소 버전 {MIN_BUILDER_API_VERSION}
@@ -119,7 +122,7 @@ export function SettingsPage() {
               로 설정하세요.
             </p>
           ) : connection.status === "checking" ? (
-            <p className="text-muted-foreground">Builder 연결을 확인하는 중입니다…</p>
+            <p className="text-muted-foreground">{t("settings.conn.checking")}</p>
           ) : connection.status === "ok" ? (
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center gap-2">
@@ -130,9 +133,7 @@ export function SettingsPage() {
               </div>
               {!isBuilderApiCompatible(connection.apiVersion) ? (
                 <p role="alert" className="text-sm text-amber-700 dark:text-amber-400">
-                  계약 버전 불일치 주의: Builder {connection.apiVersion}이(가) Studio가
-                  요구하는 최소 버전({MIN_BUILDER_API_VERSION}, 같은 major)과 호환되지
-                  않습니다. 일부 응답 형태가 호환되지 않을 수 있습니다.
+                  {t("settings.conn.mismatch", { api: connection.apiVersion, min: MIN_BUILDER_API_VERSION })}
                 </p>
               ) : null}
             </div>
@@ -151,7 +152,7 @@ export function SettingsPage() {
 
       <Card variant="dashed">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          프라이버시 고지
+          {t("settings.privacy.title")}
         </p>
         <div className="mt-3 space-y-2 text-sm text-muted-foreground">
           <p>
@@ -159,11 +160,10 @@ export function SettingsPage() {
             전송됩니다. API 키와 비용은 사용자 부담입니다.
           </p>
           <p className="text-amber-700 dark:text-amber-400">
-            공용 API 키를 VITE_* 환경변수로 주입하지 마세요 — 번들에 평문으로 포함됩니다.
+            {t("settings.privacy.noPublic")}
           </p>
           <p>
-            시크릿 스크러빙(#206)이 sourceParams의 서비스 키를 자동 마스킹하지만,
-            대화에 직접 입력하는 민감 정보는 마스킹되지 않습니다.
+            {t("settings.privacy.scrub")}
           </p>
         </div>
       </Card>
@@ -180,10 +180,11 @@ function AccountSection({
   email: string | null;
   onLogout: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <Card data-testid="settings-account">
       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        계정
+        {t("settings.account.title")}
       </p>
       <div className="mt-4 text-sm">
         {email ? (
@@ -196,7 +197,7 @@ function AccountSection({
         ) : realEnabled ? (
           <div className="flex items-center justify-between gap-2">
             <p className="text-muted-foreground">
-              로그인되지 않았습니다. 실연동 모드에서는 Builder 호출을 위해 로그인이 필요합니다.
+              {t("settings.account.notLoggedIn")}
             </p>
             <Link
               to="/login"

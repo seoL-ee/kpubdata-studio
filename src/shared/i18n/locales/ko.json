@@ -663,29 +663,59 @@
     }
   },
   "settings": {
-    "title": "설정",
-    "desc": "Studio 환경을 구성합니다.",
-    "theme": "테마",
-    "themeLight": "라이트",
-    "themeDark": "다크",
-    "language": "언어",
-    "logout": "로그아웃",
-    "apiKey": "API Key",
-    "saved": "저장됨"
+    "page": {
+      "eyebrow": "설정",
+      "title": "환경 설정",
+      "desc": "계정, Builder 연결, 데이터 Provider 자격 증명, Kubi BYOK를 관리합니다."
+    },
+    "conn": {
+      "title": "연결 상태",
+      "checking": "Builder 연결을 확인하는 중입니다…",
+      "version": "Builder API 버전 {{version}}",
+      "minVersion": "필요한 Builder API 최소 버전 {{version}}",
+      "mismatch": "계약 버전 불일치 주의: Builder {{api}}이(가) Studio가 요구하는 최소 버전({{min}}, 같은 major)과 호환되지 않습니다. 일부 응답 형태가 호환되지 않을 수 있습니다.",
+      "mockNote": "mock 모드입니다. 실제 Builder에 연결하려면",
+      "mockEnv": "로 설정하세요.",
+      "connFail": "연결 확인에 실패했습니다.",
+      "fetchFail": "조회에 실패했습니다."
+    },
+    "privacy": {
+      "title": "프라이버시 고지",
+      "llm": "어시스턴트 기능을 사용하면 대화 내용이 사용자가 설정한 외부 LLM 제공자(OpenAI 등)로 전송됩니다. API 키와 비용은 사용자 부담입니다.",
+      "noPublic": "공용 API 키를 VITE_* 환경변수로 주입하지 마세요 — 번들에 평문으로 포함됩니다.",
+      "scrub": "시크릿 스크러빙(#206)이 sourceParams의 서비스 키를 자동 마스킹하지만, 대화에 직접 입력하는 민감 정보는 마스킹되지 않습니다."
+    },
+    "account": {
+      "title": "계정",
+      "logout": "로그아웃",
+      "notLoggedIn": "로그인되지 않았습니다. 실연동 모드에서는 Builder 호출을 위해 로그인이 필요합니다.",
+      "login": "로그인",
+      "mockNote": "mock 모드에서는 로그인 상태가 UI 시연용으로만 동작합니다. 계정/권한 백엔드는"
+    }
   },
   "auth": {
-    "login": "로그인",
-    "signup": "회원가입",
-    "email": "이메일",
-    "password": "비밀번호",
-    "confirmPassword": "비밀번호 확인",
-    "submit": "계속하기",
-    "google": "Google로 계속하기",
-    "or": "또는",
-    "noAccount": "계정이 없으신가요?",
-    "hasAccount": "이미 계정이 있으신가요?",
-    "signupLink": "회원가입",
-    "loginLink": "로그인"
+    "page": {
+      "introLabel": "KPubData Studio 소개",
+      "introTitle": "공공데이터를 신뢰할 수 있는 데이터셋으로",
+      "introDesc": "다양한 공공데이터를 연결하고, 검증 룰과 품질 관리까지 하나의 흐름으로 관리하세요.",
+      "welcome": "KPubData Studio에 오신 것을 환영합니다",
+      "welcomeDesc": "로그인하거나 새 계정을 만들고 공공데이터 작업을 시작하세요.",
+      "loginLabel": "로그인",
+      "loginTitle": "로그인",
+      "mockNote": "KPubData Studio에 로그인하세요. mock/demo 계정입니다.",
+      "email": "이메일",
+      "password": "비밀번호",
+      "submit": "로그인",
+      "noAccount": "계정이 없으신가요?",
+      "getAccount": "계정 발급 안내",
+      "checking": "로그인 상태를 확인하는 중입니다.",
+      "initFail": "인증 초기화에 실패했습니다. 잠시 후 다시 시도하거나 관리자에게 문의하세요.",
+      "keycloak": "Google 로그인과 KPubData 계정 로그인은 모두 Keycloak에서 안전하게 처리됩니다.",
+      "google": "Google로 계속하기",
+      "or": "또는",
+      "emailLogin": "KPubData 계정으로 로그인",
+      "loginFail": "로그인에 실패했습니다. 잠시 후 다시 시도해주세요."
+    }
   },
   "workspace": {
     "recentTitle": "최근 작업",
