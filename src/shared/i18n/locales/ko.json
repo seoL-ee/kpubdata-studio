@@ -505,5 +505,96 @@
       "empty": "비교 기준 없음 또는 검사하지 않음 — 관찰된 schema drift가 없습니다(PASS로 간주하지 않습니다)."
     },
     "rowsUnit": "행"
+  },
+  "provider": {
+    "status": {
+      "needsCred": "자격 증명이 필요한 제공 기관입니다.",
+      "noCred": "자격 증명 없이 사용할 수 있는 제공 기관입니다."
+    },
+    "errors": {
+      "loadProvider": "Provider 정보를 불러올 수 없습니다",
+      "credStatus": "자격 증명 상태를 불러오지 못했습니다",
+      "saveNoStore": "Builder에 자격 증명 저장소(master key)가 구성되어 있지 않아 저장할 수 없습니다.",
+      "saveFail": "Credential 저장에 실패했습니다",
+      "deleteNoStore": "Builder에 자격 증명 저장소(master key)가 구성되어 있지 않아 삭제할 수 없습니다.",
+      "deleteFail": "Credential 삭제에 실패했습니다"
+    },
+    "page": {
+      "title": "데이터 제공 기관 연결",
+      "desc": "공공데이터 제공 기관과 연결하고 자격 증명(credential)을 관리합니다.",
+      "settings": "설정으로 이동",
+      "note": "공공데이터 API Key와 Provider 자격 증명은 이곳에서 연결합니다. Kubi AI 요청에 사용하는 API Key와는 별개입니다.",
+      "cta": "데이터 추가를 계속하려면 API 연결을 완료하세요.",
+      "emptyTitle": "등록된 Provider가 없습니다",
+      "emptyDesc": "데이터 제공 기관을 추가하고 연결하세요.",
+      "selectTitle": "Provider를 선택해주세요",
+      "selectDesc": "왼쪽 목록에서 Provider를 선택하면 상세 정보를 볼 수 있습니다."
+    },
+    "detail": {
+      "connStatus": "연결 상태",
+      "scopeNote": "선택한 Dataset에서 API Key가 실제 유효한지, 활용신청·필수 요청 파라미터가 맞는지는 Add Data의 Preview 단계에서 확인합니다. 이 화면은 Provider 인증 정보 등록 상태만 관리합니다.",
+      "credTitle": "자격 증명 (Credential) 상태",
+      "delete": "삭제",
+      "register": "등록하기",
+      "registered": "사용자 자격 증명 등록",
+      "noCredNote": "이 제공 기관은 자격 증명 없이 사용할 수 있습니다. 등록하거나 삭제할 자격 증명이 없습니다.",
+      "loading": "자격 증명 상태를 불러오는 중…",
+      "noStoreTitle": "자격 증명 저장소가 아직 구성되지 않았습니다",
+      "noStoreBody": "Builder에 암호화된 자격 증명 저장소(master key)가 설정되어 있지 않아 사용자 자격 증명을 등록·조회할 수 없습니다. 이는 \"아직 자격 증명을 등록하지 않음\"과는 다른 상태입니다. 운영자가 Builder에 KPUBDATA_BUILDER_CREDENTIAL_MASTER_KEY를 설정한 뒤 다시 시도하세요.",
+      "keyPlaceholder": "API Key를 입력하세요",
+      "save": "저장",
+      "cancel": "취소",
+      "savedKey": "저장된 API Key (마스킹):",
+      "configured": "설정됨",
+      "lastUpdated": "마지막 업데이트:",
+      "maskingNote": "Builder가 마스킹한 값이며 원문은 표시되지 않습니다.",
+      "backToData": "데이터 설정으로 돌아가기",
+      "defaultCredNote": "이 제공 기관은 현재 Builder 기본 자격 증명으로 사용 중입니다. 별도 사용자 자격 증명을 등록하면 이 기관 호출에 우선 적용됩니다.",
+      "needsCredNote": "이 제공 기관을 사용하려면 자격 증명을 등록해야 합니다."
+    }
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "시작하기",
+      "title": "공공데이터를 찾아 신뢰할 수 있는 데이터셋으로 만드세요",
+      "desc": "데이터를 찾거나 직접 가져온 뒤 Preview와 Quality를 확인하고 Build할 수 있습니다.",
+      "tour": "둘러보기 다시 보기"
+    },
+    "explore": {
+      "title": "공공데이터 탐색",
+      "desc": "Builder가 제공하는 공공데이터 카탈로그에서 Provider와 Dataset을 찾아 시작합니다.",
+      "cta": "탐색하기"
+    },
+    "addData": {
+      "title": "데이터 직접 가져오기",
+      "desc": "Public API·파일·URL을 직접 추가하고 Preview와 검증을 거쳐 Build합니다.",
+      "cta": "데이터 추가하기"
+    },
+    "steps": {
+      "1": "데이터 찾기",
+      "1d": "Discover 또는 직접 데이터 추가",
+      "2": "가져오기 준비",
+      "2d": "Public API는 인증·활용신청·요청값을 확인",
+      "3": "Preview · Build",
+      "3d": "데이터를 미리 확인·검증한 뒤 Build",
+      "4": "품질 확인 · 활용",
+      "4d": "Quality · Kubi · Export · Publish",
+      "heading": "전체 작업 흐름",
+      "note": "아래는 진행 순서를 보여주는 설명입니다 — 각 단계는 사이드바 메뉴와 화면 안내를 따라 진행하세요."
+    },
+    "kubi": {
+      "title": "어디서 시작할지 모르겠다면 Kubi에게 물어보세요",
+      "desc": "원하는 데이터나 분석 목적을 입력하면 Kubi에서 시작 방법을 함께 찾아볼 수 있습니다.",
+      "placeholder": "예: 서울 대기오염 데이터로 뭘 할 수 있어?",
+      "cta": "Kubi에서 시작하기 →",
+      "noKey": "아직 API Key가 설정되지 않았습니다. Kubi 화면에서 설정 방법을 안내합니다.",
+      "try": "Kubi에게 자연어로 데이터 물어보기"
+    },
+    "dashboard": {
+      "eyebrow": "대시보드",
+      "title": "작업 현황을 한눈에 확인하세요",
+      "desc": "최근 데이터셋, 빌드 상태, 품질 경고를 모니터링합니다",
+      "guide": "사용 가이드"
+    }
   }
 }

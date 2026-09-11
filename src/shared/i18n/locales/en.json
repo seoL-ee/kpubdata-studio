@@ -505,5 +505,96 @@
       "empty": "No baseline or not checked — no schema drift observed (not treated as PASS)."
     },
     "rowsUnit": " rows"
+  },
+  "provider": {
+    "status": {
+      "needsCred": "This provider requires credentials.",
+      "noCred": "This provider can be used without credentials."
+    },
+    "errors": {
+      "loadProvider": "Could not load provider information",
+      "credStatus": "Failed to load credential status",
+      "saveNoStore": "Cannot save — Builder credential store (master key) is not configured.",
+      "saveFail": "Failed to save credential",
+      "deleteNoStore": "Cannot delete — Builder credential store (master key) is not configured.",
+      "deleteFail": "Failed to delete credential"
+    },
+    "page": {
+      "title": "Data Provider Connections",
+      "desc": "Connect public data providers and manage credentials.",
+      "settings": "Go to Settings",
+      "note": "Public data API keys and provider credentials are connected here. They are separate from the API key used for Kubi AI requests.",
+      "cta": "Complete API connection to continue adding data.",
+      "emptyTitle": "No registered providers",
+      "emptyDesc": "Add and connect data providers.",
+      "selectTitle": "Select a provider",
+      "selectDesc": "Select a provider from the list to see details."
+    },
+    "detail": {
+      "connStatus": "Connection Status",
+      "scopeNote": "Whether the API key is actually valid for the selected dataset and whether required parameters are correct is verified in the Add Data Preview step. This screen only manages provider credential registration status.",
+      "credTitle": "Credential Status",
+      "delete": "Delete",
+      "register": "Register",
+      "registered": "User credential registered",
+      "noCredNote": "This provider can be used without credentials. There is no credential to register or delete.",
+      "loading": "Loading credential status…",
+      "noStoreTitle": "Credential store not configured",
+      "noStoreBody": "Builder does not have an encrypted credential store (master key) configured, so user credentials cannot be registered or viewed. This is different from \"not yet registered\". Ask the operator to set KPUBDATA_BUILDER_CREDENTIAL_MASTER_KEY in Builder and try again.",
+      "keyPlaceholder": "Enter API Key",
+      "save": "Save",
+      "cancel": "Cancel",
+      "savedKey": "Saved API Key (masked):",
+      "configured": "Configured",
+      "lastUpdated": "Last updated:",
+      "maskingNote": "Value masked by Builder — the original is not shown.",
+      "backToData": "Back to data settings",
+      "defaultCredNote": "This provider currently uses Builder default credentials. Registering a separate user credential takes priority for calls to this provider.",
+      "needsCredNote": "Credentials must be registered to use this provider."
+    }
+  },
+  "home": {
+    "hero": {
+      "eyebrow": "Get Started",
+      "title": "Find public data and turn it into trusted datasets",
+      "desc": "Find or bring your own data, then preview, validate, and build.",
+      "tour": "Replay tour"
+    },
+    "explore": {
+      "title": "Explore Public Data",
+      "desc": "Start from the Builder catalog of providers and datasets.",
+      "cta": "Explore"
+    },
+    "addData": {
+      "title": "Bring Your Own Data",
+      "desc": "Add via Public API, file, or URL — preview, validate, and build.",
+      "cta": "Add Data"
+    },
+    "steps": {
+      "1": "Find data",
+      "1d": "Discover or add your own",
+      "2": "Prepare",
+      "2d": "Public API: auth, activation, required params",
+      "3": "Preview · Build",
+      "3d": "Preview and validate, then build",
+      "4": "Quality & Use",
+      "4d": "Quality · Kubi · Export · Publish",
+      "heading": "Overall Workflow",
+      "note": "Below is the recommended order — follow the sidebar and on-screen guidance for each step."
+    },
+    "kubi": {
+      "title": "Not sure where to start? Ask Kubi",
+      "desc": "Describe the data or analysis you want and Kubi will help you get started.",
+      "placeholder": "e.g., What can I do with Seoul air quality data?",
+      "cta": "Start with Kubi →",
+      "noKey": "No API key configured yet. See the Kubi screen for setup instructions.",
+      "try": "Ask Kubi about data in natural language"
+    },
+    "dashboard": {
+      "eyebrow": "Dashboard",
+      "title": "See your work at a glance",
+      "desc": "Monitor recent datasets, build status, and quality alerts",
+      "guide": "User Guide"
+    }
   }
 }
