@@ -5,6 +5,8 @@
  * Builder evidence 기반 deterministic Report를 새로 만든다. 실제 편집/블록 구성은
  * `/reports/:reportId`(`ReportEditorPage`)에서 이어진다.
  */
+import { useTranslation } from "react-i18next";
+import { i18n } from "@/shared/i18n";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { listDatasetRuns, listDatasets } from "@/features/datasets/api";
@@ -34,6 +36,7 @@ function formatDateTime(value: string): string {
 }
 
 export function ReportsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [summaries, setSummaries] = useState<ReportSummary[]>([]);
   const [pendingNoteCount, setPendingNoteCount] = useState(0);
@@ -66,7 +69,7 @@ export function ReportsPage() {
       })
       .catch((cause: unknown) => {
         if (controller.signal.aborted) return;
-        setDatasetsState({ status: "error", error: cause instanceof Error ? cause.message : "데이터셋 목록을 불러오지 못했습니다." });
+        setDatasetsState({ status: "error", error: cause instanceof Error ? cause.message : i18n.t("reports.errors.datasets") });
       });
     return () => controller.abort();
   }, []);
@@ -85,7 +88,7 @@ export function ReportsPage() {
       })
       .catch((cause: unknown) => {
         if (controller.signal.aborted) return;
-        setRunsState({ status: "error", error: cause instanceof Error ? cause.message : "run 목록을 불러오지 못했습니다." });
+        setRunsState({ status: "error", error: cause instanceof Error ? cause.message : i18n.t("reports.errors.runs") });
       });
     return () => controller.abort();
   }, [selectedDatasetId]);
@@ -114,7 +117,7 @@ export function ReportsPage() {
       }
       navigate(`/reports/${encodeURIComponent(report.id)}`);
     } catch (cause) {
-      setCreateError(cause instanceof Error ? cause.message : "Report를 만들지 못했습니다.");
+      setCreateError(cause instanceof Error ? cause.message : i18n.t("reports.errors.create"));
     } finally {
       setCreating(false);
     }
@@ -122,7 +125,7 @@ export function ReportsPage() {
 
   function handleRenameSubmit() {
     if (!renameTarget) return;
-    const result = renameReport(renameTarget.id, renameTarget.title.trim() || "제목 없음");
+    const result = renameReport(renameTarget.id, renameTarget.title.trim() || i18n.t("reports.page.untitled"));
     if (!result.ok) {
       setListError(result.reason);
       return;
@@ -142,7 +145,7 @@ export function ReportsPage() {
   }
 
   function handleDelete(id: string) {
-    if (!window.confirm("이 Report를 삭제하시겠습니까? 되돌릴 수 없습니다.")) return;
+    if (!window.confirm(i18n.t("reports.page.deleteConfirm"))) return;
     deleteReport(id);
     refresh();
   }
@@ -151,17 +154,17 @@ export function ReportsPage() {
     <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
       <PageHeader
         eyebrow="Reports"
-        title="리포트"
-        description="Builder evidence를 기준으로 Report를 만들고, Kubi 해석을 참고 블록으로 덧붙여 편집·저장·내보냅니다."
+        title={t("reports.page.title")}
+        description={t("reports.page.desc")}
       />
 
       <Card>
-        <p className="text-sm font-semibold">새 Report 만들기</p>
+        <p className="text-sm font-semibold">{t("reports.page.newTitle")}</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          선택한 dataset/run이 이 Report의 기준으로 고정됩니다. 새 Run이 생겨도 이 Report는 자동으로 바뀌지 않습니다.
+          {t("reports.page.newDesc")}
         </p>
         {datasetsState.status === "error" ? (
-          <ErrorState className="mt-3" message={datasetsState.error ?? "데이터셋 목록을 불러오지 못했습니다."} />
+          <ErrorState className="mt-3" message={datasetsState.error ?? i18n.t("reports.errors.datasets")} />
         ) : (
           <div className="mt-3 flex flex-wrap items-end gap-3">
             <div className="min-w-[220px]">
@@ -201,12 +204,12 @@ export function ReportsPage() {
               </Select>
             </div>
             <Button onClick={handleCreate} loading={creating} disabled={!selectedDatasetId || !selectedRunId}>
-              Report 만들기
+              {t("reports.page.createCta")}
             </Button>
           </div>
         )}
         {runsState.status === "loaded" && (runsState.data ?? []).length === 0 ? (
-          <p className="mt-2 text-xs text-muted-foreground">이 dataset에는 접근 가능한 run이 없습니다.</p>
+          <p className="mt-2 text-xs text-muted-foreground">{t("reports.page.noRuns")}</p>
         ) : null}
         {createError ? <ErrorState className="mt-3" message={createError} /> : null}
       </Card>
@@ -221,9 +224,9 @@ export function ReportsPage() {
       {listError ? <ErrorState message={listError} /> : null}
 
       <Card>
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">저장된 Report</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("reports.page.savedTitle")}</p>
         {summaries.length === 0 ? (
-          <EmptyState className="py-8" title="저장된 Report가 없습니다" description="위에서 dataset/run을 선택해 첫 Report를 만들어보세요." />
+          <EmptyState className="py-8" title={t("reports.page.savedEmpty")} description={t("reports.page.savedEmptyDesc")} />
         ) : (
           <ul className="mt-3 flex flex-col divide-y divide-border">
             {summaries.map((summary) => (
@@ -241,10 +244,10 @@ export function ReportsPage() {
                       }}
                     />
                     <Button size="sm" onClick={handleRenameSubmit}>
-                      저장
+                      {t("reports.actions.save")}
                     </Button>
                     <Button size="sm" variant="secondary" onClick={() => setRenameTarget(null)}>
-                      취소
+                      {t("reports.actions.cancel")}
                     </Button>
                   </div>
                 ) : (
@@ -257,7 +260,7 @@ export function ReportsPage() {
                       {summary.title}
                     </button>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      {summary.datasetId} · {summary.baseRunId} · 최근 수정 {formatDateTime(summary.updatedAt)}
+                      {summary.datasetId} · {summary.baseRunId} · {t("reports.page.lastModified", { time: formatDateTime(summary.updatedAt) })}
                     </p>
                   </div>
                 )}
@@ -268,14 +271,14 @@ export function ReportsPage() {
                       className="text-muted-foreground underline hover:text-foreground"
                       onClick={() => setRenameTarget({ id: summary.id, title: summary.title })}
                     >
-                      이름변경
+                      {t("reports.actions.rename")}
                     </button>
                     <button
                       type="button"
                       className="text-muted-foreground underline hover:text-foreground"
                       onClick={() => handleDuplicate(summary.id)}
                     >
-                      복제
+                      {t("reports.actions.duplicate")}
                     </button>
                     <button
                       type="button"
