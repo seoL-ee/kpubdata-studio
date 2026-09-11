@@ -303,5 +303,116 @@
       "saveDraft": "Save draft",
       "specTitle": "Generated spec"
     }
+  },
+  "kubi": {
+    "context": {
+      "current": "Current Context",
+      "stageAll": "Whole Run",
+      "stageDisabled": "Unavailable",
+      "sourceLabel": "Analysis Source",
+      "sourceFirst": "Select first",
+      "hintNoRun": "Select a run to analyze run and stage evidence.",
+      "hintMultiSource": "This run has multiple sources. Select which source to analyze first.",
+      "hintNoStage": "Analyzing the whole run. Select Silver or Gold to generate SQL.",
+      "hintBronze": "Generated SQL cannot run on Bronze. Select Silver or Gold.",
+      "hintSqlReady": "Ask questions and generate SQL on the {{stage}} schema"
+    },
+    "byok": {
+      "title": "An LLM API key is required to use Kubi (BYOK)",
+      "desc": "Keys are kept only in this browser's memory by default and disappear on refresh. Studio does not provide a shared key.",
+      "modelLabel": "Model (optional)",
+      "baseUrlLabel": "Base URL (optional)",
+      "baseUrlWarning": "This is not the default provider address. Your API key will be sent to:",
+      "saveSession": "Save (this session only)",
+      "clearStored": "Clear browser storage",
+      "saveBrowser": "Save in this browser (risky — warning shown)"
+    },
+    "turnStatus": {
+      "noKey": "No API key configured. Set one above first.",
+      "cancelled": "The request was cancelled.",
+      "staleContext": "This answer is based on a previous screen.",
+      "retry": "Retry"
+    },
+    "queryError": {
+      "unsafe_query": "SQL syntax error or disallowed query.",
+      "forbidden": "No access to this dataset/run.",
+      "artifact_unavailable": "The requested stage artifact is not available yet.",
+      "invalid_context": "Invalid dataset/run/stage context.",
+      "invalid_request": "Invalid request format.",
+      "query_busy": "Query capacity is full. Please try again shortly.",
+      "query_timeout": "Query execution timed out.",
+      "query_execution_failed": "Query execution failed.",
+      "network": "Could not connect to Builder.",
+      "mock_mode": "Queries cannot run in mock mode.",
+      "unknown": "An unknown error occurred."
+    },
+    "query": {
+      "running": "Running query…",
+      "rowsShown": "{{rows}} rows shown · {{scope}} · {{ms}}ms",
+      "truncated": "partial results (truncated)",
+      "all": "all results",
+      "copySql": "Copy Generated SQL",
+      "copy": "Copy",
+      "run": "Run",
+      "runningEllipsis": "Running…"
+    },
+    "action": {
+      "buildSpec": "BuildSpec change proposal",
+      "reportNote": "Note to add to Report",
+      "evidence": "Linked Evidence",
+      "approve": "Approve",
+      "open": "Open",
+      "reject": "Reject",
+      "apply": "Apply",
+      "applying": "Applying…",
+      "rejected": "Rejected",
+      "staleCantRun": "Based on a previous screen — cannot run"
+    },
+    "evidence": {
+      "count": "{{count}} evidence items",
+      "countRejected": "{{count}} evidence · {{rejected}} excluded",
+      "detailUnavailable": "Detailed evidence is not available from the current evidence.",
+      "openOriginal": "Open original screen",
+      "rejectedCount": "⚠ {{count}} excluded evidence items",
+      "unavailable": "Evidence not confirmed: {{items}}"
+    },
+    "phases": {
+      "collecting": "Checking evidence",
+      "generating": "Generating answer",
+      "validating": "Validating evidence",
+      "inProgress": ""
+    },
+    "turn": {
+      "ok": "Success",
+      "error": "Failed",
+      "running": "In progress",
+      "stale": "Previous screen",
+      "collapse": "Collapse conversation",
+      "demoBadge": "DEMO · mock data (not a real analysis)",
+      "staleBadge": "Previous screen",
+      "cancel": "Cancel",
+      "history": "{{count}} earlier conversations"
+    },
+    "empty": {
+      "demoTitle": "Try the demo first without an API key",
+      "demoDesc": "Example response based on mock data — not a real analysis. Only available in dev/mock mode.",
+      "demoSend": "Send a demo question",
+      "welcomeTitle": "First time here?",
+      "welcomeDesc": "Start with a suggested question or ask your own.",
+      "demoQuestion": "How is this dataset's quality?"
+    },
+    "input": {
+      "aria": "Ask Kubi",
+      "placeholder": "Type a question…",
+      "placeholderDemo": "Type a question… (demo · mock data)",
+      "placeholderNoKey": "Set an API key first",
+      "send": "Send",
+      "suggested": "Suggested questions",
+      "currentDataset": "Current Dataset",
+      "openDataset": "Open {{id}}",
+      "relatedDatasets": "Related datasets",
+      "relatedHintNoQ": "Send a question to load evidence and see other dataset candidates from the same provider.",
+      "relatedHintNoDs": "Select a dataset to see related dataset candidates verified against the actual catalog."
+    }
   }
 }

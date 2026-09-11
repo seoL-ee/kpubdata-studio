@@ -303,5 +303,116 @@
       "saveDraft": "초안 저장",
       "specTitle": "생성될 스펙 (Generated spec)"
     }
+  },
+  "kubi": {
+    "context": {
+      "current": "현재 Context",
+      "stageAll": "Run 전체",
+      "stageDisabled": "사용 불가",
+      "sourceLabel": "분석 Source",
+      "sourceFirst": "먼저 선택하세요",
+      "hintNoRun": "Run을 선택하면 Run 및 Stage 근거를 분석할 수 있습니다.",
+      "hintMultiSource": "이 Run에는 source가 여러 개 있습니다. 분석할 source를 먼저 선택하세요.",
+      "hintNoStage": "Run 전체를 분석 중입니다. SQL을 생성하려면 Silver 또는 Gold를 선택하세요.",
+      "hintBronze": "Bronze에서는 Generated SQL을 실행할 수 없습니다. Silver 또는 Gold를 선택하세요.",
+      "hintSqlReady": "{{stage}} schema 기반 질문 및 SQL 생성 가능"
+    },
+    "byok": {
+      "title": "Kubi를 사용하려면 LLM API 키가 필요합니다 (BYOK)",
+      "desc": "키는 기본적으로 이 브라우저 메모리에만 보관되며, 새로고침하면 사라집니다. Studio는 공용 키를 제공하지 않습니다.",
+      "modelLabel": "Model (선택)",
+      "baseUrlLabel": "Base URL (선택)",
+      "baseUrlWarning": "기본 Provider 주소가 아닙니다. 이 주소로 API Key가 전송됩니다:",
+      "saveSession": "저장(이 세션 동안만)",
+      "clearStored": "브라우저 저장 해제",
+      "saveBrowser": "이 브라우저에 저장(위험 — 경고 표시됨)"
+    },
+    "turnStatus": {
+      "noKey": "API Key가 설정되어 있지 않습니다. 위에서 먼저 설정하세요.",
+      "cancelled": "요청이 취소되었습니다.",
+      "staleContext": "이 답변은 이전 화면 기준입니다.",
+      "retry": "다시 시도"
+    },
+    "queryError": {
+      "unsafe_query": "SQL 구문 오류 또는 허용되지 않은 쿼리입니다.",
+      "forbidden": "이 dataset/run에 대한 접근 권한이 없습니다.",
+      "artifact_unavailable": "요청한 stage 산출물을 아직 사용할 수 없습니다.",
+      "invalid_context": "dataset/run/stage 문맥이 올바르지 않습니다.",
+      "invalid_request": "요청 형식이 올바르지 않습니다.",
+      "query_busy": "Query 처리 용량이 가득 찼습니다. 잠시 후 다시 시도하세요.",
+      "query_timeout": "Query 실행이 시간 초과되었습니다.",
+      "query_execution_failed": "Query 실행 중 오류가 발생했습니다.",
+      "network": "Builder에 연결하지 못했습니다.",
+      "mock_mode": "mock 모드에서는 Query를 실행할 수 없습니다.",
+      "unknown": "알 수 없는 오류가 발생했습니다."
+    },
+    "query": {
+      "running": "Query 실행 중…",
+      "rowsShown": "{{rows}}행 표시 · {{scope}} · {{ms}}ms",
+      "truncated": "일부 결과만 표시 중(truncated)",
+      "all": "전체 결과",
+      "copySql": "Generated SQL 복사",
+      "copy": "복사",
+      "run": "실행",
+      "runningEllipsis": "실행 중…"
+    },
+    "action": {
+      "buildSpec": "BuildSpec 변경 제안",
+      "reportNote": "Report에 추가될 노트",
+      "evidence": "연결된 Evidence",
+      "approve": "승인",
+      "open": "열기",
+      "reject": "거부",
+      "apply": "적용",
+      "applying": "적용 중…",
+      "rejected": "거부됨",
+      "staleCantRun": "이전 화면 기준 — 실행할 수 없습니다"
+    },
+    "evidence": {
+      "count": "근거 {{count}}개",
+      "countRejected": "근거 {{count}}개 · 제외된 근거 {{rejected}}개",
+      "detailUnavailable": "상세 근거를 현재 evidence에서 확인할 수 없습니다.",
+      "openOriginal": "원본 화면 열기",
+      "rejectedCount": "⚠ 제외된 근거 {{count}}개",
+      "unavailable": "확인하지 못한 근거: {{items}}"
+    },
+    "phases": {
+      "collecting": "Evidence 확인",
+      "generating": "답변 생성",
+      "validating": "근거 검증",
+      "inProgress": " 중"
+    },
+    "turn": {
+      "ok": "성공",
+      "error": "실패",
+      "running": "진행 중",
+      "stale": "이전 화면",
+      "collapse": "대화 접기",
+      "demoBadge": "DEMO · mock 데이터(실제 분석 아님)",
+      "staleBadge": "이전 화면 기준",
+      "cancel": "취소",
+      "history": "이전 대화 {{count}}개"
+    },
+    "empty": {
+      "demoTitle": "API Key 없이 먼저 데모로 보기",
+      "demoDesc": "mock 데이터 기반 예시 응답입니다 — 실제 분석 결과가 아닙니다. dev/mock 모드에서만 제공됩니다.",
+      "demoSend": "데모 질문 보내보기",
+      "welcomeTitle": "처음이신가요?",
+      "welcomeDesc": "예시 질문으로 시작하거나 직접 질문할 수 있습니다.",
+      "demoQuestion": "이 데이터셋 품질 어때?"
+    },
+    "input": {
+      "aria": "Kubi에게 질문하기",
+      "placeholder": "질문을 입력하세요…",
+      "placeholderDemo": "질문을 입력하세요… (데모 · mock 데이터)",
+      "placeholderNoKey": "먼저 API Key를 설정하세요",
+      "send": "전송",
+      "suggested": "추천 질문",
+      "currentDataset": "현재 Dataset",
+      "openDataset": "{{id}} 열기",
+      "relatedDatasets": "관련 데이터셋",
+      "relatedHintNoQ": "질문을 보내 evidence를 불러오면 같은 provider의 다른 데이터셋 후보를 확인할 수 있습니다.",
+      "relatedHintNoDs": "Dataset을 선택하면 실제 catalog와 대조한 관련 데이터셋 후보를 확인할 수 있습니다."
+    }
   }
 }
