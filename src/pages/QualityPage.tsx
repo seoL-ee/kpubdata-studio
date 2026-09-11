@@ -6,6 +6,8 @@
  * Dataset/Run/Source는 #253의 Dataset Detail과 동일한 API·URL 패턴(?run=&source=&stage=)을
  * 재사용해 두 화면 사이에서 문맥이 끊기지 않도록 한다.
  */
+import { useTranslation } from "react-i18next";
+import { i18n } from "@/shared/i18n";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
@@ -55,12 +57,12 @@ const selectClassName =
   "h-9 rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 /** 행 수 필드(affected_rows/evaluated_rows)를 N/A 없이 0으로 바꾸지 않고 그대로 보여준다. */
-function formatRowCount(value: number | null): string {
-  return value === null ? "N/A" : `${value.toLocaleString("ko-KR")}행`;
+function formatRowCount(value: number | null, t: (k: string) => string): string {
+  return value === null ? "N/A" : `${value.toLocaleString("ko-KR")}${t("quality.rowsUnit")}`;
 }
 
 function describeWorst(summary: CategorySummary): string {
-  if (summary.evaluated === 0) return "평가된 규칙 없음";
+  if (summary.evaluated === 0) return i18n.t("quality.noRules");
   const worst = summary.worst;
   if (!worst) return `${summary.pass}/${summary.evaluated} PASS`;
   return `${worst.column ?? worst.rule} · actual ${formatQualityValue(worst.rule, worst.actual)} (threshold ${formatQualityValue(worst.rule, worst.threshold)})`;
@@ -77,6 +79,7 @@ function MetricCard({ label, value, sub }: { label: string; value: ReactNode; su
 }
 
 export function QualityPage() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const openKubiDrawer = useUIStore((state) => state.openKubiDrawer);
   const seedKubiQuestion = useKubiStore((state) => state.seedQuestion);
@@ -94,7 +97,7 @@ export function QualityPage() {
       .then((datasets) => setDatasetsState({ status: "loaded", data: datasets }))
       .catch((cause: unknown) => {
         if (controller.signal.aborted) return;
-        setDatasetsState({ status: "error", error: cause instanceof Error ? cause.message : "데이터셋 목록을 불러오지 못했습니다." });
+        setDatasetsState({ status: "error", error: cause instanceof Error ? cause.message : i18n.t("quality.errors.datasets") });
       });
     return () => controller.abort();
   }, []);
@@ -118,13 +121,13 @@ export function QualityPage() {
     listDatasetRuns(selectedDatasetId, 50, controller.signal)
       .then((data) => setRunsState({ status: "loaded", data: data.runs }))
       .catch((cause: unknown) => {
-        if (!controller.signal.aborted) setRunsState({ status: "error", error: cause instanceof Error ? cause.message : "실행 이력을 불러오지 못했습니다." });
+        if (!controller.signal.aborted) setRunsState({ status: "error", error: cause instanceof Error ? cause.message : i18n.t("quality.errors.runs") });
       });
     // Trend(history) 조회는 current-run quality와 독립적으로 실패/성공한다 — 서로의 상태를 지우지 않는다.
     getDatasetQualityHistory(selectedDatasetId, 30, controller.signal)
       .then((data) => setHistoryState({ status: "loaded", data }))
       .catch((cause: unknown) => {
-        if (!controller.signal.aborted) setHistoryState({ status: "error", error: cause instanceof Error ? cause.message : "Quality 이력을 불러오지 못했습니다." });
+        if (!controller.signal.aborted) setHistoryState({ status: "error", error: cause instanceof Error ? cause.message : i18n.t("quality.errors.history") });
       });
     return () => controller.abort();
   }, [selectedDatasetId, invalidDataset]);
@@ -176,12 +179,12 @@ export function QualityPage() {
     listBuildStages(selectedRunId, controller.signal)
       .then((data) => setStagesState({ status: "loaded", data }))
       .catch((cause: unknown) => {
-        if (!controller.signal.aborted) setStagesState({ status: "error", error: cause instanceof Error ? cause.message : "Stage 상태를 불러오지 못했습니다." });
+        if (!controller.signal.aborted) setStagesState({ status: "error", error: cause instanceof Error ? cause.message : i18n.t("quality.errors.stages") });
       });
     getBuildQuality(selectedRunId, controller.signal)
       .then((data) => setQualityState({ status: "loaded", data }))
       .catch((cause: unknown) => {
-        if (!controller.signal.aborted) setQualityState({ status: "error", error: cause instanceof Error ? cause.message : "Quality 결과를 불러오지 못했습니다." });
+        if (!controller.signal.aborted) setQualityState({ status: "error", error: cause instanceof Error ? cause.message : i18n.t("quality.errors.quality") });
       });
     return () => controller.abort();
   }, [selectedRunId, invalidRun]);
@@ -232,7 +235,7 @@ export function QualityPage() {
   const categoryGroups = useMemo(() => groupByCategory(scopedResults), [scopedResults]);
   const issues = useMemo(() => warnOrFailResults(scopedResults), [scopedResults]);
 
-  const scopeLabel = selectedSource || "전체 소스";
+  const scopeLabel = selectedSource || t("quality.allSources");
   // Rule Pass Rate / Recent Issues / Schema Drift가 "어떤 Dataset/Run/Source/Stage" 기준인지
   // 항상 함께 드러내도록 하나의 문맥 문자열로 합성한다(#254 리뷰 §3, §7).
   const contextLabel = [
@@ -269,7 +272,7 @@ export function QualityPage() {
   if (datasetsState.status === "loading") {
     return (
       <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-        <PageHeader eyebrow="Quality" title="Quality Center" description="데이터셋 목록을 불러오는 중입니다." />
+        <PageHeader eyebrow="Quality" title="Quality Center" description={t("quality.loading")} />
         <Card><Skeleton className="h-40 w-full" /></Card>
       </main>
     );
@@ -279,7 +282,7 @@ export function QualityPage() {
     return (
       <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
         <PageHeader eyebrow="Quality" title="Quality Center" />
-        <ErrorState title="데이터셋 목록을 불러오지 못했습니다" message={datasetsState.error} />
+        <ErrorState title={t("quality.errors.datasets")} message={datasetsState.error} />
       </main>
     );
   }
@@ -288,7 +291,7 @@ export function QualityPage() {
     return (
       <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
         <PageHeader eyebrow="Quality" title="Quality Center" />
-        <Card><EmptyState title="데이터셋이 없습니다" description="Quality 결과를 보려면 먼저 데이터셋을 빌드해야 합니다." actionLabel="Add Data로 이동" actionHref="/add" /></Card>
+        <Card><EmptyState title={t("quality.empty.title")} description={t("quality.empty.desc")} actionLabel={t("quality.empty.action")} actionHref="/add" /></Card>
       </main>
     );
   }
@@ -298,9 +301,9 @@ export function QualityPage() {
       <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
         <PageHeader eyebrow="Quality" title="Quality Center" />
         <Card variant="error" role="alert">
-          <p className="font-semibold">선택한 데이터셋에 접근할 수 없습니다.</p>
-          <p className="mt-2 text-sm">URL의 dataset `{requestedDatasetId}`는 접근 가능한 데이터셋 목록에 없습니다.</p>
-          <Button className="mt-4" variant="secondary" onClick={() => updateContext({ dataset: null, run: null, source: null, stage: null })}>첫 데이터셋 보기</Button>
+          <p className="font-semibold">{t("quality.wrongDataset.title")}</p>
+          <p className="mt-2 text-sm">{t("quality.wrongDataset.desc", { id: requestedDatasetId })}</p>
+          <Button className="mt-4" variant="secondary" onClick={() => updateContext({ dataset: null, run: null, source: null, stage: null })}>{t("quality.wrongDataset.back")}</Button>
         </Card>
       </main>
     );
@@ -311,9 +314,9 @@ export function QualityPage() {
       <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
         <PageHeader eyebrow="Quality" title="Quality Center" description={selectedDataset?.title} />
         <Card variant="error" role="alert">
-          <p className="font-semibold">선택한 run에 접근할 수 없습니다.</p>
-          <p className="mt-2 text-sm">URL의 run `{requestedRunId}`은 이 데이터셋의 접근 가능한 실행 이력에 없습니다. latest run으로 자동 변경하지 않았습니다.</p>
-          <Button className="mt-4" variant="secondary" onClick={() => updateContext({ run: null, source: null, stage: null })}>latest run 보기</Button>
+          <p className="font-semibold">{t("quality.wrongRun.title")}</p>
+          <p className="mt-2 text-sm">{t("quality.wrongRun.desc", { id: requestedRunId })}</p>
+          <Button className="mt-4" variant="secondary" onClick={() => updateContext({ run: null, source: null, stage: null })}>{t("quality.wrongRun.back")}</Button>
         </Card>
       </main>
     );
@@ -324,7 +327,7 @@ export function QualityPage() {
       <PageHeader
         eyebrow="Quality"
         title="Quality Center"
-        description="점수 대신 실제 검증 통과 여부(PASS/WARN/FAIL)와 규칙별 이슈를 보여줍니다."
+        description={t("quality.header.desc")}
         actions={
           <Button
             variant="secondary"
@@ -334,7 +337,7 @@ export function QualityPage() {
               openKubiDrawer();
             }}
           >
-            Kubi 분석
+            {t("quality.kubiAnalyze")}
           </Button>
         }
       />
@@ -344,27 +347,27 @@ export function QualityPage() {
       <Card className="flex flex-wrap items-end gap-3 p-3">
         <label className="min-w-52 flex-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           Dataset
-          <select aria-label="Dataset 선택" className={`mt-1 w-full ${selectClassName}`} value={selectedDatasetId} onChange={(event) => updateContext({ dataset: event.target.value, run: null, source: null, stage: null })}>
+          <select aria-label={t("quality.selectors.dataset")} className={`mt-1 w-full ${selectClassName}`} value={selectedDatasetId} onChange={(event) => updateContext({ dataset: event.target.value, run: null, source: null, stage: null })}>
             {datasetsState.data.map((dataset) => <option key={dataset.dataset_id} value={dataset.dataset_id}>{dataset.title}</option>)}
           </select>
         </label>
         <label className="min-w-52 flex-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           Run
-          <select aria-label="Run 선택" className={`mt-1 w-full ${selectClassName}`} value={selectedRunId} disabled={runsState.status !== "loaded"} onChange={(event) => updateContext({ run: event.target.value === selectedDataset?.latest_run_id ? null : event.target.value, source: null, stage: null })}>
+          <select aria-label={t("quality.selectors.run")} className={`mt-1 w-full ${selectClassName}`} value={selectedRunId} disabled={runsState.status !== "loaded"} onChange={(event) => updateContext({ run: event.target.value === selectedDataset?.latest_run_id ? null : event.target.value, source: null, stage: null })}>
             {(runsState.data ?? []).map((run) => <option key={run.run_id} value={run.run_id}>{run.run_id}{run.run_id === selectedDataset?.latest_run_id ? " (latest)" : ""}</option>)}
           </select>
         </label>
         <label className="min-w-52 flex-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           Source
-          <select aria-label="Source 선택" className={`mt-1 w-full ${selectClassName}`} value={selectedSource} disabled={stagesState.status !== "loaded"} onChange={(event) => updateContext({ source: event.target.value || null, stage: null })}>
-            <option value="">전체 소스</option>
+          <select aria-label={t("quality.selectors.source")} className={`mt-1 w-full ${selectClassName}`} value={selectedSource} disabled={stagesState.status !== "loaded"} onChange={(event) => updateContext({ source: event.target.value || null, stage: null })}>
+            <option value="">{t("quality.allSources")}</option>
             {sourceEntries.map((source) => <option key={source.source_key} value={source.source_key}>{source.source_key}</option>)}
           </select>
         </label>
         <label className="min-w-44 flex-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           Stage
-          <select aria-label="Stage 선택" className={`mt-1 w-full ${selectClassName}`} value={selectedStage ?? ""} disabled={!selectedSourceEntry} onChange={(event) => updateContext({ stage: event.target.value || null })}>
-            <option value="">(문맥용)</option>
+          <select aria-label={t("quality.selectors.stage")} className={`mt-1 w-full ${selectClassName}`} value={selectedStage ?? ""} disabled={!selectedSourceEntry} onChange={(event) => updateContext({ stage: event.target.value || null })}>
+            <option value="">{t("quality.selectors.stageOption")}</option>
             {DATASET_STAGES.map((stageName) => <option key={stageName} value={stageName}>{stageName}{selectedSourceEntry ? ` · ${selectedSourceEntry[stageName].status}` : ""}</option>)}
           </select>
         </label>
@@ -373,32 +376,32 @@ export function QualityPage() {
           <span>·</span><span>Availability</span><strong className="text-foreground">{qualityState.data?.availability ?? "—"}</strong>
           <QualityStateBadge state={overallState} />
         </div>
-        <p className="basis-full text-xs text-muted-foreground">현재 선택한 Dataset · Run · Source · Stage 범위의 Builder 평가 결과입니다. <TermHelp term="quality" /></p>
-        {datasetDetailHref && selectedSource ? <Link className="ml-auto text-xs font-medium text-accent-subtle-foreground underline" to={datasetDetailHref}>Dataset Detail에서 보기</Link> : null}
+        <p className="basis-full text-xs text-muted-foreground">{t("quality.scope.desc")} <TermHelp term="quality" /></p>
+        {datasetDetailHref && selectedSource ? <Link className="ml-auto text-xs font-medium text-accent-subtle-foreground underline" to={datasetDetailHref}>{t("quality.scope.viewDetail")}</Link> : null}
       </Card>
 
       {stagesState.status === "error" ? <Card variant="error" role="alert">{stagesState.error}</Card> : null}
 
       {qualityState.status === "error" ? (
         <Card variant="error" role="alert">
-          <p className="font-semibold">Quality 결과를 불러오지 못했습니다</p>
+          <p className="font-semibold">{t("quality.failed.title")}</p>
           <p className="mt-2 text-sm">{qualityState.error}</p>
         </Card>
       ) : invalidSource ? (
         <Card variant="error" role="alert">
-          <p className="font-semibold">잘못된 source 필터입니다</p>
-          <p className="mt-2 text-sm">URL의 source `{requestedSource}`는 선택한 run에 존재하지 않습니다. 유효한 source를 선택할 때까지 결과를 표시하지 않습니다.</p>
-          <Button className="mt-4" variant="secondary" onClick={() => updateContext({ source: null, stage: null })}>전체 소스로 초기화</Button>
+          <p className="font-semibold">{t("quality.wrongSource.title")}</p>
+          <p className="mt-2 text-sm">{t("quality.wrongSource.desc", { id: requestedSource })}</p>
+          <Button className="mt-4" variant="secondary" onClick={() => updateContext({ source: null, stage: null })}>{t("quality.wrongSource.reset")}</Button>
         </Card>
       ) : qualityState.status === "loading" || qualityState.status === "idle" ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 4 }, (_, index) => <Card key={index} className="p-5"><Skeleton className="h-16 w-full" /></Card>)}</div>
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard label="Checks Passed" value={checksPassed.evaluated === 0 ? "N/A" : `${checksPassed.pass} / ${checksPassed.evaluated}`} sub={checksPassed.evaluated === 0 ? "평가된 규칙 없음" : `${checksPassed.warn} WARN · ${checksPassed.fail} FAIL · ${scopeLabel} 기준`} />
+            <MetricCard label="Checks Passed" value={checksPassed.evaluated === 0 ? "N/A" : `${checksPassed.pass} / ${checksPassed.evaluated}`} sub={checksPassed.evaluated === 0 ? t("quality.metrics.noRulesSub") : `${checksPassed.warn} WARN · ${checksPassed.fail} FAIL · ${t("quality.metrics.scopeBase", { scope: scopeLabel })}`} />
             <MetricCard label="Missing" value={<QualityBadge status={missingSummary.status} />} sub={describeWorst(missingSummary)} />
             <MetricCard label="Duplicates" value={<QualityBadge status={duplicateSummary.status} />} sub={describeWorst(duplicateSummary)} />
-            <MetricCard label="Schema" value={<QualityBadge status={schemaRuleSummary.status} />} sub={`규칙 평가 ${schemaRuleSummary.evaluated}건 · Drift ${scopedDrift.length}건`} />
+            <MetricCard label="Schema" value={<QualityBadge status={schemaRuleSummary.status} />} sub={t("quality.metrics.schemaSub", { evaluated: schemaRuleSummary.evaluated, drift: scopedDrift.length })} />
           </div>
 
           {selectedSource === "" && sourceBreakdown.length > 1 ? <SourceBreakdown rows={sourceBreakdown} /> : null}
@@ -415,7 +418,7 @@ export function QualityPage() {
             selectedRun={selectedRun}
             onKubi={(issue) => {
               syncKubiContext();
-              seedKubiQuestion(`"${issue.category} · ${issue.rule}" 규칙이 ${issue.status.toUpperCase()}인 이유와 조치 방법을 분석해줘.`);
+              seedKubiQuestion(t("quality.kubiQuestion", { category: issue.category, rule: issue.rule, status: issue.status.toUpperCase() }));
               openKubiDrawer();
             }}
           />
@@ -429,16 +432,17 @@ export function QualityPage() {
 
 /** "전체 소스" 조회 시 일부 source만 검사 완료된 상태를 첫 source로 뭉개지 않고 드러낸다(#254 리뷰 §1, §8). */
 function SourceBreakdown({ rows }: { rows: { sourceKey: string; summary: ReturnType<typeof summarizeChecksPassed> }[] }) {
+  const { t } = useTranslation();
   return (
     <Card>
-      <h3 className="text-sm font-semibold">Source별 검사 현황</h3>
-      <p className="mt-1 text-xs text-muted-foreground">"전체 소스" 합계가 일부 source만 검사된 결과를 가리지 않도록 source별로 보여줍니다.</p>
+      <h3 className="text-sm font-semibold">{t("quality.perSource.title")}</h3>
+      <p className="mt-1 text-xs text-muted-foreground">{t("quality.perSource.desc")}</p>
       <div className="mt-4 flex flex-col">
         {rows.map(({ sourceKey, summary }) => (
           <div key={sourceKey} className="flex flex-wrap items-center justify-between gap-3 border-b border-border py-2 text-sm last:border-0">
             <span className="font-mono text-xs">{sourceKey}</span>
             {summary.evaluated === 0 ? (
-              <span className="text-xs text-muted-foreground">평가된 결과 없음 (N/A)</span>
+              <span className="text-xs text-muted-foreground">{t("quality.perSource.noResult")}</span>
             ) : (
               <span className="text-xs text-muted-foreground">{summary.pass} / {summary.evaluated} PASS · WARN {summary.warn} · FAIL {summary.fail}</span>
             )}
@@ -450,27 +454,28 @@ function SourceBreakdown({ rows }: { rows: { sourceKey: string; summary: ReturnT
 }
 
 function ValidationTrend({ state }: { state: AsyncState<DatasetQualityHistoryResponse> }) {
+  const { t } = useTranslation();
   return (
     <Card>
       <h3 className="text-sm font-semibold">Validation trend</h3>
       {state.status === "loading" || state.status === "idle" ? (
         <Skeleton className="mt-4 h-40 w-full" />
       ) : state.status === "error" ? (
-        <p className="mt-3 text-sm text-red-700 dark:text-red-300">이력을 불러오지 못했습니다: {state.error}</p>
+        <p className="mt-3 text-sm text-red-700 dark:text-red-300">{t("quality.history.fail", { error: state.error })}</p>
       ) : (state.data?.runs.length ?? 0) === 0 ? (
-        <p className="mt-3 text-sm text-muted-foreground">이 데이터셋에 대해 조회 가능한 품질 이력이 없습니다.</p>
+        <p className="mt-3 text-sm text-muted-foreground">{t("quality.history.empty")}</p>
       ) : (
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[560px] text-left text-sm">
             <thead className="border-b border-border text-xs uppercase text-muted-foreground">
-              <tr><th className="py-2 pr-3">Run</th><th className="py-2 pr-3">시각</th><th className="py-2 pr-3">분포</th><th className="py-2 pr-3">Evaluated</th><th className="py-2 pr-3">검사 행 수</th><th className="py-2 pr-3">Pass rate</th></tr>
+              <tr><th className="py-2 pr-3">Run</th><th className="py-2 pr-3">{t("quality.history.cols.time")}</th><th className="py-2 pr-3">{t("quality.history.cols.distribution")}</th><th className="py-2 pr-3">Evaluated</th><th className="py-2 pr-3">{t("quality.history.cols.rows")}</th><th className="py-2 pr-3">Pass rate</th></tr>
             </thead>
             <tbody>
               {state.data!.runs.map((run) => {
                 const total = run.pass_count + run.warn_count + run.fail_count;
                 return (
                   <tr key={run.run_id} className="border-b border-border last:border-0">
-                    <td className="py-2 pr-3"><Link className="font-mono text-xs text-accent-subtle-foreground underline" to={`/builds/${encodeURIComponent(run.run_id)}`}>{run.run_id}</Link><div className="text-xs text-muted-foreground">{run.status}{run.status === "failed" ? " · Build 실패" : ""}</div></td>
+                    <td className="py-2 pr-3"><Link className="font-mono text-xs text-accent-subtle-foreground underline" to={`/builds/${encodeURIComponent(run.run_id)}`}>{run.run_id}</Link><div className="text-xs text-muted-foreground">{run.status}{run.status === "failed" ? t("quality.history.buildFailed") : ""}</div></td>
                     <td className="py-2 pr-3 text-xs text-muted-foreground">{formatDateTime(run.timestamp)}</td>
                     <td className="py-2 pr-3">
                       {total === 0 ? <span className="text-xs text-muted-foreground">N/A</span> : (
@@ -483,14 +488,14 @@ function ValidationTrend({ state }: { state: AsyncState<DatasetQualityHistoryRes
                       <div className="mt-1 text-xs text-muted-foreground">PASS {run.pass_count} · WARN {run.warn_count} · FAIL {run.fail_count}</div>
                     </td>
                     <td className="py-2 pr-3 font-mono text-xs">{run.evaluated_checks}</td>
-                    <td className="py-2 pr-3 font-mono text-xs">{formatRowCount(run.validated_rows)}</td>
+                    <td className="py-2 pr-3 font-mono text-xs">{formatRowCount(run.validated_rows, t)}</td>
                     <td className="py-2 pr-3 text-xs">{run.rule_pass_rate === null ? "N/A" : `${Math.round(run.rule_pass_rate * 1000) / 10}%`}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-          <p className="mt-2 text-xs text-muted-foreground">Run마다 평가되는 규칙 구성이 다를 수 있어 단순 점수 비교로 취급하지 않습니다.</p>
+          <p className="mt-2 text-xs text-muted-foreground">{t("quality.history.note")}</p>
         </div>
       )}
     </Card>
@@ -498,12 +503,13 @@ function ValidationTrend({ state }: { state: AsyncState<DatasetQualityHistoryRes
 }
 
 function RulePassRate({ groups, contextLabel }: { groups: { category: string; results: QualityCheckResult[] }[]; contextLabel: string }) {
+  const { t } = useTranslation();
   return (
     <Card>
       <h3 className="text-sm font-semibold">Rule pass rate</h3>
-      <p className="mt-1 text-xs text-muted-foreground">현재 문맥: {contextLabel}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{t("quality.rules.context", { context: contextLabel })}</p>
       {groups.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">평가된 규칙이 없습니다(N/A).</p>
+        <p className="mt-4 text-sm text-muted-foreground">{t("quality.rules.noRules")}</p>
       ) : (
         <div className="mt-4 flex flex-col">
           {groups.map(({ category, results }) => {
@@ -522,17 +528,18 @@ function RulePassRate({ groups, contextLabel }: { groups: { category: string; re
 }
 
 function RecentIssues({ issues, evaluatedTotal, contextLabel, selectedRun, onKubi }: { issues: QualityCheckResult[]; evaluatedTotal: number; contextLabel: string; selectedRun?: DatasetRunSummary; onKubi: (issue: QualityCheckResult) => void }) {
+  const { t } = useTranslation();
   const runTimestamp = formatDateTime(selectedRun?.finished_at ?? selectedRun?.started_at);
   return (
     <Card className="overflow-hidden p-0">
       <div className="border-b border-border px-5 py-4">
         <h3 className="text-sm font-semibold">Recent quality issues</h3>
-        <p className="mt-1 text-xs text-muted-foreground">현재 문맥: {contextLabel} · WARN/FAIL만 표시(PASS 숨김)</p>
+        <p className="mt-1 text-xs text-muted-foreground">{t("quality.rules.contextWarnFail", { context: contextLabel })}</p>
       </div>
       {evaluatedTotal === 0 ? (
-        <EmptyState title="평가된 quality check가 없습니다" description="evaluated_checks = 0 입니다. 규칙이 구성되지 않았거나 아직 평가되지 않았을 수 있습니다." />
+        <EmptyState title={t("quality.rules.emptyTitle")} description={t("quality.rules.emptyDesc")} />
       ) : issues.length === 0 ? (
-        <EmptyState title="WARN/FAIL이 없습니다" description="현재 문맥의 모든 평가 결과가 PASS입니다." />
+        <EmptyState title={t("quality.rules.allPassTitle")} description={t("quality.rules.allPassDesc")} />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1180px] text-left text-sm">
@@ -549,12 +556,12 @@ function RecentIssues({ issues, evaluatedTotal, contextLabel, selectedRun, onKub
                   <td className="px-4 py-3"><QualityBadge status={result.status.toUpperCase() as "PASS" | "WARN" | "FAIL"} /></td>
                   <td className="px-4 py-3 font-mono text-xs">{formatQualityValue(result.rule, result.actual)}</td>
                   <td className="px-4 py-3 font-mono text-xs">{formatQualityValue(result.rule, result.threshold)}</td>
-                  <td className="px-4 py-3 font-mono text-xs">{formatRowCount(result.affected_rows)} / {formatRowCount(result.evaluated_rows)}</td>
+                  <td className="px-4 py-3 font-mono text-xs">{formatRowCount(result.affected_rows, t)} / {formatRowCount(result.evaluated_rows, t)}</td>
                   <td className="px-4 py-3 max-w-64 truncate text-xs text-muted-foreground">{result.detail ?? "—"}</td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2">
-                      {selectedRun ? <Link className="text-xs font-medium text-accent-subtle-foreground underline" to={`/builds/${encodeURIComponent(selectedRun.run_id)}`}>Build 보기</Link> : null}
-                      <Button variant="ghost" size="sm" onClick={() => onKubi(result)}>Kubi 분석</Button>
+                      {selectedRun ? <Link className="text-xs font-medium text-accent-subtle-foreground underline" to={`/builds/${encodeURIComponent(selectedRun.run_id)}`}>{t("quality.rules.viewBuild")}</Link> : null}
+                      <Button variant="ghost" size="sm" onClick={() => onKubi(result)}>{t("quality.kubiAnalyze")}</Button>
                     </div>
                   </td>
                 </tr>
@@ -568,12 +575,13 @@ function RecentIssues({ issues, evaluatedTotal, contextLabel, selectedRun, onKub
 }
 
 function SchemaDriftCard({ drift, contextLabel }: { drift: SchemaDriftFinding[]; contextLabel: string }) {
+  const { t } = useTranslation();
   return (
     <Card>
       <h3 className="text-sm font-semibold">Schema Drift</h3>
-      <p className="mt-1 text-xs text-muted-foreground">현재 문맥: {contextLabel} · 일반 Quality rule과 별개로 표시합니다.</p>
+      <p className="mt-1 text-xs text-muted-foreground">{t("quality.drift.context", { context: contextLabel })}</p>
       {drift.length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">비교 기준 없음 또는 검사하지 않음 — 관찰된 schema drift가 없습니다(PASS로 간주하지 않습니다).</p>
+        <p className="mt-4 text-sm text-muted-foreground">{t("quality.drift.empty")}</p>
       ) : (
         <div className="mt-4 space-y-3">
           {drift.map((finding, index) => (
