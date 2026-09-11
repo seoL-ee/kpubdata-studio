@@ -663,29 +663,59 @@
     }
   },
   "settings": {
-    "title": "Settings",
-    "desc": "Configure Studio preferences.",
-    "theme": "Theme",
-    "themeLight": "Light",
-    "themeDark": "Dark",
-    "language": "Language",
-    "logout": "Sign out",
-    "apiKey": "API Key",
-    "saved": "Saved"
+    "page": {
+      "eyebrow": "Settings",
+      "title": "Preferences",
+      "desc": "Manage account, Builder connection, data provider credentials, and Kubi BYOK."
+    },
+    "conn": {
+      "title": "Connection Status",
+      "checking": "Checking Builder connection…",
+      "version": "Builder API version {{version}}",
+      "minVersion": "Minimum required Builder API version {{version}}",
+      "mismatch": "Contract version mismatch: Builder {{api}} is not compatible with the minimum version ({{min}}, same major) required by Studio. Some response shapes may be incompatible.",
+      "mockNote": "Mock mode. To connect to a real Builder,",
+      "mockEnv": ".",
+      "connFail": "Connection check failed.",
+      "fetchFail": "Fetch failed."
+    },
+    "privacy": {
+      "title": "Privacy Notice",
+      "llm": "Using the assistant sends conversation content to the external LLM provider (OpenAI, etc.) configured by you. API keys and costs are your responsibility.",
+      "noPublic": "Do not inject public API keys via VITE_* environment variables — they are bundled in plaintext.",
+      "scrub": "Secret scrubbing (#206) automatically masks service keys in sourceParams, but sensitive information typed directly into conversations is not masked."
+    },
+    "account": {
+      "title": "Account",
+      "logout": "Sign out",
+      "notLoggedIn": "Not signed in. Real integration mode requires sign-in for Builder calls.",
+      "login": "Sign in",
+      "mockNote": "In mock mode, login state is for UI demonstration only. Account/permission backend is"
+    }
   },
   "auth": {
-    "login": "Sign in",
-    "signup": "Sign up",
-    "email": "Email",
-    "password": "Password",
-    "confirmPassword": "Confirm password",
-    "submit": "Continue",
-    "google": "Continue with Google",
-    "or": "or",
-    "noAccount": "Don't have an account?",
-    "hasAccount": "Already have an account?",
-    "signupLink": "Sign up",
-    "loginLink": "Sign in"
+    "page": {
+      "introLabel": "About KPubData Studio",
+      "introTitle": "Turn public data into trusted datasets",
+      "introDesc": "Connect diverse public data, manage validation rules and quality in one flow.",
+      "welcome": "Welcome to KPubData Studio",
+      "welcomeDesc": "Sign in or create a new account to start working with public data.",
+      "loginLabel": "Sign in",
+      "loginTitle": "Sign in",
+      "mockNote": "Sign in to KPubData Studio. This is a mock/demo account.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "noAccount": "Don't have an account?",
+      "getAccount": "Get an account",
+      "checking": "Checking sign-in status.",
+      "initFail": "Authentication initialization failed. Please try again later or contact the administrator.",
+      "keycloak": "Both Google sign-in and KPubData account sign-in are securely handled by Keycloak.",
+      "google": "Continue with Google",
+      "or": "or",
+      "emailLogin": "Sign in with KPubData account",
+      "loginFail": "Sign-in failed. Please try again shortly."
+    }
   },
   "workspace": {
     "recentTitle": "Recent Work",

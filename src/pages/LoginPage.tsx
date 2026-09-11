@@ -11,6 +11,8 @@
  *
  * 기존 Google 로그인 플로우(#187, GoogleLoginButton/gis.ts)는 건드리지 않는다.
  */
+import { useTranslation } from "react-i18next";
+import { i18n } from "@/shared/i18n";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { keycloakLogin } from "@/features/auth/keycloak";
@@ -27,16 +29,17 @@ const lightLogoUrl = new URL("../../assets/logo/kpubdata-brand-assets/svg/horizo
 
 /** Auth 화면에 표시하는 짧은 제품 소개. */
 function BrandPanel() {
+  const { t } = useTranslation();
   return (
-    <section className="hidden min-h-screen flex-col bg-sidebar px-8 py-10 text-sidebar-foreground lg:flex lg:w-[48%] lg:px-12 xl:px-16" aria-label="KPubData Studio 소개">
+    <section className="hidden min-h-screen flex-col bg-sidebar px-8 py-10 text-sidebar-foreground lg:flex lg:w-[48%] lg:px-12 xl:px-16" aria-label={t("auth.page.introLabel")}>
       <img alt="KPubData Studio" className="w-[160px] self-start xl:w-[192px]" src={darkLogoUrl} />
       <div className="my-auto max-w-xl">
         <p className="text-xs font-semibold tracking-[0.16em] text-sidebar-muted">PUBLIC DATA → AI-READY DATASET</p>
         <h1 className="mt-5 max-w-xl break-keep text-balance text-4xl font-semibold leading-tight tracking-tight text-sidebar-active-foreground xl:text-5xl">
-          공공데이터를 신뢰할 수 있는 데이터셋으로
+          {t("auth.page.introTitle")}
         </h1>
         <p className="mt-6 max-w-lg text-base leading-7 text-sidebar-foreground">
-          다양한 공공데이터를 연결하고, 검증 룰과 품질 관리까지 하나의 흐름으로 관리하세요.
+          {t("auth.page.introDesc")}
         </p>
         <div aria-hidden="true" className="mt-8 flex flex-wrap gap-2">
           {["Source", "BuildSpec", "Preview", "Validate", "Build", "Quality", "AI"].map((item) => (
@@ -50,6 +53,7 @@ function BrandPanel() {
 }
 
 export function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const setSession = useAuthStore((state) => state.setSession);
@@ -69,7 +73,7 @@ export function LoginPage() {
       navigate(returnTo, { replace: true });
     } catch (cause) {
       setError(
-        cause instanceof AuthError ? cause.message : "로그인에 실패했습니다. 잠시 후 다시 시도해주세요.",
+        cause instanceof AuthError ? cause.message : i18n.t("auth.page.loginFail"),
       );
     } finally {
       setIsSubmitting(false);
@@ -90,30 +94,30 @@ export function LoginPage() {
   return (
     <main className="min-h-screen bg-background lg:flex">
       <BrandPanel />
-      <section className="flex min-h-screen flex-1 items-center justify-center px-5 py-12 sm:px-8 lg:px-12" aria-label="로그인">
+      <section className="flex min-h-screen flex-1 items-center justify-center px-5 py-12 sm:px-8 lg:px-12" aria-label={t("auth.page.loginLabel")}>
         <div className="w-full max-w-md">
           <div className="mb-8 lg:hidden">
             <img alt="KPubData Studio" className="w-[160px] max-w-full" src={lightLogoUrl} />
           </div>
           <div className="mb-7">
             <p className="text-xs font-semibold tracking-[0.16em] text-accent-subtle-foreground">WELCOME</p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight">KPubData Studio에<br className="hidden sm:block" /> 오신 것을 환영합니다</h1>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">로그인하거나 새 계정을 만들고 공공데이터 작업을 시작하세요.</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight">{t("auth.page.welcome")}</h1>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">{t("auth.page.welcomeDesc")}</p>
           </div>
           <Card>
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-xl font-semibold tracking-tight">로그인</h2>
+            <h2 className="text-xl font-semibold tracking-tight">{t("auth.page.loginTitle")}</h2>
             {demoMode ? <DemoBadge /> : null}
           </div>
 
           {demoMode ? (
             <>
               <p className="mt-2 text-sm text-muted-foreground">
-                KPubData Studio에 로그인하세요. mock/demo 계정입니다.
+                {t("auth.page.mockNote")}
               </p>
 
               <form className="mt-6 flex flex-col gap-4" onSubmit={handleSubmit}>
-                <FormField id="login-email" label="이메일" required>
+                <FormField id="login-email" label={t("auth.page.email")} required>
                   {(field) => (
                     <TextInput
                       {...field}
@@ -126,7 +130,7 @@ export function LoginPage() {
                   )}
                 </FormField>
 
-                <FormField id="login-password" label="비밀번호" required>
+                <FormField id="login-password" label={t("auth.page.password")} required>
                   {(field) => (
                     <TextInput
                       {...field}
@@ -142,40 +146,40 @@ export function LoginPage() {
                 <ErrorMessage>{error}</ErrorMessage>
 
                 <Button type="submit" loading={isSubmitting} className="mt-2">
-                  로그인
+                  {t("auth.page.submit")}
                 </Button>
               </form>
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
-                계정이 없으신가요?{" "}
+                {t("auth.page.noAccount")}{" "}
                 <Link to="/signup" className="font-medium text-accent-subtle-foreground underline">
-                  계정 발급 안내
+                  {t("auth.page.getAccount")}
                 </Link>
               </p>
             </>
           ) : oidcStatus === "initializing" ? (
-            <p className="mt-4 text-sm text-muted-foreground">로그인 상태를 확인하는 중입니다.</p>
+            <p className="mt-4 text-sm text-muted-foreground">{t("auth.page.checking")}</p>
           ) : oidcStatus === "error" ? (
-            <ErrorMessage>인증 초기화에 실패했습니다. 잠시 후 다시 시도하거나 관리자에게 문의하세요.</ErrorMessage>
+            <ErrorMessage>{t("auth.page.initFail")}</ErrorMessage>
           ) : oidc.status === "ok" ? (
             <div className="mt-4 flex flex-col gap-4">
               <p className="text-sm text-muted-foreground">
-                Google 로그인과 KPubData 계정 로그인은 모두 Keycloak에서 안전하게 처리됩니다.
+                {t("auth.page.keycloak")}
               </p>
               <Button
                 type="button"
                 leadingIcon={<span aria-hidden="true" className="font-semibold">G</span>}
                 onClick={() => void keycloakLogin(returnTo, "google")}
               >
-                Google로 계속하기
+                {t("auth.page.google")}
               </Button>
               <div className="flex items-center gap-3 text-xs text-muted-foreground" aria-hidden="true">
                 <span className="h-px flex-1 bg-border" />
-                또는
+                {t("auth.page.or")}
                 <span className="h-px flex-1 bg-border" />
               </div>
               <Button type="button" variant="secondary" onClick={() => void keycloakLogin(returnTo)}>
-                KPubData 계정으로 로그인
+                {t("auth.page.emailLogin")}
               </Button>
             </div>
           ) : oidc.status === "error" ? (
