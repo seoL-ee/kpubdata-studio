@@ -10,6 +10,8 @@
  * 일부 legacy/partial 실행은 manifest에 메타데이터 필드가 없을 수 있으며, 그 경우에만
  * "일부 메타데이터가 없다"고 사실대로 안내한다. mock 모드에서는 결정적 fixture를 쓴다.
  */
+import { useTranslation } from "react-i18next";
+import { i18n } from "@/shared/i18n";
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -51,6 +53,7 @@ type RowDownloadState =
  * 중복 클릭을 막고, 실패는 이 row에만 표시한다 — 페이지 전체를 실패 상태로 만들지 않는다.
  */
 function ArtifactRow({ runId, path }: { runId: string; path: string }) {
+  const { t } = useTranslation();
   const { name, format } = describeFile(path);
   const [state, setState] = useState<RowDownloadState>({ status: "idle" });
 
@@ -65,7 +68,7 @@ function ArtifactRow({ runId, path }: { runId: string; path: string }) {
       .catch((cause: unknown) => {
         setState({
           status: "error",
-          message: cause instanceof Error ? cause.message : "다운로드에 실패했습니다.",
+          message: cause instanceof Error ? cause.message : i18n.t("artifacts.errors.download"),
         });
       });
   }, [runId, path, state.status]);
@@ -82,7 +85,7 @@ function ArtifactRow({ runId, path }: { runId: string; path: string }) {
           disabled={state.status === "downloading"}
           onClick={onDownload}
         >
-          다운로드
+          {t("artifacts.files.download")}
         </Button>
         {state.status === "error" ? (
           <span role="alert" className="text-xs text-red-600 dark:text-red-400">
@@ -100,6 +103,7 @@ function ArtifactRow({ runId, path }: { runId: string; path: string }) {
  * @returns 결과물 화면.
  */
 export function BuildArtifactsPage() {
+  const { t } = useTranslation();
   const { buildId = "" } = useParams();
   const [state, setState] = useState<ManifestState>({ status: "loading" });
   const [artifacts, setArtifacts] = useState<ArtifactsState>({ status: "loading" });
@@ -116,7 +120,7 @@ export function BuildArtifactsPage() {
         if (controller.signal.aborted) return;
         setState({
           status: "error",
-          error: cause instanceof Error ? cause.message : "manifest를 불러오지 못했습니다.",
+          error: cause instanceof Error ? cause.message : i18n.t("artifacts.errors.manifest"),
         });
       });
     // 다운로드 가능한 파일 목록은 canonical `GET /artifacts/{run_id}`에서 별도로 받는다
@@ -130,7 +134,7 @@ export function BuildArtifactsPage() {
         if (controller.signal.aborted) return;
         setArtifacts({
           status: "error",
-          error: cause instanceof Error ? cause.message : "파일 목록을 불러오지 못했습니다.",
+          error: cause instanceof Error ? cause.message : i18n.t("artifacts.errors.files"),
         });
       });
     return () => controller.abort();
@@ -155,10 +159,10 @@ export function BuildArtifactsPage() {
   return (
     <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
       <PageHeader
-        eyebrow="결과물"
-        title={`${buildId || "빌드"} 결과물`}
-        description="빌드가 생성한 파일, manifest, 다운로드 링크를 확인하세요."
-        actions={<LinkButton to={`/builds/${buildId}/publish`}>게시하기</LinkButton>}
+        eyebrow={t("artifacts.page.eyebrow")}
+        title={t("artifacts.page.title", { build: buildId || "Build" })}
+        description={t("artifacts.page.desc")}
+        actions={<LinkButton to={`/builds/${buildId}/publish`}>{t("artifacts.page.publish")}</LinkButton>}
       />
 
       {state.status === "loading" ? (
@@ -170,7 +174,7 @@ export function BuildArtifactsPage() {
       {state.status === "error" ? (
         <Card variant="error" className="p-0">
           <ErrorState
-            title="결과물을 불러오지 못했습니다"
+            title={t("artifacts.errors.loadTitle")}
             message={state.error}
             onRetry={() => load()}
           />
@@ -181,19 +185,19 @@ export function BuildArtifactsPage() {
         <>
           <Card>
             <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              Manifest 요약
+              {t("artifacts.manifest.summary")}
             </p>
             <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
               <div>
-                <dt className="text-muted-foreground">레코드 수</dt>
+                <dt className="text-muted-foreground">{t("artifacts.manifest.records")}</dt>
                 <dd className="text-foreground">
                   {totalRecords !== undefined
                     ? totalRecords.toLocaleString("ko-KR")
-                    : "미제공"}
+                    : i18n.t("artifacts.manifest.notProvided")}
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">출력 형식</dt>
+                <dt className="text-muted-foreground">{t("artifacts.manifest.formats")}</dt>
                 <dd className="text-foreground">
                   {formats === undefined
                     ? "미제공"
@@ -203,7 +207,7 @@ export function BuildArtifactsPage() {
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">소스</dt>
+                <dt className="text-muted-foreground">{t("artifacts.manifest.sources")}</dt>
                 <dd className="text-foreground">
                   {manifest.provenance === undefined
                     ? "미제공"
@@ -213,24 +217,24 @@ export function BuildArtifactsPage() {
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">빌드 ID</dt>
-                <dd className="break-all text-foreground">{manifest?.build_id || "미제공"}</dd>
+                <dt className="text-muted-foreground">{t("artifacts.manifest.buildId")}</dt>
+                <dd className="break-all text-foreground">{manifest?.build_id || i18n.t("artifacts.manifest.notProvided")}</dd>
               </div>
             </dl>
           </Card>
 
           <Card className="p-0">
             <div className="grid grid-cols-[1.6fr_0.6fr_0.8fr] gap-4 border-b border-border px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              <span>파일</span>
-              <span>형식</span>
-              <span>액션</span>
+              <span>{t("artifacts.files.title")}</span>
+              <span>{t("artifacts.files.format")}</span>
+              <span>{t("artifacts.files.action")}</span>
             </div>
             {artifacts.status === "loading" ? (
               <SkeletonTable rows={4} />
             ) : artifacts.status === "error" ? (
-              <EmptyState title="파일 목록을 불러오지 못했습니다" description={artifacts.error} />
+              <EmptyState title={t("artifacts.errors.files")} description={artifacts.error} />
             ) : artifacts.files.length === 0 ? (
-              <EmptyState title="생성된 파일이 없습니다" />
+              <EmptyState title={t("artifacts.files.emptyTitle")} />
             ) : (
               <ul>
                 {artifacts.files.map((path) => (

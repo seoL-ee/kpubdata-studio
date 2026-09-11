@@ -728,5 +728,71 @@
     "edit": "편집",
     "run": "실행",
     "newBuild": "새 빌드 만들기"
+  },
+  "reports": {
+    "page": {
+      "eyebrow": "리포트",
+      "title": "리포트",
+      "desc": "Builder evidence를 기준으로 Report를 만들고, Kubi 해석을 참고 블록으로 덧붙여 편집·저장·내보냅니다.",
+      "newTitle": "새 Report 만들기",
+      "newDesc": "선택한 dataset/run이 이 Report의 기준으로 고정됩니다. 새 Run이 생겨도 이 Report는 자동으로 바뀌지 않습니다.",
+      "createCta": "Report 만들기",
+      "noRuns": "이 dataset에는 접근 가능한 run이 없습니다.",
+      "savedTitle": "저장된 Report",
+      "savedEmpty": "저장된 Report가 없습니다",
+      "savedEmptyDesc": "위에서 dataset/run을 선택해 첫 Report를 만들어보세요.",
+      "kubiPending": "Kubi 참고 노트 {{count}}건이 대기 중입니다. Report를 열어 \"Kubi 참고 노트 대기열\"에서 추가하거나 무시할 수 있습니다.",
+      "deleteConfirm": "이 Report를 삭제하시겠습니까? 되돌릴 수 없습니다.",
+      "titleTemplate": "{{dataset}} · {{run}} 보고서",
+      "untitled": "제목 없음",
+      "lastModified": "최근 수정 {{time}}"
+    },
+    "errors": {
+      "datasets": "데이터셋 목록을 불러오지 못했습니다.",
+      "runs": "run 목록을 불러오지 못했습니다.",
+      "create": "Report를 만들지 못했습니다."
+    },
+    "actions": {
+      "save": "저장",
+      "cancel": "취소",
+      "rename": "이름변경",
+      "duplicate": "복제",
+      "delete": "삭제"
+    }
+  },
+  "artifacts": {
+    "page": {
+      "eyebrow": "결과물",
+      "title": "{{build}} 결과물",
+      "desc": "빌드가 생성한 파일, manifest, 다운로드 링크를 확인하세요.",
+      "publish": "게시하기"
+    },
+    "manifest": {
+      "summary": "Manifest 요약",
+      "records": "레코드 수",
+      "formats": "출력 형식",
+      "sources": "소스",
+      "buildId": "빌드 ID",
+      "notProvided": "미제공",
+      "noFormats": "출력 형식 없음",
+      "noSources": "소스 없음"
+    },
+    "files": {
+      "title": "파일",
+      "format": "형식",
+      "action": "액션",
+      "download": "다운로드",
+      "emptyTitle": "생성된 파일이 없습니다",
+      "failTitle": "파일 목록을 불러오지 못했습니다"
+    },
+    "errors": {
+      "download": "다운로드에 실패했습니다.",
+      "manifest": "manifest를 불러오지 못했습니다.",
+      "files": "파일 목록을 불러오지 못했습니다",
+      "loadTitle": "결과물을 불러오지 못했습니다"
+    },
+    "meta": {
+      "note": "이 실행의 manifest에는 일부 메타데이터 필드(레코드 수·스키마·출처 등)가"
+    }
   }
 }
