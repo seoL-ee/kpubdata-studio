@@ -6,6 +6,8 @@
  * 각 단계 진행 전에 해당 단계 필드만 검증한다. Preview/Validate는 독립 페이지가 아니라
  * 마법사 내부 단계로 통합되어 있다(§5.3/§5.4).
  */
+import { useTranslation } from "react-i18next";
+import { i18n } from "@/shared/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -75,18 +77,18 @@ interface BuildTemplate {
 const TEMPLATES: BuildTemplate[] = [
   {
     id: "blank",
-    name: "직접 구성",
-    description: "아무 값 없이 처음부터 직접 설정합니다.",
+    name: i18n.t("newBuild.templates.blank"),
+    description: i18n.t("newBuild.templates.blankDesc"),
     values: initialValues,
   },
   {
     id: "air_quality",
-    name: "대기오염 정보",
-    description: "data.go.kr 대기오염 측정 데이터로 시작합니다.",
+    name: i18n.t("newBuild.templates.air"),
+    description: i18n.t("newBuild.templates.airDesc"),
     values: {
       datasetId: "datago-air-quality",
-      title: "대기오염 정보",
-      description: "data.go.kr 대기오염 측정 데이터셋",
+      title: i18n.t("newBuild.templates.airTitle"),
+      description: i18n.t("newBuild.templates.airSourceDesc"),
       provider: "datago",
       sourceDataset: "air_quality",
       sourceParams: '{"sidoName": "서울"}',
@@ -96,12 +98,12 @@ const TEMPLATES: BuildTemplate[] = [
   },
   {
     id: "interest_rate",
-    name: "기준금리 추이",
-    description: "한국은행 ECOS 기준금리 시계열 데이터로 시작합니다.",
+    name: i18n.t("newBuild.templates.rate"),
+    description: i18n.t("newBuild.templates.rateDesc"),
     values: {
       datasetId: "bok-interest-rate",
-      title: "기준금리 추이",
-      description: "한국은행 ECOS 기준금리 시계열 데이터셋",
+      title: i18n.t("newBuild.templates.rateTitle"),
+      description: i18n.t("newBuild.templates.rateSourceDesc"),
       provider: "bok",
       sourceDataset: "base_rate",
       sourceParams: '{"stat_code": "722Y001"}',
@@ -111,12 +113,12 @@ const TEMPLATES: BuildTemplate[] = [
   },
   {
     id: "population",
-    name: "인구 통계",
-    description: "통계청(KOSIS) 인구 통계로 시작합니다.",
+    name: i18n.t("newBuild.templates.pop"),
+    description: i18n.t("newBuild.templates.popDesc"),
     values: {
       datasetId: "kosis-population",
-      title: "인구 통계",
-      description: "통계청 KOSIS 인구 통계 데이터셋",
+      title: i18n.t("newBuild.templates.popTitle"),
+      description: i18n.t("newBuild.templates.popSourceDesc"),
       provider: "kosis",
       sourceDataset: "population_migration",
       sourceParams: '{"region": "11"}',
@@ -126,15 +128,17 @@ const TEMPLATES: BuildTemplate[] = [
   },
 ];
 
-const STEPS: StepItem[] = [
-  { id: "template", label: "템플릿" },
-  { id: "identity", label: "기본 정보" },
-  { id: "source", label: "데이터 소스" },
-  { id: "params", label: "파라미터" },
-  { id: "preview", label: "미리보기" },
-  { id: "output", label: "출력 형식" },
-  { id: "review", label: "검증·실행" },
-];
+function buildSteps(t: (k: string) => string): StepItem[] {
+  return [
+    { id: "template", label: t("newBuild.steps.template") },
+    { id: "identity", label: t("newBuild.steps.identity") },
+    { id: "source", label: t("newBuild.steps.source") },
+    { id: "params", label: t("newBuild.steps.params") },
+    { id: "preview", label: t("newBuild.steps.preview") },
+    { id: "output", label: t("newBuild.steps.output") },
+    { id: "review", label: t("newBuild.steps.review") },
+  ];
+}
 
 // 각 단계에서 Next 진입 전에 검증할 폼 필드. Template/Preview/Review 단계는 입력 필드가 없다.
 const STEP_FIELDS: Array<Array<keyof BuildFormValues>> = [
@@ -168,7 +172,7 @@ function toBuildSpec(
   // Workbench의 `buildSpecFromDraft`와 동일 정책). 사용자가 값을 다시 입력해야 한다.
   // `[REDACTED]`(specStore/savedSpecs) · `__KPD_*_REDACTED__`(draft) · `__SCRUBBED_*` 모두 포함.
   if (sourceParamsHasRedactedSecret(values.sourceParams)) {
-    return { error: "저장된 초안에서 시크릿이 포함된 파라미터 값이 제거되었습니다. 파라미터를 다시 입력해주세요." };
+    return { error: i18n.t("newBuild.errors.draftSecretRemoved") };
   }
 
   const parsedParams = parseSourceParams(values.sourceParams);
@@ -196,12 +200,12 @@ function toBuildSpec(
   // 폼이 편집하지 않는 영역(base의 sources[1+], 원본 metadata)에 redaction marker가 남아
   // 있으면 여기서 fail-closed — sources[0] sourceParams 검사만으로는 놓치는 경로다.
   if (jsonValueHasRedactedSecret(candidate)) {
-    return { error: "저장된 스펙에서 시크릿 값이 제거되었습니다. 해당 credential을 다시 입력해주세요." };
+    return { error: i18n.t("newBuild.errors.specSecretRemoved") };
   }
 
   const result = buildSpecSchema.safeParse(candidate);
   if (!result.success) {
-    return { error: result.error.issues[0]?.message ?? "빌드 스펙이 올바르지 않습니다." };
+    return { error: result.error.issues[0]?.message ?? i18n.t("newBuild.errors.specInvalid") };
   }
   return { spec: result.data };
 }
@@ -293,7 +297,7 @@ function TemplateButton({ template, catalog, onSelect }: { template: BuildTempla
         <p className="mt-3 text-xs font-medium text-muted-foreground">
           {resolvedDataset
             ? `${providerLabel(template.values.provider)} / ${resolvedDataset.title}`
-            : "현재 Builder catalog에 없는 source입니다."}
+            : i18n.t("newBuild.errors.unknownSource")}
         </p>
       ) : null}
     </button>
@@ -306,6 +310,8 @@ function TemplateButton({ template, catalog, onSelect }: { template: BuildTempla
  * @returns 마법사 UI.
  */
 export function NewBuildPage() {
+  const { t } = useTranslation();
+  const steps = buildSteps(t);
   // /builds/:buildId/edit 로 진입한 경우(편집 모드). buildId가 있으면 기존 스펙을 로드한다.
   const { buildId } = useParams();
   const [searchParams] = useSearchParams();
@@ -381,7 +387,7 @@ export function NewBuildPage() {
         setCatalog({
           status: "error",
           providers: [],
-          error: cause instanceof Error ? cause.message : "Builder catalog를 불러오지 못했습니다.",
+          error: cause instanceof Error ? cause.message : i18n.t("newBuild.errors.catalogFail"),
         });
       });
     return () => controller.abort();
@@ -483,7 +489,7 @@ export function NewBuildPage() {
     const fields = STEP_FIELDS[step];
     const ok = fields.length === 0 ? true : await trigger(fields);
     if (!ok) return;
-    setStep((current) => Math.min(current + 1, STEPS.length - 1));
+    setStep((current) => Math.min(current + 1, steps.length - 1));
   }
 
   function goBack() {
@@ -511,7 +517,7 @@ export function NewBuildPage() {
         rows: [],
         schema: {},
         warnings: [],
-        error: cause instanceof Error ? cause.message : "미리보기에 실패했습니다.",
+        error: cause instanceof Error ? cause.message : i18n.t("newBuild.errors.previewFail"),
       });
     }
   }
@@ -522,7 +528,7 @@ export function NewBuildPage() {
     validatedSnapshotRef.current = JSON.stringify(getValues());
     const next = toBuildSpec(getValues(), baseSpec);
     if (next.error || !next.spec) {
-      setValidation({ status: "validated", isValid: false, errors: [next.error ?? "스펙 오류"] });
+      setValidation({ status: "validated", isValid: false, errors: [next.error ?? i18n.t("newBuild.errors.specError")] });
       return;
     }
     setValidation({ status: "validating", isValid: false, errors: [] });
@@ -534,7 +540,7 @@ export function NewBuildPage() {
       setValidation({
         status: "validated",
         isValid: false,
-        errors: [cause instanceof Error ? cause.message : "검증 요청에 실패했습니다."],
+        errors: [cause instanceof Error ? cause.message : i18n.t("newBuild.errors.validateFail")],
       });
     }
   }
@@ -543,7 +549,7 @@ export function NewBuildPage() {
   // 그대로 함께 기록한다 — 검증 안 한 스펙을 "통과"로 보여주지 않기 위함이다.
   function saveAsSavedSpec() {
     if (!specPreview.spec) return;
-    const name = window.prompt("저장할 이름을 입력하세요", specPreview.spec.title || "이름 없는 BuildSpec");
+    const name = window.prompt(i18n.t("newBuild.review.savePrompt"), specPreview.spec.title || i18n.t("newBuild.review.unnamed"));
     if (!name) return;
 
     const validationSummary: SavedSpecValidation =
@@ -554,7 +560,7 @@ export function NewBuildPage() {
     const { result } = createSavedSpec({ name, spec: specPreview.spec, validation: validationSummary });
     setSaveSpecMessage(
       result.ok
-        ? { type: "success", text: `"${name}" 이름으로 Workspace에 저장했습니다.` }
+        ? { type: "success", text: i18n.t("newBuild.review.savedAs", { name }) }
         : { type: "error", text: result.reason },
     );
   }
@@ -562,28 +568,26 @@ export function NewBuildPage() {
   return (
     <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
       <PageHeader
-        eyebrow={isEditMode ? "빌드 편집" : "새 빌드"}
-        title={isEditMode ? `${baseSpec?.title || buildId} 편집` : "새 공공데이터 빌드 만들기"}
+        eyebrow={isEditMode ? t("newBuild.page.eyebrowEdit") : t("newBuild.page.eyebrowNew")}
+        title={isEditMode ? t("newBuild.page.titleEdit", { title: baseSpec?.title || buildId }) : t("newBuild.page.titleNew")}
         description={
           isEditMode
-            ? "기존 스펙을 불러왔습니다. 수정한 내용은 새 실행으로 기록됩니다."
-            : "데이터 소스, 파라미터, 출력 형식을 단계별로 설정합니다."
+            ? t("newBuild.page.descEdit")
+            : t("newBuild.page.descNew")
         }
         actions={<StatusBadge status={draftStatus} />}
       />
 
       {buildId && buildLoading ? (
         <Card variant="dashed" className="p-4">
-          <p className="text-sm text-muted-foreground">기존 스펙을 불러오는 중입니다...</p>
+          <p className="text-sm text-muted-foreground">{t("newBuild.page.loadingSpec")}</p>
         </Card>
       ) : null}
 
       {buildId && !buildLoading && !isEditMode ? (
         <Card variant="dashed" className="p-4">
           <p className="text-sm text-foreground">
-            빌드 <span className="font-medium">{buildId}</span>의 스펙을 찾지 못했습니다. Builder는
-            스펙을 보관하지 않으므로, 이 브라우저에서 실행하지 않은 빌드는 불러올 수 없습니다.
-            아래 입력은 새 빌드로 작성됩니다.
+            {t("newBuild.page.specNotFound", { id: buildId })}
           </p>
         </Card>
       ) : null}
@@ -591,8 +595,7 @@ export function NewBuildPage() {
       {isEditMode ? (
         <Card variant="dashed" className="p-4">
           <p className="text-sm text-foreground">
-            빌드 <span className="font-medium">{buildId}</span>의 스펙을 편집하고 있습니다. Builder는
-            기존 실행을 덮어쓰지 않으므로, 실행하면 수정된 스펙으로 새 빌드가 기록됩니다.
+            {t("newBuild.page.specEditing", { id: buildId })}
           </p>
         </Card>
       ) : null}
@@ -600,9 +603,7 @@ export function NewBuildPage() {
       {openedSavedSpecName ? (
         <Card variant="dashed" className="p-4">
           <p className="text-sm text-foreground">
-            Saved BuildSpec <span className="font-medium">{openedSavedSpecName}</span>을(를) 불러왔습니다.
-            수정 후 "이 스펙 저장"을 다시 눌러야 Workspace에 반영됩니다 — 지금 열기만 한 것으로는 원본이
-            바뀌지 않습니다.
+            {t("newBuild.page.savedSpecLoaded", { name: openedSavedSpecName })}
           </p>
         </Card>
       ) : null}
@@ -610,37 +611,37 @@ export function NewBuildPage() {
       {draftAvailable ? (
         <Card variant="dashed" className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-foreground">
-            저장된 초안이 있습니다. 이어서 편집할까요?
+            {t("newBuild.page.draftExists")}
           </p>
           <div className="flex gap-2">
             <Button size="sm" onClick={restoreDraft}>
-              불러오기
+              {t("newBuild.page.load")}
             </Button>
             <Button size="sm" variant="ghost" onClick={discardDraft}>
-              삭제
+              {t("newBuild.page.delete")}
             </Button>
           </div>
         </Card>
       ) : null}
 
       <Card>
-        <Stepper steps={STEPS} current={step} onStepClick={setStep} />
+        <Stepper steps={steps} current={step} onStepClick={setStep} />
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(20rem,0.8fr)]">
         <Card>
           {step === 0 ? (
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold tracking-tight">템플릿 선택</h3>
+              <h3 className="text-xl font-semibold tracking-tight">{t("newBuild.template.selectTitle")}</h3>
               <p className="text-sm text-muted-foreground">
-                자주 쓰는 공공데이터 조합으로 시작하거나 직접 구성으로 처음부터 설정하세요.
+                {t("newBuild.template.selectDesc")}
               </p>
               {catalog.status === "loading" ? (
-                <p className="text-sm text-muted-foreground">Builder catalog를 불러오는 중입니다...</p>
+                <p className="text-sm text-muted-foreground">{t("newBuild.template.catalogLoading")}</p>
               ) : null}
               {catalog.status === "error" ? (
                 <p role="alert" className="text-sm text-red-700 dark:text-red-300">
-                  Builder catalog 조회 실패: {catalog.error}
+                  {t("newBuild.template.catalogError", { error: catalog.error })}
                 </p>
               ) : null}
               {catalog.status === "loaded" ? (
@@ -657,7 +658,7 @@ export function NewBuildPage() {
                       {unavailable.length > 0 ? (
                         <div className="rounded-2xl border border-dashed border-border p-4">
                           <p className="text-sm font-medium text-muted-foreground">
-                            준비 중인 템플릿 {unavailable.length}개
+                            {t("newBuild.templates.unavailableCount", { count: unavailable.length })}
                           </p>
                           <div className="mt-3 grid gap-3 sm:grid-cols-2">
                             {unavailable.map((template) => (
@@ -684,42 +685,42 @@ export function NewBuildPage() {
 
           {step === 1 ? (
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold tracking-tight">기본 정보</h3>
+              <h3 className="text-xl font-semibold tracking-tight">{t("newBuild.identity.title")}</h3>
               <FormField
                 id="datasetId"
-                label="데이터셋 ID"
+                label={t("newBuild.identity.datasetIdLabel")}
                 required
-                help="공백 없이 영문 소문자·숫자·하이픈만. 예: kma-daily-observations"
+                help={t("newBuild.identity.datasetIdHelp")}
                 error={errors.datasetId?.message}
               >
                 {(field) => (
                   <TextInput
                     placeholder="kma-daily-observations"
                     {...field}
-                    {...register("datasetId", { required: "데이터셋 ID를 입력해주세요. 예: kma-daily-observations" })}
+                    {...register("datasetId", { required: i18n.t("newBuild.errors.datasetIdRequired") })}
                   />
                 )}
               </FormField>
-              <FormField id="title" label="제목" required error={errors.title?.message}>
+              <FormField id="title" label={t("newBuild.identity.titleLabel")} required error={errors.title?.message}>
                 {(field) => (
                   <TextInput
-                    placeholder="기상청 일별 관측"
+                    placeholder={t("newBuild.identity.titlePlaceholder")}
                     {...field}
-                    {...register("title", { required: "제목을 입력해주세요." })}
+                    {...register("title", { required: i18n.t("newBuild.errors.titleRequired") })}
                   />
                 )}
               </FormField>
               <FormField
                 id="description"
-                label="설명"
+                label={t("newBuild.identity.descLabel")}
                 required
-                help="이 빌드가 무엇을 수집하고 어떻게 활용하는지 적어주세요."
+                help={t("newBuild.identity.descHelp")}
                 error={errors.description?.message}
               >
                 {(field) => (
                   <Textarea
                     {...field}
-                    {...register("description", { required: "설명을 입력해주세요." })}
+                    {...register("description", { required: i18n.t("newBuild.errors.descriptionRequired") })}
                   />
                 )}
               </FormField>
@@ -728,11 +729,11 @@ export function NewBuildPage() {
 
           {step === 2 ? (
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold tracking-tight">데이터 소스</h3>
-              <FormField id="provider" label="제공자 (Provider)" required error={errors.provider?.message}>
+              <h3 className="text-xl font-semibold tracking-tight">{t("newBuild.source.title")}</h3>
+              <FormField id="provider" label={t("newBuild.source.providerLabel")} required error={errors.provider?.message}>
                 {(field) => (
-                  <Select {...field} {...register("provider", { required: "제공자를 선택해주세요." })}>
-                    <option value="">제공자 선택…</option>
+                  <Select {...field} {...register("provider", { required: i18n.t("newBuild.errors.providerRequired") })}>
+                    <option value="">{t("newBuild.source.providerSelect")}</option>
                     {providerOptions.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
@@ -743,18 +744,18 @@ export function NewBuildPage() {
               </FormField>
               <FormField
                 id="sourceDataset"
-                label="데이터셋 (Dataset)"
+                label={t("newBuild.source.datasetLabel")}
                 required
-                help="Builder catalog에서 제공하는 provider 내부 데이터셋 코드입니다."
+                help={t("newBuild.source.datasetHelp")}
                 error={errors.sourceDataset?.message}
               >
                 {(field) => (
                   <Select
                     {...field}
                     disabled={!selectedProvider || datasetOptions.length === 0}
-                    {...register("sourceDataset", { required: "데이터셋을 입력해주세요." })}
+                    {...register("sourceDataset", { required: i18n.t("newBuild.errors.datasetRequired") })}
                   >
-                    <option value="">데이터셋 선택…</option>
+                    <option value="">{t("newBuild.source.datasetSelect")}</option>
                     {datasetOptions.map((dataset) => (
                       <option key={dataset.name} value={dataset.name}>
                         {dataset.title} ({dataset.name})
@@ -764,7 +765,7 @@ export function NewBuildPage() {
                 )}
               </FormField>
               {catalog.status === "loading" ? (
-                <p className="text-sm text-muted-foreground">Builder catalog를 불러오는 중입니다...</p>
+                <p className="text-sm text-muted-foreground">{t("newBuild.template.catalogLoading")}</p>
               ) : null}
               {catalog.status === "error" ? (
                 <p role="alert" className="text-sm text-red-700 dark:text-red-300">
@@ -776,11 +777,11 @@ export function NewBuildPage() {
 
           {step === 3 ? (
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold tracking-tight">파라미터</h3>
+              <h3 className="text-xl font-semibold tracking-tight">{t("newBuild.params.title")}</h3>
               <FormField
                 id="sourceParams"
-                label="요청 파라미터 (고급 / Advanced JSON)"
-                help='지역·기간 등 요청 파라미터를 JSON 객체로 입력하세요. 예: {"region": "gangnam"}'
+                label={t("newBuild.params.label")}
+                help={t("newBuild.params.help")}
                 error={errors.sourceParams?.message}
               >
                 {(field) => (
@@ -789,7 +790,7 @@ export function NewBuildPage() {
                     rows={8}
                     {...field}
                     {...register("sourceParams", {
-                      required: "파라미터를 입력해주세요.",
+                      required: i18n.t("newBuild.errors.paramsRequired"),
                       // JSON 문법/객체 여부를 단계 이동(trigger) 시점에 바로 막고 필드에 표시한다.
                       validate: (value) => parseSourceParams(value).error ?? true,
                     })}
@@ -802,32 +803,32 @@ export function NewBuildPage() {
           {step === 4 ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold tracking-tight">미리보기</h3>
+                <h3 className="text-xl font-semibold tracking-tight">{t("newBuild.preview.title")}</h3>
                 <Button
                   variant="secondary"
                   size="sm"
                   loading={preview.status === "loading"}
                   onClick={() => void runPreview()}
                 >
-                  미리보기 새로고침
+                  {t("newBuild.preview.refresh")}
                 </Button>
               </div>
               {preview.status === "idle" ? (
                 <EmptyState
-                  title="현재 설정으로 샘플 데이터를 확인하세요"
-                  description="‘미리보기 새로고침’을 누르면 Builder가 반환한 샘플 행과 스키마가 표시됩니다."
+                  title={t("newBuild.preview.guideTitle")}
+                  description={t("newBuild.preview.guideDesc")}
                 />
               ) : null}
               {preview.status === "error" ? (
                 <EmptyState
-                  title="미리보기를 불러오지 못했습니다"
-                  description={preview.error ?? "파라미터를 확인한 뒤 다시 시도하세요."}
+                  title={t("newBuild.preview.failTitle")}
+                  description={preview.error ?? t("newBuild.preview.failDesc")}
                 />
               ) : null}
               {preview.status === "loaded" && preview.rows.length === 0 ? (
                 <EmptyState
-                  title="조건에 맞는 데이터가 없습니다"
-                  description="날짜 범위나 지역 조건을 조정한 뒤 '미리보기 새로고침'을 눌러 다시 시도하세요."
+                  title={t("newBuild.preview.emptyTitle")}
+                  description={t("newBuild.preview.emptyDesc")}
                 />
               ) : null}
               {preview.status === "loaded" && preview.warnings.length > 0 ? (
@@ -845,7 +846,7 @@ export function NewBuildPage() {
               ) : null}
               {preview.status === "loaded" && preview.rows.length > 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  {preview.rows.length}개 샘플 행 · {Object.keys(preview.schema).length}개 컬럼
+                  {t("newBuild.preview.rowsCols", { rows: preview.rows.length, cols: Object.keys(preview.schema).length })}
                 </p>
               ) : null}
             </div>
@@ -853,10 +854,10 @@ export function NewBuildPage() {
 
           {step === 5 ? (
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold tracking-tight">출력 형식</h3>
+              <h3 className="text-xl font-semibold tracking-tight">{t("newBuild.output.title")}</h3>
               <fieldset>
                 <legend className="text-sm font-medium text-foreground">
-                  결과물 형식 (최소 1개)
+                  {t("newBuild.output.formatsLabel")}
                 </legend>
                 <div className="mt-3 grid gap-3 md:grid-cols-2">
                   {exportFormats.map((format) => (
@@ -870,7 +871,7 @@ export function NewBuildPage() {
                         className="h-4 w-4 accent-emerald-600"
                         {...register("exportFormats", {
                           validate: (selected) =>
-                            (selected?.length ?? 0) > 0 || "출력 형식을 최소 1개 선택해주세요.",
+                            (selected?.length ?? 0) > 0 || i18n.t("newBuild.errors.outputRequired"),
                         })}
                       />
                       <span className="text-sm font-medium capitalize">{format}</span>
@@ -885,7 +886,7 @@ export function NewBuildPage() {
               </fieldset>
               <FormField
                 id="outputPath"
-                label="출력 경로 (Output path)"
+                label={t("newBuild.output.pathLabel")}
                 required
                 error={errors.outputPath?.message}
               >
@@ -893,7 +894,7 @@ export function NewBuildPage() {
                   <TextInput
                     placeholder="artifacts/builds/air-quality"
                     {...field}
-                    {...register("outputPath", { required: "출력 경로를 입력해주세요." })}
+                    {...register("outputPath", { required: i18n.t("newBuild.errors.outputPathRequired") })}
                   />
                 )}
               </FormField>
@@ -903,25 +904,25 @@ export function NewBuildPage() {
           {step === 6 ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold tracking-tight">검증·실행</h3>
+                <h3 className="text-xl font-semibold tracking-tight">{t("newBuild.review.title")}</h3>
                 <Button
                   variant="secondary"
                   size="sm"
                   loading={validation.status === "validating"}
                   onClick={() => void runValidate()}
                 >
-                  다시 검증
+                  {t("newBuild.review.revalidate")}
                 </Button>
               </div>
               {validation.status === "idle" ? (
                 <p className="text-sm text-muted-foreground">
-                  ‘다시 검증’을 눌러 입력값과 빌드 설정을 확인하세요.
+                  {t("newBuild.review.guide")}
                 </p>
               ) : null}
               {validation.status === "validated" && validation.isValid ? (
                 <Card variant="success" className="p-4">
                   <p className="text-sm font-medium text-accent-subtle-foreground">
-                    검증을 통과했습니다. 빌드를 실행할 수 있습니다.
+                    {t("newBuild.review.passed")}
                   </p>
                 </Card>
               ) : null}
@@ -946,16 +947,16 @@ export function NewBuildPage() {
                     if (specPreview.spec) void job.start(specPreview.spec);
                   }}
                 >
-                  빌드 실행
+                  {t("newBuild.review.run")}
                 </Button>
                 {job.status === "running" ? (
                   <Button variant="secondary" onClick={job.cancel}>
-                    취소
+                    {t("newBuild.review.cancel")}
                   </Button>
                 ) : null}
                 {job.status === "succeeded" ? (
                   <span className="text-sm text-accent-subtle-foreground">
-                    빌드 성공 (run {job.run?.id})
+                    {t("newBuild.review.success", { id: job.run?.id })}
                   </span>
                 ) : null}
                 {job.status === "failed" ? (
@@ -964,21 +965,21 @@ export function NewBuildPage() {
                   </span>
                 ) : null}
                 {job.status === "cancelled" ? (
-                  <span className="text-sm text-muted-foreground">실행이 취소되었습니다.</span>
+                  <span className="text-sm text-muted-foreground">{t("newBuild.review.cancelled")}</span>
                 ) : null}
                 {job.interrupted && job.status !== "cancelled" ? (
                   <span className="text-sm text-muted-foreground">
-                    요청을 중단했습니다. 서버 빌드 결과는 확인되지 않았습니다.
+                    {t("newBuild.review.aborted")}
                   </span>
                 ) : null}
               </div>
 
               <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
                 <Button variant="secondary" disabled={!specPreview.spec} onClick={saveAsSavedSpec}>
-                  이 스펙 저장 (Workspace)
+                  {t("newBuild.review.saveSpec")}
                 </Button>
                 <span className="text-xs text-muted-foreground">
-                  이름을 붙여 이 브라우저에 저장합니다 — Builder에는 전송되지 않습니다.
+                  {t("newBuild.review.saveSpecDesc")}
                 </span>
               </div>
               {saveSpecMessage ? (
@@ -995,14 +996,14 @@ export function NewBuildPage() {
           {/* 모바일에서는 하단 sticky action bar로 고정해 긴 폼에서도 이전/다음이 항상 보이게 한다(§13). */}
           <div className="sticky bottom-0 z-10 -mx-6 -mb-6 mt-8 flex items-center justify-between gap-3 border-t border-border bg-background/95 px-6 py-3 backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none sm:dark:bg-transparent">
             <Button variant="ghost" onClick={goBack} disabled={step === 0}>
-              이전
+              {t("newBuild.nav.prev")}
             </Button>
             <div className="flex gap-2">
               <Button variant="secondary" onClick={saveCurrentDraft}>
-                {draftSaved && !isDirty ? "저장됨 ✓" : "초안 저장"}
+                {draftSaved && !isDirty ? t("newBuild.nav.saved") : t("newBuild.nav.saveDraft")}
               </Button>
-              {step < STEPS.length - 1 ? (
-                <Button onClick={() => void goNext()}>다음</Button>
+              {step < steps.length - 1 ? (
+                <Button onClick={() => void goNext()}>{t("newBuild.nav.next")}</Button>
               ) : null}
             </div>
           </div>
@@ -1014,7 +1015,7 @@ export function NewBuildPage() {
                 표시되며 필요 시 펼친다(§13). */}
             <details className="group">
               <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                생성될 스펙 (Generated spec)
+                {t("newBuild.nav.specTitle")}
                 <span className="text-base transition group-open:rotate-180" aria-hidden="true">
                   ⌄
                 </span>
