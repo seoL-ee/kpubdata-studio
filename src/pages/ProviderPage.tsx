@@ -17,6 +17,8 @@
  *   probe 결과를 "연결 성공 여부"로 노출하지 않는다 — 실제 사용 가능 여부는 선택한
  *   Dataset의 Preview가 확인한다(#S-provider-probe).
  */
+import { useTranslation } from "react-i18next";
+import { i18n } from "@/shared/i18n";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -101,12 +103,13 @@ function mapProviderSummary(summary: ProviderSummary): ProviderConfig {
     requiresCredential: summary.requires_credential,
     summaryConfigured: summary.configured,
     description: summary.requires_credential
-      ? "자격 증명이 필요한 제공 기관입니다."
-      : "자격 증명 없이 사용할 수 있는 제공 기관입니다.",
+      ? i18n.t("provider.status.needsCred")
+      : i18n.t("provider.status.noCred"),
   };
 }
 
 export function ProviderPage() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   // Add Data 등에서 `?provider=datago&returnTo=/add`로 넘어온 경우(#S-add-data, §4).
   // URL에는 provider id와 safe return destination만 싣는다 — credential/BuildSpec은
@@ -162,7 +165,7 @@ export function ProviderPage() {
         setProviders(getMockProviders());
       }
     } catch {
-      setError("Provider 정보를 불러올 수 없습니다");
+      setError(i18n.t("provider.errors.loadProvider"));
       setProviders([]);
     } finally {
       setLoading(false);
@@ -210,7 +213,7 @@ export function ProviderPage() {
           setCredentialMeta({ status: "store_unavailable" });
           return;
         }
-        setCredentialMeta({ status: "error", message: "자격 증명 상태를 불러오지 못했습니다" });
+        setCredentialMeta({ status: "error", message: i18n.t("provider.errors.credStatus") });
       }
     },
     [],
@@ -268,8 +271,8 @@ export function ProviderPage() {
       if (selectedProviderIdRef.current !== provider.id) return;
       setError(
         isCredentialStoreUnavailable(cause)
-          ? "Builder에 자격 증명 저장소(master key)가 구성되어 있지 않아 저장할 수 없습니다."
-          : "Credential 저장에 실패했습니다",
+          ? i18n.t("provider.errors.saveNoStore")
+          : i18n.t("provider.errors.saveFail"),
       );
     }
   };
@@ -292,8 +295,8 @@ export function ProviderPage() {
       if (selectedProviderIdRef.current !== provider.id) return;
       setError(
         isCredentialStoreUnavailable(cause)
-          ? "Builder에 자격 증명 저장소(master key)가 구성되어 있지 않아 삭제할 수 없습니다."
-          : "Credential 삭제에 실패했습니다",
+          ? i18n.t("provider.errors.deleteNoStore")
+          : i18n.t("provider.errors.deleteFail"),
       );
     }
   };
@@ -331,17 +334,17 @@ export function ProviderPage() {
     <main className="flex flex-1 flex-col gap-8 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
       <PageHeader
         eyebrow="Provider"
-        title="데이터 제공 기관 연결"
-        description="공공데이터 제공 기관과 연결하고 자격 증명(credential)을 관리합니다."
-        actions={<LinkButton to="/settings">설정으로 이동</LinkButton>}
+        title={t("provider.page.title")}
+        description={t("provider.page.desc")}
+        actions={<LinkButton to="/settings">{t("provider.page.settings")}</LinkButton>}
       />
       <p className="-mt-6 text-xs text-muted-foreground">
-        공공데이터 API Key와 Provider 자격 증명은 이곳에서 연결합니다. Kubi AI 요청에 사용하는 API Key와는 별개입니다.
+        {t("provider.page.note")}
       </p>
 
       {safeReturnTo ? (
         <Card variant="dashed" className="text-sm">
-          데이터 추가를 계속하려면 API 연결을 완료하세요.
+          {t("provider.page.cta")}
         </Card>
       ) : null}
 
@@ -369,8 +372,8 @@ export function ProviderPage() {
               </div>
             ) : providers.length === 0 ? (
               <EmptyState
-                title="등록된 Provider가 없습니다"
-                description="데이터 제공 기관을 추가하고 연결하세요."
+                title={t("provider.page.emptyTitle")}
+                description={t("provider.page.emptyDesc")}
               />
             ) : (
               <ul>
@@ -408,8 +411,8 @@ export function ProviderPage() {
           {!selectedProvider ? (
             <Card>
               <EmptyState
-                title="Provider를 선택해주세요"
-                description="왼쪽 목록에서 Provider를 선택하면 상세 정보를 볼 수 있습니다."
+                title={t("provider.page.selectTitle")}
+                description={t("provider.page.selectDesc")}
               />
             </Card>
           ) : (
@@ -417,7 +420,7 @@ export function ProviderPage() {
               <Card>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="text-lg font-semibold">연결 상태</h3>
+                    <h3 className="text-lg font-semibold">{t("provider.detail.connStatus")}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {getReadinessPresentation(selectedProvider, userCredentialConfigured).detail}
                     </p>
@@ -431,46 +434,39 @@ export function ProviderPage() {
                   </span>
                 </div>
                 <p className="mt-4 text-xs text-muted-foreground">
-                  선택한 Dataset에서 API Key가 실제 유효한지, 활용신청·필수 요청
-                  파라미터가 맞는지는 Add Data의 Preview 단계에서 확인합니다. 이
-                  화면은 Provider 인증 정보 등록 상태만 관리합니다.
+                  {t("provider.detail.scopeNote")}
                 </p>
               </Card>
 
               <Card>
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold">자격 증명 (Credential) 상태</h4>
+                  <h4 className="font-semibold">{t("provider.detail.credTitle")}</h4>
                   {userCredentialConfigured ? (
                     <Button size="sm" variant="danger" onClick={handleCredentialDelete}>
-                      삭제
+                      {t("provider.detail.delete")}
                     </Button>
                   ) : canRegisterCredential && !showCredentialForm ? (
                     <Button size="sm" onClick={() => setShowCredentialForm(true)}>
-                      {selectedProvider.summaryConfigured ? "사용자 자격 증명 등록" : "등록하기"}
+                      {selectedProvider.summaryConfigured ? t("provider.detail.registered") : t("provider.detail.register")}
                     </Button>
                   ) : null}
                 </div>
 
                 {!selectedProvider.requiresCredential ? (
                   <p className="mt-4 text-sm text-muted-foreground">
-                    이 제공 기관은 자격 증명 없이 사용할 수 있습니다. 등록하거나 삭제할
-                    자격 증명이 없습니다.
+                    {t("provider.detail.noCredNote")}
                   </p>
                 ) : credentialMeta.status === "loading" || credentialMeta.status === "idle" ? (
                   <p className="mt-4 text-sm text-muted-foreground">
-                    자격 증명 상태를 불러오는 중…
+                    {t("provider.detail.loading")}
                   </p>
                 ) : credentialMeta.status === "store_unavailable" ? (
                   <div className="mt-4 rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
                     <p className="font-medium text-foreground">
-                      자격 증명 저장소가 아직 구성되지 않았습니다
+                      {t("provider.detail.noStoreTitle")}
                     </p>
                     <p className="mt-2">
-                      Builder에 암호화된 자격 증명 저장소(master key)가 설정되어 있지 않아 사용자
-                      자격 증명을 등록·조회할 수 없습니다. 이는 &ldquo;아직 자격 증명을 등록하지
-                      않음&rdquo;과는 다른 상태입니다. 운영자가 Builder에
-                      <code className="mx-1">KPUBDATA_BUILDER_CREDENTIAL_MASTER_KEY</code>를 설정한
-                      뒤 다시 시도하세요.
+                      {t("provider.detail.noStoreBody")}
                     </p>
                   </div>
                 ) : credentialMeta.status === "error" ? (
@@ -484,7 +480,7 @@ export function ProviderPage() {
                       <input
                         type="password"
                         className="w-full rounded-md border border-input bg-card px-3 py-2 text-sm"
-                        placeholder="API Key를 입력하세요"
+                        placeholder={t("provider.detail.keyPlaceholder")}
                         value={credentialForm.credential}
                         onChange={(e) =>
                           setCredentialForm({ ...credentialForm, credential: e.target.value })
@@ -497,7 +493,7 @@ export function ProviderPage() {
                         onClick={handleCredentialSubmit}
                         disabled={!credentialForm.credential}
                       >
-                        저장
+                        {t("provider.detail.save")}
                       </Button>
                       <Button
                         size="sm"
@@ -507,39 +503,38 @@ export function ProviderPage() {
                           setCredentialForm({ credential: "" });
                         }}
                       >
-                        취소
+                        {t("provider.detail.cancel")}
                       </Button>
                     </div>
                   </div>
                 ) : credentialMeta.status === "loaded" && credentialMeta.configured ? (
                   <div className="mt-4">
                     <div className="text-sm text-muted-foreground">
-                      <span className="font-medium">저장된 API Key (마스킹):</span>{" "}
-                      {credentialMeta.masked ?? "설정됨"}
+                      <span className="font-medium">{t("provider.detail.savedKey")}</span>{" "}
+                      {credentialMeta.masked ?? t("provider.detail.configured")}
                     </div>
                     {credentialMeta.updatedAt ? (
                       <p className="mt-1 text-xs text-muted-foreground">
-                        마지막 업데이트:{" "}
+                        {t("provider.detail.lastUpdated")}{" "}
                         {new Date(credentialMeta.updatedAt).toLocaleString("ko-KR")}
                       </p>
                     ) : null}
                     <p className="mt-2 text-xs text-muted-foreground">
-                      Builder가 마스킹한 값이며 원문은 표시되지 않습니다.
+                      {t("provider.detail.maskingNote")}
                     </p>
                     {justSavedCredential && safeReturnTo ? (
                       <div className="mt-4">
-                        <LinkButton to={safeReturnTo}>데이터 설정으로 돌아가기</LinkButton>
+                        <LinkButton to={safeReturnTo}>{t("provider.detail.backToData")}</LinkButton>
                       </div>
                     ) : null}
                   </div>
                 ) : selectedProvider.summaryConfigured ? (
                   <p className="mt-4 text-sm text-muted-foreground">
-                    이 제공 기관은 현재 Builder 기본 자격 증명으로 사용 중입니다. 별도
-                    사용자 자격 증명을 등록하면 이 기관 호출에 우선 적용됩니다.
+                    {t("provider.detail.defaultCredNote")}
                   </p>
                 ) : (
                   <p className="mt-4 text-sm text-muted-foreground">
-                    이 제공 기관을 사용하려면 자격 증명을 등록해야 합니다.
+                    {t("provider.detail.needsCredNote")}
                   </p>
                 )}
               </Card>

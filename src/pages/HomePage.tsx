@@ -12,6 +12,8 @@
  * 실제 예시 데이터셋이 없는 상태에서 서비스가 미완성인 인상을 줬다. 같은 CTA는 이미
  * "공공데이터 탐색 → /discover" 카드가 담당한다.
  */
+import { useTranslation } from "react-i18next";
+import { i18n } from "@/shared/i18n";
 import {
   useEffect,
   useMemo,
@@ -151,6 +153,7 @@ function loadRealKpis(
  * 신규로 추측하지 않고 기존 대시보드를 보여준다(DATASETS만 "확인 불가").
  */
 export function HomePage() {
+  const { t } = useTranslation();
   const realBuilder = isRealBuilderEnabled();
   const userId = useAuthStore((state) => state.userId);
   const [builds, setBuilds] = useState<BuildListItem[]>([]);
@@ -307,35 +310,36 @@ export function HomePage() {
 }
 
 function EmptyWorkspaceHome({ userId }: { userId: string | null }) {
+  const { t } = useTranslation();
   return (
     <>
       <PageHeader
-        eyebrow="시작하기"
-        title="공공데이터를 찾아 신뢰할 수 있는 데이터셋으로 만드세요"
-        description="데이터를 찾거나 직접 가져온 뒤 Preview와 Quality를 확인하고 Build할 수 있습니다."
-        actions={<Button variant="ghost" size="sm" onClick={resetFirstRunTour}>둘러보기 다시 보기</Button>}
+        eyebrow={t("home.hero.eyebrow")}
+        title={t("home.hero.title")}
+        description={t("home.hero.desc")}
+        actions={<Button variant="ghost" size="sm" onClick={resetFirstRunTour}>{t("home.hero.tour")}</Button>}
       />
 
       <WorkflowStrip />
 
       <section data-tour="start-actions" className="grid gap-6 lg:grid-cols-2">
         <Card variant="elevated" className="flex flex-col items-center justify-center p-10 text-center">
-          <h2 className="text-xl font-semibold tracking-tight">공공데이터 탐색</h2>
+          <h2 className="text-xl font-semibold tracking-tight">{t("home.explore.title")}</h2>
           <p className="mt-3 text-muted-foreground">
-            Builder가 제공하는 공공데이터 카탈로그에서 Provider와 Dataset을 찾아 시작합니다.
+            {t("home.explore.desc")}
           </p>
           <LinkButton className="mt-6" variant="secondary" to="/discover">
-            탐색하기
+            {t("home.explore.cta")}
           </LinkButton>
         </Card>
 
         <Card variant="elevated" className="flex flex-col items-center justify-center p-10 text-center">
-          <h2 className="text-xl font-semibold tracking-tight">데이터 직접 가져오기</h2>
+          <h2 className="text-xl font-semibold tracking-tight">{t("home.addData.title")}</h2>
           <p className="mt-3 text-muted-foreground">
-            Public API·파일·URL을 직접 추가하고 Preview와 검증을 거쳐 Build합니다.
+            {t("home.addData.desc")}
           </p>
           <LinkButton className="mt-6" variant="secondary" to="/add">
-            데이터 추가하기
+            {t("home.addData.cta")}
           </LinkButton>
         </Card>
       </section>
@@ -376,10 +380,10 @@ function qualityAlertsForRun(
 }
 
 const WORKFLOW_STEPS = [
-  ["1", "데이터 찾기", "Discover 또는 직접 데이터 추가"],
-  ["2", "가져오기 준비", "Public API는 인증·활용신청·요청값을 확인"],
-  ["3", "Preview · Build", "데이터를 미리 확인·검증한 뒤 Build"],
-  ["4", "품질 확인 · 활용", "Quality · Kubi · Export · Publish"],
+  ["1", i18n.t("home.steps.1"), i18n.t("home.steps.1d")],
+  ["2", i18n.t("home.steps.2"), i18n.t("home.steps.2d")],
+  ["3", i18n.t("home.steps.3"), i18n.t("home.steps.3d")],
+  ["4", i18n.t("home.steps.4"), i18n.t("home.steps.4d")],
 ] as const;
 
 /**
@@ -389,11 +393,12 @@ const WORKFLOW_STEPS = [
  * 가져오기" 카드와 사이드바에서 진행한다.
  */
 function WorkflowStrip() {
+  const { t } = useTranslation();
   return (
     <section data-tour="workflow" aria-labelledby="workflow-heading" className="space-y-3">
       <div>
-        <h2 id="workflow-heading" className="text-sm font-semibold text-foreground">전체 작업 흐름</h2>
-        <p className="text-xs text-muted-foreground">아래는 진행 순서를 보여주는 설명입니다 — 각 단계는 사이드바 메뉴와 화면 안내를 따라 진행하세요.</p>
+        <h2 id="workflow-heading" className="text-sm font-semibold text-foreground">{t("home.steps.heading")}</h2>
+        <p className="text-xs text-muted-foreground">{t("home.steps.note")}</p>
       </div>
       <ol className="grid items-stretch gap-2 sm:grid-cols-2 xl:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr]">
         {WORKFLOW_STEPS.map(([number, title, copy], index) => (
@@ -426,6 +431,7 @@ function WorkflowStrip() {
  * 남기고, 아니면 seed 없이 `/kubi`로 이동해 그 화면의 API Key 설정 안내를 보여준다.
  */
 function KubiHero() {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
   const seedQuestion = useKubiStore((state) => state.seedQuestion);
@@ -446,23 +452,23 @@ function KubiHero() {
 
   return (
     <Card className="p-6">
-      <h2 className="text-base font-semibold tracking-tight">어디서 시작할지 모르겠다면 Kubi에게 물어보세요</h2>
+      <h2 className="text-base font-semibold tracking-tight">{t("home.kubi.title")}</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        원하는 데이터나 분석 목적을 입력하면 Kubi에서 시작 방법을 함께 찾아볼 수 있습니다.
+        {t("home.kubi.desc")}
       </p>
       <form className="mt-4 flex flex-col gap-2 sm:flex-row" onSubmit={handleSubmit}>
         <label className="sr-only" htmlFor="home-kubi-hero">
-          Kubi에게 자연어로 데이터 물어보기
+          {t("home.kubi.try")}
         </label>
         <input
           className="h-11 flex-1 rounded-lg border border-input bg-card px-4 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
           id="home-kubi-hero"
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="예: 서울 대기오염 데이터로 뭘 할 수 있어?"
+          placeholder={t("home.kubi.placeholder")}
           type="search"
           value={query}
         />
-        <Button type="submit">Kubi에서 시작하기 →</Button>
+        <Button type="submit">{t("home.kubi.cta")}</Button>
       </form>
       <div className="mt-4 flex flex-wrap gap-1.5">
         {startQuestions.map((question) => (
@@ -478,7 +484,7 @@ function KubiHero() {
       </div>
       {!isConfigured ? (
         <p className="mt-3 text-xs text-muted-foreground">
-          아직 API Key가 설정되지 않았습니다. Kubi 화면에서 설정 방법을 안내합니다.
+          {t("home.kubi.noKey")}
         </p>
       ) : null}
     </Card>
@@ -500,13 +506,14 @@ function ExistingUserHome({
   kpi: KpiPhases;
   recentQuality: RecentQualityState;
 }) {
+  const { t } = useTranslation();
   return (
     <>
       <PageHeader
-        eyebrow="대시보드"
-        title="작업 현황을 한눈에 확인하세요"
-        description="최근 데이터셋, 빌드 상태, 품질 경고를 모니터링합니다"
-        actions={userId ? <Button variant="secondary" onClick={() => resetFirstRunTour(userId)}>사용 가이드</Button> : undefined}
+        eyebrow={t("home.dashboard.eyebrow")}
+        title={t("home.dashboard.title")}
+        description={t("home.dashboard.desc")}
+        actions={userId ? <Button variant="secondary" onClick={() => resetFirstRunTour(userId)}>{t("home.dashboard.guide")}</Button> : undefined}
       />
 
       <section data-tour="dashboard-overview"><KpiCards stats={stats} kpi={kpi} /></section>
