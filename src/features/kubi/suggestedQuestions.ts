@@ -15,16 +15,17 @@
  * - Suggested Action(실행/이동)과 역할을 섞지 않는다 — 여기서는 전부 "다음 질문"만.
  */
 import type { KubiContext, KubiTurn } from "./types";
+import { i18n } from "@/shared/i18n";
 
 /**
  * Dataset/Run/Quality context가 하나도 없을 때(Home hero, 빈 /kubi) 보여줄 시작 질문.
  * Quality/Build 실패/SQL 질문을 포함하지 않는다.
  */
 export const START_QUESTIONS = [
-  "어떤 공공데이터부터 찾아볼 수 있어?",
-  "원하는 데이터셋을 찾는 방법을 알려줘.",
-  "Public API 데이터를 추가하려면 어떻게 해야 해?",
-  "KPubData의 전체 작업 흐름을 설명해줘.",
+  i18n.t("kubi.questions.q01"),
+  i18n.t("kubi.questions.q02"),
+  i18n.t("kubi.questions.q03"),
+  i18n.t("kubi.questions.q04"),
 ];
 
 /**
@@ -32,10 +33,10 @@ export const START_QUESTIONS = [
  * 호환을 위해 남겨 둔 값으로, 내용은 "context가 있을 때"의 요약/품질/실패/SQL 질문이다.
  */
 export const SUGGESTED_QUESTIONS = [
-  "현재 화면 문맥을 요약해줘.",
-  "지금 확인된 Quality 이슈의 원인과 우선순위를 알려줘.",
-  "이 Build가 실패했다면 원인을 분석해줘.",
-  "이 데이터로 어떤 걸 SQL로 확인할 수 있을지 제안해줘.",
+  i18n.t("kubi.questions.q05"),
+  i18n.t("kubi.questions.q06"),
+  i18n.t("kubi.questions.q07"),
+  i18n.t("kubi.questions.q08"),
 ];
 
 export interface SuggestedQuestionsInput {
@@ -61,35 +62,35 @@ function initialQuestions(context: KubiContext): string[] {
   // D. Quality context가 "실제로" 있을 때만 Quality-specific.
   if (context.page === "quality" && (context.runId || context.datasetId)) {
     return [
-      "현재 Quality 이슈의 원인을 설명해줘.",
-      "가장 먼저 확인해야 할 문제는 뭐야?",
-      "WARN/FAIL 항목을 어떻게 개선할 수 있어?",
+      i18n.t("kubi.questions.q09"),
+      i18n.t("kubi.questions.q10"),
+      i18n.t("kubi.questions.q11"),
     ];
   }
   // Silver/Gold stage — 컬럼/SQL.
   if (context.stage === "silver" || context.stage === "gold") {
     return [
-      "사용할 수 있는 컬럼을 알려줘.",
-      "이 데이터를 집계하는 SQL을 만들어줘.",
-      "이 단계 데이터로 어떤 분석을 할 수 있어?",
+      i18n.t("kubi.questions.q12"),
+      i18n.t("kubi.questions.q13"),
+      i18n.t("kubi.questions.q14"),
     ];
   }
   // C. Run context가 있을 때만 Run/실패 질문.
   if (context.runId) {
     return [
-      "이 Run 결과를 요약해줘.",
-      "경고되거나 실패한 단계가 있어?",
-      "이 Run의 Quality 결과를 설명해줘.",
-      "다음에 어떤 작업을 해야 해?",
+      i18n.t("kubi.questions.q15"),
+      i18n.t("kubi.questions.q16"),
+      i18n.t("kubi.questions.q17"),
+      i18n.t("kubi.questions.q18"),
     ];
   }
   // B. Dataset context가 있을 때만 Dataset-specific.
   if (context.datasetId) {
     return [
-      "이 데이터셋의 구조를 요약해줘.",
-      "이 데이터에서 확인할 품질 문제는 뭐야?",
-      "이 데이터로 어떤 분석을 할 수 있어?",
-      "Silver/Gold 단계에서는 어떻게 활용할 수 있어?",
+      i18n.t("kubi.questions.q19"),
+      i18n.t("kubi.questions.q20"),
+      i18n.t("kubi.questions.q21"),
+      i18n.t("kubi.questions.q22"),
     ];
   }
   // A. 아무 context도 없음.
@@ -118,9 +119,9 @@ function followUpQuestions(turn: KubiTurn, context: KubiContext): string[] {
 
   if (response?.generatedSql) {
     out.push(
-      "이 SQL 결과를 어떻게 해석하면 돼?",
-      "조건을 바꿔서 다시 집계해줘.",
-      "결과에서 눈에 띄는 값이 있으면 짚어줘.",
+      i18n.t("kubi.questions.q23"),
+      i18n.t("kubi.questions.q24"),
+      i18n.t("kubi.questions.q25"),
     );
   }
 
@@ -131,41 +132,41 @@ function followUpQuestions(turn: KubiTurn, context: KubiContext): string[] {
     quality.results.some((result) => result.status === "warn" || result.status === "fail");
   if (hasQualityIssue) {
     out.push(
-      "가장 먼저 고쳐야 할 품질 문제는 뭐야?",
-      "이 품질 문제가 다음 단계에 어떤 영향을 줘?",
+      i18n.t("kubi.questions.q26"),
+      i18n.t("kubi.questions.q27"),
     );
   }
 
   // 데이터 탐색/추천 성격 — catalog 근거가 있거나 아직 dataset/run을 안 정한 상태.
   if (evidence?.catalog || (!context.datasetId && !context.runId)) {
     out.push(
-      "추천한 데이터셋 중 어떤 걸 먼저 보는 게 좋아?",
-      "이 데이터를 Add Data로 가져오는 방법을 알려줘.",
-      "지역별로 비교하려면 어떤 데이터가 적합해?",
-      "분석을 시작하려면 다음 단계가 뭐야?",
+      i18n.t("kubi.questions.q28"),
+      i18n.t("kubi.questions.q29"),
+      i18n.t("kubi.questions.q30"),
+      i18n.t("kubi.questions.q31"),
     );
   }
 
   if (evidence?.dataset) {
     out.push(
-      "이 데이터셋으로 어떤 분석을 할 수 있어?",
-      "다음으로 어떤 단계를 진행하면 돼?",
+      i18n.t("kubi.questions.q32"),
+      i18n.t("kubi.questions.q33"),
     );
   }
 
   if (evidence?.stage || (evidence?.recentRuns?.length ?? 0) > 0 || context.runId) {
     out.push(
-      "이 결과에서 다음으로 확인할 건 뭐야?",
-      "경고되거나 실패한 단계가 있어?",
+      i18n.t("kubi.questions.q34"),
+      i18n.t("kubi.questions.q16"),
     );
   }
 
   // 구조적 단서가 부족하면 최근 질문을 구체화하는 generic follow-up.
   if (out.length === 0) {
     out.push(
-      "방금 답변을 좀 더 자세히 설명해줘.",
-      "이걸 바탕으로 다음 단계를 추천해줘.",
-      "관련해서 더 확인할 데이터가 있어?",
+      i18n.t("kubi.questions.q35"),
+      i18n.t("kubi.questions.q36"),
+      i18n.t("kubi.questions.q37"),
     );
   }
 
