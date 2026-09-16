@@ -17,8 +17,6 @@ interface ImportMetaEnv {
   readonly VITE_OIDC_ISSUER?: string;
   /** OIDC public SPA client id (예: kpubdata-studio). public 값 — client secret 아님. */
   readonly VITE_OIDC_CLIENT_ID?: string;
-  /** Google OAuth Client ID (GIS 로그인, #187). public 값 — 번들 포함 무방. */
-  readonly VITE_GOOGLE_CLIENT_ID?: string;
 }
 
 interface ImportMeta {

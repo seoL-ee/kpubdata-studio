@@ -1,7 +1,7 @@
 /**
  * useAuthStore (#188, #263 generic 세션 확장) 테스트.
  *
- * setToken(Google, 하위 호환)과 setSession(mock/generic AuthProvider)이 같은 store를
+ * setSession(mock/generic AuthProvider)과 setOidcIdentity(Keycloak)가 같은 store를
  * 공유하면서 서로의 필드를 오염시키지 않는지, 그리고 password가 store 어디에도 남지
  * 않는지 확인한다.
  */
@@ -19,20 +19,19 @@ describe("useAuthStore", () => {
     expect(state).toMatchObject({ token: null, email: null, name: null, providerId: null });
   });
 
-  it("setToken (Google 하위 호환) sets token/email and tags the session as google", () => {
-    useAuthStore.getState().setToken("google-jwt", "user@example.com");
-    expect(useAuthStore.getState()).toMatchObject({
-      token: "google-jwt",
+  it("setOidcIdentity records the identity without ever holding a raw token", () => {
+    useAuthStore.getState().setOidcIdentity({
       email: "user@example.com",
-      name: null,
-      providerId: "google",
+      name: "테스터",
+      userId: "sub-1",
     });
-  });
-
-  it("setToken(null) clears the session and providerId", () => {
-    useAuthStore.getState().setToken("google-jwt", "user@example.com");
-    useAuthStore.getState().setToken(null);
-    expect(useAuthStore.getState()).toMatchObject({ token: null, email: null, providerId: null });
+    expect(useAuthStore.getState()).toMatchObject({
+      token: null,
+      email: "user@example.com",
+      name: "테스터",
+      userId: "sub-1",
+      providerId: "keycloak",
+    });
   });
 
   it("setSession stores a full generic AuthSession (mock/#263)", () => {
