@@ -123,12 +123,35 @@ export function setAuthTokenProvider(provider: AuthTokenProvider | null): void {
   authTokenProvider = provider;
 }
 
-export type AuthErrorCallback = () => void;
+/**
+ * 401 응답을 auth 계층에 알리는 콜백 (#189).
+ *
+ * `true`를 반환하면 "재인증에 성공했으니 같은 요청을 새 토큰으로 한 번 더 보내도 된다"는
+ * 뜻이다. 그 외(`void`/`false`)는 기존과 동일하게 세션 정리만 하고 401을 그대로 던진다.
+ */
+export type AuthErrorCallback = () => void | boolean | Promise<void | boolean>;
 
 let authErrorCallback: AuthErrorCallback | null = null;
 
 export function setAuthErrorCallback(cb: AuthErrorCallback | null): void {
   authErrorCallback = cb;
+}
+
+/**
+ * 401을 auth 계층에 알리고 재인증에 성공했는지 반환한다.
+ *
+ * Builder는 라우팅 이전의 단일 인증 게이트에서 401을 내므로(builder `_dispatch_impl`),
+ * 401은 서버가 요청을 처리하기 전에 거부했다는 뜻이다 — 비멱등 POST라도 새 토큰으로
+ * 한 번 더 보내는 것이 안전하다. 재인증 콜백이 던지는 예외는 원래의 401을 가리지
+ * 않도록 흡수한다.
+ */
+async function recoverFromUnauthorized(): Promise<boolean> {
+  if (!authErrorCallback) return false;
+  try {
+    return (await authErrorCallback()) === true;
+  } catch {
+    return false;
+  }
 }
 
 /** 자동 타임아웃 기본값(ms). Builder /build는 외부 API를 호출해 느릴 수 있어 넉넉히 잡는다. */
@@ -178,26 +201,12 @@ function isTimeoutAbort(cause: unknown): boolean {
 }
 
 /**
- * Builder API에 JSON 요청을 보내고 JSON 응답을 파싱한다.
+ * 한 번의 논리적 요청을 보낸다 — 네트워크 오류·타임아웃·5xx에 대한 제한 재시도까지 포함한다.
  *
- * 네트워크 일시 장애와 5xx에는 지수 백오프로 제한 재시도하고(#94), 응답이 없을 경우
- * UI가 무한 대기에 빠지지 않도록 자동 타임아웃을 건다(#94). 호출자 취소 signal은 그대로 존중한다.
- *
- * 런타임 타입 검증 (#158, #103):
- * - 스키마가 제공되면 Zod로 런타임 검증을 수행한다.
- * - 검증 실패 시 ApiError를 던진다.
- *
- * @param path - 선행 슬래시를 포함한 엔드포인트 경로(예: "/version").
- * @param options - 메서드/바디/취소 시그널/타임아웃/재시도.
- * @param schema - 응답을 검증할 Zod 스키마 (선택).
- * @returns 파싱된 응답 본문.
- * @throws ApiError 응답이 2xx가 아니거나 네트워크/파싱/타임아웃/스키마 검증 오류가 발생한 경우.
+ * 인증 헤더는 매 시도마다 `authTokenProvider`에서 새로 읽는다. 401 재인증 후 재호출되면
+ * 갱신된 토큰이 자연스럽게 반영된다(#189).
  */
-export async function apiFetch<T>(
-  path: string,
-  options: RequestOptions = {},
-  schema?: z.ZodSchema<T>,
-): Promise<T> {
+async function fetchWithRetries(path: string, options: RequestOptions): Promise<Response> {
   const {
     method = "GET",
     body,
@@ -254,6 +263,42 @@ export async function apiFetch<T>(
     throw new ApiError(0, i18n.t("api.connFail"));
   }
 
+  return response;
+}
+/**
+ * Builder API에 JSON 요청을 보내고 JSON 응답을 파싱한다.
+ *
+ * 네트워크 일시 장애와 5xx에는 지수 백오프로 제한 재시도하고(#94), 응답이 없을 경우
+ * UI가 무한 대기에 빠지지 않도록 자동 타임아웃을 건다(#94). 호출자 취소 signal은 그대로 존중한다.
+ *
+ * 런타임 타입 검증 (#158, #103):
+ * - 스키마가 제공되면 Zod로 런타임 검증을 수행한다.
+ * - 검증 실패 시 ApiError를 던진다.
+ *
+ * @param path - 선행 슬래시를 포함한 엔드포인트 경로(예: "/version").
+ * @param options - 메서드/바디/취소 시그널/타임아웃/재시도.
+ * @param schema - 응답을 검증할 Zod 스키마 (선택).
+ * @returns 파싱된 응답 본문.
+ * @throws ApiError 응답이 2xx가 아니거나 네트워크/파싱/타임아웃/스키마 검증 오류가 발생한 경우.
+ */
+export async function apiFetch<T>(
+  path: string,
+  options: RequestOptions = {},
+  schema?: z.ZodSchema<T>,
+): Promise<T> {
+  let response = await fetchWithRetries(path, options);
+
+  // 401: 재인증에 성공하면 새 토큰으로 같은 요청을 딱 한 번 더 보낸다 (#189).
+  // 실패한 첫 시도를 사용자 에러로 노출하지 않기 위함이며, 재시도는 1회로 제한해
+  // 만료가 아닌 진짜 인가 실패에서 루프가 생기지 않게 한다. 인증 헤더를 붙이지 않는
+  // 요청(skipAuth)은 다시 보내도 결과가 같으므로 재시도하지 않는다.
+  if (response.status === 401) {
+    const recovered = await recoverFromUnauthorized();
+    if (recovered && !options.skipAuth) {
+      response = await fetchWithRetries(path, options);
+    }
+  }
+
   const text = await response.text();
   let parsed: unknown = undefined;
   if (text) {
@@ -266,9 +311,6 @@ export async function apiFetch<T>(
   }
 
   if (!response.ok) {
-    if (response.status === 401 && authErrorCallback) {
-      authErrorCallback();
-    }
     const message = formatApiErrorMessage(response.status, parsed);
     throw new ApiError(response.status, message, parsed);
   }
@@ -803,8 +845,10 @@ export const builderApi = {
  *
  * 요청 body가 JSON이 아니라 raw bytes(`application/octet-stream`)라 `apiFetch`의
  * JSON-only 경로를 재사용할 수 없다. 인증/재시도/타임아웃 관례는 최대한 맞추되
- * (Bearer 헤더는 authTokenProvider를 그대로 사용), 비멱등 업로드이므로 재시도는
- * 하지 않는다. `format`/`encoding`/`filename`은 query parameter로 보낸다.
+ * (Bearer 헤더는 authTokenProvider를 그대로 사용), 비멱등 업로드이므로 네트워크
+ * 오류·5xx에는 재시도하지 않는다. 401은 예외다 — Builder가 라우팅 전 인증 게이트에서
+ * 거부한 것이라 업로드가 수행되지 않았고, 재인증에 성공하면 한 번만 다시 보낸다(#189).
+ * `format`/`encoding`/`filename`은 query parameter로 보낸다.
  */
 export async function uploadFile(
   bytes: Blob | ArrayBuffer,
@@ -815,20 +859,25 @@ export async function uploadFile(
   if (options.encoding) params.set("encoding", options.encoding);
   if (options.filename) params.set("filename", options.filename);
 
-  const headers: Record<string, string> = { "Content-Type": "application/octet-stream" };
-  const token = (await authTokenProvider?.()) ?? null;
-  if (token) headers.Authorization = `Bearer ${token}`;
+  async function send(): Promise<Response> {
+    const headers: Record<string, string> = { "Content-Type": "application/octet-stream" };
+    const token = (await authTokenProvider?.()) ?? null;
+    if (token) headers.Authorization = `Bearer ${token}`;
+    try {
+      return await fetch(`${API_BASE}/uploads?${params.toString()}`, {
+        method: "POST",
+        headers,
+        body: bytes,
+        signal,
+      });
+    } catch (cause) {
+      throw new ApiError(0, i18n.t("api.connFail"), cause);
+    }
+  }
 
-  let response: Response;
-  try {
-    response = await fetch(`${API_BASE}/uploads?${params.toString()}`, {
-      method: "POST",
-      headers,
-      body: bytes,
-      signal,
-    });
-  } catch (cause) {
-    throw new ApiError(0, i18n.t("api.connFail"), cause);
+  let response = await send();
+  if (response.status === 401 && (await recoverFromUnauthorized())) {
+    response = await send();
   }
 
   const text = await response.text();
@@ -840,7 +889,6 @@ export async function uploadFile(
   }
 
   if (!response.ok) {
-    if (response.status === 401 && authErrorCallback) authErrorCallback();
     throw new ApiError(response.status, formatApiErrorMessage(response.status, parsed), parsed);
   }
 
@@ -873,7 +921,7 @@ function filenameFromContentDisposition(header: string | null): string | null {
  *
  * 응답이 JSON이 아니라 바이너리 파일이라 `apiFetch`의 JSON 경로를 쓸 수 없다. Bearer
  * 헤더는 `uploadFile`과 동일하게 `authTokenProvider`를 재사용하고, 401이면 동일한
- * `authErrorCallback`을 호출한다.
+ * `authErrorCallback`으로 재인증을 시도한 뒤 성공 시 한 번만 다시 받는다(#189).
  *
  * `filePath`는 반드시 Builder `GET /artifacts/{run_id}` 목록이 준 canonical
  * run-relative POSIX 경로여야 한다(예: "silver/datago.air_quality/table.parquet").
@@ -892,24 +940,28 @@ export async function downloadArtifactFile(
     .map((segment) => encodeURIComponent(segment))
     .join("/");
 
-  const headers: Record<string, string> = {};
-  const token = (await authTokenProvider?.()) ?? null;
-  if (token) headers.Authorization = `Bearer ${token}`;
+  async function send(): Promise<Response> {
+    const headers: Record<string, string> = {};
+    const token = (await authTokenProvider?.()) ?? null;
+    if (token) headers.Authorization = `Bearer ${token}`;
+    try {
+      return await fetch(`${API_BASE}/artifacts/${encodeURIComponent(runId)}/${encodedPath}`, {
+        method: "GET",
+        headers,
+        signal,
+      });
+    } catch (cause) {
+      if (signal?.aborted) throw cause;
+      throw new ApiError(0, i18n.t("api.connFail"), cause);
+    }
+  }
 
-  let response: Response;
-  try {
-    response = await fetch(`${API_BASE}/artifacts/${encodeURIComponent(runId)}/${encodedPath}`, {
-      method: "GET",
-      headers,
-      signal,
-    });
-  } catch (cause) {
-    if (signal?.aborted) throw cause;
-    throw new ApiError(0, i18n.t("api.connFail"), cause);
+  let response = await send();
+  if (response.status === 401 && (await recoverFromUnauthorized())) {
+    response = await send();
   }
 
   if (!response.ok) {
-    if (response.status === 401 && authErrorCallback) authErrorCallback();
     let parsed: unknown;
     try {
       const text = await response.text();

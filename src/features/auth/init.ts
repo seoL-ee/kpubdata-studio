@@ -15,20 +15,22 @@ export function initAuth(): void {
     isOidcEnabled() ? getFreshToken() : useAuthStore.getState().token,
   );
 
-  setAuthErrorCallback(() => {
+  setAuthErrorCallback(async () => {
     if (isOidcEnabled()) {
       // 401을 성공으로 간주하지 않는다. 강제 refresh를 한 번만 시도하고, 실패하면
       // unauthenticated로 표시해 LoginGate가 재로그인을 유도한다(무한 retry 없음).
-      void getFreshToken({ force: true }).then((token) => {
-        if (!token) {
-          const store = useAuthStore.getState();
-          store.clear();
-          store.setOidcStatus("unauthenticated");
-        }
-      });
-      return;
+      // refresh에 성공하면 true를 돌려줘 builderApi가 새 토큰으로 요청을 한 번만
+      // 다시 보내게 한다 — 만료가 요청 도중에 발생해도 사용자에게 에러가 보이지 않는다.
+      const token = await getFreshToken({ force: true });
+      if (token) return true;
+      const store = useAuthStore.getState();
+      store.clear();
+      store.setOidcStatus("unauthenticated");
+      return false;
     }
+    // mock/데모/Google 경로에는 갱신할 세션이 없다 — 세션만 비우고 재시도하지 않는다.
     useAuthStore.getState().clear();
+    return false;
   });
 
   bootstrapOidc();
