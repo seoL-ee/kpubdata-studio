@@ -21,8 +21,11 @@ import { getMockMonitoringData } from "@/features/monitoring/api/mockData";
 import { SystemResourcesTab } from "@/features/monitoring/components/SystemResourcesTab";
 import { BuildStatisticsTab } from "@/features/monitoring/components/BuildStatisticsTab";
 import { RecentRunsTab } from "@/features/monitoring/components/RecentRunsTab";
+import { useTranslation } from "react-i18next";
+import { i18n } from "@/shared/i18n";
 
 export function MonitoringPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<MonitoringTab>("system");
   const [loading, setLoading] = useState<MonitoringLoadingState>("idle");
   const [unauthorized, setUnauthorized] = useState(false);
@@ -60,7 +63,7 @@ export function MonitoringPage() {
         previousStatusRef.current !== summary.status
       ) {
         if (summary.status === "degraded") {
-          console.warn("Builder 시스템 상태 저하 감지됨");
+          console.warn("Builder system health degraded");
         }
       }
       previousStatusRef.current = summary.status;
@@ -103,12 +106,12 @@ export function MonitoringPage() {
       <main className="flex flex-1 flex-col gap-8 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
         <PageHeader
           eyebrow="Monitoring"
-          title="시스템 모니터링"
-          description="실행 이력과 시스템 리소스 상태를 실시간으로 확인합니다."
+          title={t("monitoringPage.title")}
+          description={t("monitoringPage.desc")}
         />
         <ErrorState
-          title="권한이 없습니다"
-          message="모니터링 데이터를 조회하려면 로그인이 필요합니다."
+          title={t("monitoringPage.forbiddenTitle")}
+          message={t("monitoringPage.forbiddenDesc")}
         />
       </main>
     );
@@ -118,14 +121,18 @@ export function MonitoringPage() {
     <main className="flex flex-1 flex-col gap-8 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
       <PageHeader
         eyebrow="Monitoring"
-        title="시스템 모니터링"
-        description="실행 이력과 시스템 리소스 상태를 실시간으로 확인합니다."
+        title={t("monitoringPage.title")}
+        description={t("monitoringPage.desc")}
         actions={
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
               {lastRefreshTime
-                ? `마지막 업데이트: ${lastRefreshTime.toLocaleTimeString("ko-KR")}`
-                : "데이터 로드 중..."}
+                ? t("monitoringPage.lastUpdate", {
+                    at: lastRefreshTime.toLocaleTimeString(
+                      i18n.language?.startsWith("en") ? "en-US" : "ko-KR",
+                    ),
+                  })
+                : t("monitoringPage.loading")}
             </span>
             <Button
               variant={autoRefresh ? "primary" : "secondary"}
@@ -133,7 +140,7 @@ export function MonitoringPage() {
               onClick={toggleAutoRefresh}
               type="button"
             >
-              {autoRefresh ? "자동 새로고침 ON" : "자동 새로고침 OFF"}
+              {autoRefresh ? t("monitoringPage.autoRefreshOn") : t("monitoringPage.autoRefreshOff")}
             </Button>
             <Button
               variant="secondary"
@@ -141,7 +148,7 @@ export function MonitoringPage() {
               onClick={() => fetchMonitoringData()}
               type="button"
             >
-              새로고침
+              {t("monitoringPage.refresh")}
             </Button>
           </div>
         }
@@ -149,9 +156,9 @@ export function MonitoringPage() {
 
       {data?.summary.status === "degraded" && (
         <Card variant="error">
-          <p className="font-semibold">시스템 상태 저하</p>
+          <p className="font-semibold">{t("monitoringPage.degradedTitle")}</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            일부 하위 시스템이 partial/unavailable 상태입니다. 각 카드의 상태 배지를 확인하세요.
+            {t("monitoringPage.degradedDesc")}
           </p>
         </Card>
       )}

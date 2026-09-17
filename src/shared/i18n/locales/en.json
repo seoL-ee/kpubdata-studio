@@ -816,6 +816,20 @@
       "next": "Next",
       "saved": "Saved ✓",
       "saveDraft": "Save draft"
+    },
+    "model": {
+      "sourceRequired": "Choose a source first.",
+      "exportRequired": "Choose at least one output format.",
+      "metadataRequired": "Enter a dataset id, title and description.",
+      "providerDatasetRequired": "Choose a provider and a dataset.",
+      "paramsRedacted": "Parameter values containing secrets were stripped from the saved draft. Enter the query/config again.",
+      "uploadRequired": "Upload a file first.",
+      "endpointRequired": "Enter an endpoint.",
+      "urlRedacted": "A URL containing a secret was stripped from the saved draft. Enter the endpoint again.",
+      "urlUserInfo": "The URL must not contain user info (for example user:pass@host). Do not put credentials in the endpoint.",
+      "specBuildFailed": "The build spec could not be generated.",
+      "unresolvedPlaceholder": "The saved draft has a secret placeholder that cannot be restored. Enter the original credential again.",
+      "specInvalid": "The build spec is not valid."
     }
   },
   "settings": {
@@ -1438,5 +1452,18 @@
     "openDetail": "Open build details",
     "openArtifacts": "View artifacts",
     "editSpec": "Edit spec"
+  },
+  "monitoringPage": {
+    "title": "System monitoring",
+    "desc": "Watch run history and system resource status in real time.",
+    "forbiddenTitle": "No permission",
+    "forbiddenDesc": "Sign in to read monitoring data.",
+    "lastUpdate": "Last update: {{at}}",
+    "loading": "Loading data...",
+    "autoRefreshOn": "Auto refresh ON",
+    "autoRefreshOff": "Auto refresh OFF",
+    "refresh": "Refresh",
+    "degradedTitle": "System degraded",
+    "degradedDesc": "Some subsystems are partial or unavailable. Check the status badge on each card."
   }
 }
