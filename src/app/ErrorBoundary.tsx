@@ -7,6 +7,7 @@
  */
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { useRouteError } from "react-router-dom";
+import { i18n } from "@/shared/i18n";
 
 /**
  * 오류 발생 시 보여줄 한국어 폴백 화면.
@@ -20,18 +21,17 @@ export function ErrorFallback() {
       className="flex min-h-screen flex-1 flex-col items-center justify-center gap-4 px-6 py-16 text-center"
     >
       <p className="text-2xl font-semibold tracking-tight text-foreground">
-        문제가 발생했습니다
+        {i18n.t("errorBoundary.global.title")}
       </p>
       <p className="max-w-md text-sm leading-6 text-muted-foreground">
-        예기치 못한 오류로 화면을 표시할 수 없습니다. 페이지를 새로고침하면 대부분 해결됩니다.
-        문제가 계속되면 잠시 후 다시 시도해주세요.
+        {i18n.t("errorBoundary.global.desc")}
       </p>
       <button
         type="button"
         onClick={() => window.location.reload()}
         className="inline-flex items-center justify-center rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground shadow-sm transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        새로고침
+        {i18n.t("errorBoundary.global.reload")}
       </button>
     </main>
   );
@@ -88,7 +88,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
  * 전역 폴백과 달리 화면 전체를 차지하지 않으며, 셸(사이드바/헤더)을 유지한 채 해당 feature
  * 영역만 오류 UI로 대체한다. 새로고침 대신 영역만 다시 그리는 ‘다시 시도’를 제공한다.
  *
- * @param feature - 오류가 난 기능 이름(예: "미리보기").
+ * @param feature - 오류가 난 기능의 i18n 키(예: "router.features.preview").
  * @param onRetry - 경계 상태를 초기화해 하위 트리를 다시 렌더하는 콜백.
  * @returns 영역 한정 오류 안내 UI.
  */
@@ -99,25 +99,24 @@ function FeatureErrorFallback({ feature, onRetry }: { feature: string; onRetry: 
       className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-16 text-center"
     >
       <p className="text-lg font-semibold tracking-tight text-foreground">
-        {feature} 화면에 문제가 발생했습니다
+        {i18n.t("errorBoundary.feature.title", { feature: i18n.t(feature) })}
       </p>
       <p className="max-w-md text-sm leading-6 text-muted-foreground">
-        이 영역만 일시적으로 표시할 수 없습니다. 사이드바와 다른 메뉴는 정상적으로 사용할 수 있어요.
-        잠시 후 다시 시도해주세요.
+        {i18n.t("errorBoundary.feature.desc")}
       </p>
       <button
         type="button"
         onClick={onRetry}
         className="inline-flex items-center justify-center rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground shadow-sm transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        다시 시도
+        {i18n.t("errorBoundary.feature.retry")}
       </button>
     </main>
   );
 }
 
 interface FeatureErrorBoundaryProps {
-  /** 폴백 메시지에 노출할 기능 이름 */
+  /** 폴백 메시지에 노출할 기능 이름의 i18n 키 */
   feature: string;
   /** 보호할 feature 하위 트리 */
   children: ReactNode;

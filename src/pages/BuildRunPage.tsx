@@ -15,6 +15,7 @@ import { useBuild } from "@/features/runs/useBuild";
 import { isRealBuilderEnabled } from "@/shared/lib/builderApi";
 import type { BuildRunStatus } from "@/shared/lib/types";
 import { Card, EmptyState, LinkButton, PageHeader, Skeleton, StatusBadge } from "@/shared/ui";
+import { useTranslation } from "react-i18next";
 
 /**
  * 빌드 실행의 canonical 상태를 추적하는 페이지.
@@ -22,6 +23,7 @@ import { Card, EmptyState, LinkButton, PageHeader, Skeleton, StatusBadge } from 
  * @returns 실행 상태 화면.
  */
 export function BuildRunPage() {
+  const { t } = useTranslation();
   const { buildId = "" } = useParams();
 
   // historical: Builds 목록/편집과 같은 getBuild() 조회(mock 모드는 결정적 mock, 실연동은
@@ -40,58 +42,58 @@ export function BuildRunPage() {
   return (
     <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
       <PageHeader
-        eyebrow="실행"
-        title={`${buildId || "빌드"} 실행`}
-        description="Builds 목록/상세와 동일한 run 상태를 보여줍니다."
+        eyebrow={t("buildRun.eyebrow")}
+        title={t("buildRun.title", { id: buildId || t("buildRun.fallbackId") })}
+        description={t("buildRun.desc")}
         actions={
           <LinkButton variant="secondary" to={`/builds?run=${encodeURIComponent(buildId)}`}>
-            Build 상세에서 관리
+            {t("buildRun.manageInDetail")}
           </LinkButton>
         }
       />
 
       <Card className="flex flex-wrap items-center gap-3">
-        <span className="text-sm text-muted-foreground">상태</span>
+        <span className="text-sm text-muted-foreground">{t("buildRun.status")}</span>
         {historicalLoading && live.kind !== "job" ? (
           <Skeleton className="h-6 w-20" />
         ) : runStatus ? (
           <StatusBadge status={runStatus} />
         ) : (
           <span className="text-xs text-muted-foreground">
-            {historicalError ?? "상태 불명"}
+            {historicalError ?? t("buildRun.unknownStatus")}
           </span>
         )}
         {live.kind === "job" && (live.job.status === "queued" || live.job.status === "running" || live.job.status === "cancelling") ? (
-          <span className="text-xs text-muted-foreground">실시간 갱신 중…</span>
+          <span className="text-xs text-muted-foreground">{t("buildRun.liveUpdating")}</span>
         ) : null}
         {live.kind === "error" ? (
           <span className="text-xs text-amber-700 dark:text-amber-400">
-            실시간 상태 갱신 실패(일시적) — 마지막으로 확인된 상태를 유지합니다.
+            {t("buildRun.liveFailed")}
           </span>
         ) : null}
         {live.kind === "permission_denied" ? (
           <span className="text-xs text-red-700 dark:text-red-400">
-            이 Run의 실시간 상태를 조회할 권한이 없습니다 — 마지막으로 확인된 상태를 대신 표시합니다.
+            {t("buildRun.liveForbidden")}
           </span>
         ) : null}
       </Card>
 
       <Card variant="dashed" className="p-0">
         <EmptyState
-          title="상세 진행은 Build 상세에서 확인하세요"
-          description="이 화면은 Builds 목록/상세와 동일한 canonical run 상태만 보여줍니다. 단계별 진행(Bronze/Silver/Gold), 실행 이벤트 타임라인, 협조적 실행 취소는 Build 상세(/builds?run=...)에서 제공됩니다."
+          title={t("buildRun.detailHint.title")}
+          description={t("buildRun.detailHint.desc")}
         />
       </Card>
 
       <div className="flex flex-wrap gap-3">
         <LinkButton variant="secondary" to={`/builds?run=${encodeURIComponent(buildId)}`}>
-          Build 상세 보기
+          {t("buildRun.openDetail")}
         </LinkButton>
         <LinkButton variant="secondary" to={`/builds/${buildId}/artifacts`}>
-          결과물 보기
+          {t("buildRun.openArtifacts")}
         </LinkButton>
         <LinkButton variant="ghost" to={`/builds/${buildId}/edit`}>
-          스펙 수정
+          {t("buildRun.editSpec")}
         </LinkButton>
       </div>
     </main>
