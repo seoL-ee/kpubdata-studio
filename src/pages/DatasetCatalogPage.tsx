@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { i18n } from "@/shared/i18n";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { loadDatasetCatalog, type CatalogDataset } from "@/features/datasets/api";
 import {
@@ -32,6 +34,7 @@ const stageSummaryClass = {
 } as const;
 
 export function DatasetCatalogPage() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [state, setState] = useState<CatalogState>({ status: "loading" });
@@ -45,7 +48,7 @@ export function DatasetCatalogPage() {
         if (controller.signal.aborted) return;
         setState({
           status: "error",
-          error: cause instanceof Error ? cause.message : "데이터셋 목록을 불러오지 못했습니다.",
+          error: cause instanceof Error ? cause.message : i18n.t("catalog.errors.list"),
         });
       });
     return () => controller.abort();
@@ -96,35 +99,35 @@ export function DatasetCatalogPage() {
       <PageHeader
         eyebrow="Data"
         title="Dataset Catalog"
-        description="정확 검색과 필터로 데이터셋을 찾습니다."
+        description={t("catalog.page.desc")}
       />
 
       <Card className="overflow-hidden p-0">
         <div className="flex flex-wrap items-center gap-2 border-b border-border p-4">
           <div className="min-w-56 flex-1 lg:max-w-[390px]">
             <label htmlFor="dataset-search" className="sr-only">
-              Dataset / Provider 검색
+              {t("catalog.searchLabel")}
             </label>
-            <TextInput id="dataset-search" placeholder="데이터셋명·기관 검색" value={query} onChange={(event) => updateParam("q", event.target.value)} />
+            <TextInput id="dataset-search" placeholder={t("catalog.searchPlaceholder")} value={query} onChange={(event) => updateParam("q", event.target.value)} />
           </div>
           <label className="min-w-36 flex-1 sm:flex-none">
             <span className="sr-only">Provider</span>
             <select aria-label="Provider" className={`w-full ${selectClassName}`} value={provider} onChange={(event) => updateParam("provider", event.target.value)}>
-              <option value="">Provider 전체</option>
+              <option value="">{t("catalog.allProviders")}</option>
               {providerOptions.map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
           </label>
           <label className="min-w-32 flex-1 sm:flex-none">
-            <span className="sr-only">Stage 상태</span>
-            <select aria-label="Stage 상태" className={`w-full ${selectClassName}`} value={stage} onChange={(event) => updateParam("stage", event.target.value)}>
-              <option value="">Stage 전체</option>
+            <span className="sr-only">{t("catalog.stageLabel")}</span>
+            <select aria-label={t("catalog.stageLabel")} className={`w-full ${selectClassName}`} value={stage} onChange={(event) => updateParam("stage", event.target.value)}>
+              <option value="">{t("catalog.allStages")}</option>
               {STAGE_STATUSES.map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
           </label>
           <label className="min-w-36 flex-1 sm:flex-none">
             <span className="sr-only">Validation</span>
             <select aria-label="Validation" className={`w-full ${selectClassName}`} value={validation} onChange={(event) => updateParam("validation", event.target.value)}>
-              <option value="">Validation 전체</option>
+              <option value="">{t("catalog.allValidations")}</option>
               {(["PASS", "WARN", "FAIL", "N/A"] satisfies ValidationStatus[]).map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
           </label>
@@ -133,9 +136,9 @@ export function DatasetCatalogPage() {
         {state.status === "loading" ? (
           <SkeletonTable rows={5} className="w-full" />
         ) : state.status === "error" ? (
-          <ErrorState title="데이터셋 목록을 불러오지 못했습니다" message={state.error} onRetry={load} />
+          <ErrorState title={t("catalog.errors.listTitle")} message={state.error} onRetry={load} />
         ) : visibleDatasets.length === 0 ? (
-          <EmptyState title="조건에 맞는 데이터셋이 없습니다" description="검색어나 필터를 변경해 보세요." />
+          <EmptyState title={t("catalog.noMatch.title")} description={t("catalog.noMatch.desc")} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
@@ -150,7 +153,7 @@ export function DatasetCatalogPage() {
                     key={dataset.dataset_id}
                     role="link"
                     tabIndex={0}
-                    aria-label={`${dataset.title} 상세 열기`}
+                    aria-label={t("catalog.openDetail", { title: dataset.title })}
                     className="cursor-pointer border-b border-border align-top transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring last:border-0"
                     onClick={() => openDataset(dataset.dataset_id)}
                     onKeyDown={(event) => {
@@ -166,7 +169,7 @@ export function DatasetCatalogPage() {
                       const summary = summarizeDatasetStages(dataset.stages);
                       return <span title={summary.description} className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${stageSummaryClass[summary.tone]}`}>{summary.label}</span>;
                     })()}</td>
-                    <td className="px-5 py-4"><QualityBadge status={dataset.validation} />{dataset.qualityError ? <p className="mt-1 max-w-44 text-xs text-muted-foreground">Quality 조회 실패</p> : null}</td>
+                    <td className="px-5 py-4"><QualityBadge status={dataset.validation} />{dataset.qualityError ? <p className="mt-1 max-w-44 text-xs text-muted-foreground">{t("catalog.qualityError")}</p> : null}</td>
                     <td className="whitespace-nowrap px-5 py-4 text-muted-foreground">{formatDateTime(dataset.updated_at)}</td>
                   </tr>
                 ))}
@@ -176,8 +179,8 @@ export function DatasetCatalogPage() {
         )}
         {state.status === "loaded" ? (
           <div className="flex items-center justify-between border-t border-border px-4 py-3 text-xs text-muted-foreground">
-            <span>{visibleDatasets.length}개 표시</span>
-            {(query || provider || stage || validation) ? <Button variant="ghost" size="sm" onClick={() => setSearchParams({})}>필터 초기화</Button> : null}
+            <span>{t("catalog.shownCount", { count: visibleDatasets.length })}</span>
+            {(query || provider || stage || validation) ? <Button variant="ghost" size="sm" onClick={() => setSearchParams({})}>{t("catalog.resetFilters")}</Button> : null}
           </div>
         ) : null}
       </Card>

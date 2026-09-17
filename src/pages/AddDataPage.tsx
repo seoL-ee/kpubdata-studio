@@ -16,6 +16,7 @@
  *  - Quality 표시 — `features/quality/model.ts`, `features/quality/QualityBadge`
  */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { fetchCatalog, fetchProviderConfigured, uploadSourceFile } from "@/features/add-data/api";
 import { CREDENTIAL_PREREQUISITE_MESSAGE, checkCredentialPrerequisite } from "@/features/add-data/credentialPrerequisite";
@@ -42,16 +43,15 @@ import type { SourceKind } from "@/shared/lib/types";
 import { previewBuildDetailed } from "@/features/preview/api";
 import { useBuildJob } from "@/features/runs/useBuildJob";
 import { validateSpec } from "@/features/validation/api";
-import { Button, Card, PageHeader, Stepper, type StepItem } from "@/shared/ui";
+import { i18n } from "@/shared/i18n";
+import { Button, Card, PageHeader, Stepper } from "@/shared/ui";
 
-const STEPS: StepItem[] = [
-  { id: "source", label: "데이터 선택" },
-  { id: "configure", label: "가져오기 설정" },
-  { id: "preview", label: "Preview · 검증" },
-  { id: "review", label: "검토 · Build" },
-];
+// 라벨은 화면 언어를 따라야 하므로 상수로 굳히지 않고 렌더 시점에 만든다.
+const STEP_IDS = ["source", "configure", "preview", "review"] as const;
+
 
 export function AddDataPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const job = useBuildJob();
@@ -99,7 +99,7 @@ export function AddDataPage() {
         setCatalog({
           status: "error",
           providers: [],
-          error: cause instanceof Error ? cause.message : "Builder catalog를 불러오지 못했습니다.",
+          error: cause instanceof Error ? cause.message : i18n.t("addData.errors.catalog"),
         });
       });
     return () => controller.abort();
@@ -236,7 +236,7 @@ export function AddDataPage() {
   function goNext() {
     if (step === 0 && !draft.sourceKind) return;
     if (step === 1 && buildSpecFromDraft(draft).error) return;
-    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    setStep((s) => Math.min(s + 1, STEP_IDS.length - 1));
   }
 
   function goBack() {
@@ -283,7 +283,7 @@ export function AddDataPage() {
     } catch (cause) {
       setUpload({
         status: "error",
-        error: cause instanceof Error ? cause.message : "파일 업로드에 실패했습니다.",
+        error: cause instanceof Error ? cause.message : i18n.t("addData.errors.upload"),
       });
     }
   }
@@ -310,11 +310,11 @@ export function AddDataPage() {
       setYamlEditError(undefined);
     } catch (cause) {
       if (cause instanceof YamlSyntaxError) {
-        setYamlEditError(`YAML 구문 오류: ${cause.message}`);
+        setYamlEditError(i18n.t("addData.errors.yamlSyntax", { message: cause.message }));
       } else if (cause instanceof BuildSpecShapeError) {
         setYamlEditError(cause.message);
       } else {
-        setYamlEditError("YAML을 적용하지 못했습니다.");
+        setYamlEditError(i18n.t("addData.errors.yamlApply"));
       }
     }
   }
@@ -327,8 +327,12 @@ export function AddDataPage() {
     const requestId = ++previewRequestIdRef.current;
     const specResult = buildSpecFromDraft(draft);
     if (specResult.error || !specResult.spec) {
-      setPreview({ status: "error", error: specResult.error ?? "빌드 스펙 오류" });
-      setValidation({ status: "validated", valid: false, errors: [specResult.error ?? "빌드 스펙 오류"] });
+      setPreview({ status: "error", error: specResult.error ?? i18n.t("addData.errors.spec") });
+      setValidation({
+        status: "validated",
+        valid: false,
+        errors: [specResult.error ?? i18n.t("addData.errors.spec")],
+      });
       return;
     }
     const spec = specResult.spec;
@@ -373,7 +377,9 @@ export function AddDataPage() {
     } else {
       setPreview({
         status: "error",
-        error: previewOutcome.reason instanceof Error ? previewOutcome.reason.message : "Preview 요청에 실패했습니다.",
+        error: previewOutcome.reason instanceof Error
+            ? previewOutcome.reason.message
+            : i18n.t("addData.errors.preview"),
       });
     }
 
@@ -384,7 +390,11 @@ export function AddDataPage() {
       setValidation({
         status: "validated",
         valid: false,
-        errors: [validateOutcome.reason instanceof Error ? validateOutcome.reason.message : "검증 요청에 실패했습니다."],
+        errors: [
+          validateOutcome.reason instanceof Error
+            ? validateOutcome.reason.message
+            : i18n.t("addData.errors.validate"),
+        ],
       });
     }
   }
@@ -434,22 +444,26 @@ export function AddDataPage() {
     <main className="flex flex-1 flex-col gap-6 px-5 pt-8 pb-28 sm:px-8 sm:pb-8 lg:px-10 lg:pt-10 lg:pb-10">
       <PageHeader
         eyebrow="Add Data"
-        title="데이터 추가"
-        description="가져오기에 필요한 설정을 준비하고, Preview에서 실제 데이터를 확인·검증한 뒤 Build를 시작합니다."
+        title={t("addData.page.title")}
+        description={t("addData.page.desc")}
       />
 
       {draftAvailable ? (
         <Card variant="dashed" className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-foreground">저장된 초안이 있습니다. 이어서 편집할까요?</p>
+          <p className="text-sm text-foreground">{t("addData.draft.prompt")}</p>
           <div className="flex gap-2">
-            <Button size="sm" onClick={restoreDraft}>불러오기</Button>
-            <Button size="sm" variant="ghost" onClick={discardDraft}>삭제</Button>
+            <Button size="sm" onClick={restoreDraft}>{t("addData.draft.restore")}</Button>
+            <Button size="sm" variant="ghost" onClick={discardDraft}>{t("addData.draft.discard")}</Button>
           </div>
         </Card>
       ) : null}
 
       <Card>
-        <Stepper steps={STEPS} current={step} onStepClick={setStep} />
+        <Stepper
+          steps={STEP_IDS.map((id) => ({ id, label: t(`addData.steps.${id}`) }))}
+          current={step}
+          onStepClick={setStep}
+        />
       </Card>
 
       <Card>
@@ -513,12 +527,12 @@ export function AddDataPage() {
         ) : null}
 
         <div className="sticky bottom-0 z-10 -mx-6 -mb-6 mt-8 flex items-center justify-between gap-3 border-t border-border bg-background/95 px-6 py-3 backdrop-blur sm:static sm:mx-0 sm:mb-0 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none sm:dark:bg-transparent">
-          <Button variant="ghost" onClick={goBack} disabled={step === 0}>이전</Button>
+          <Button variant="ghost" onClick={goBack} disabled={step === 0}>{t("addData.nav.back")}</Button>
           <div className="flex gap-2">
             <Button variant="secondary" onClick={saveCurrentDraft}>
-              {draftSaved ? "저장됨 ✓" : "초안 저장"}
+              {draftSaved ? t("addData.nav.saved") : t("addData.nav.saveDraft")}
             </Button>
-            {step < STEPS.length - 1 ? <Button onClick={goNext}>다음</Button> : null}
+            {step < STEP_IDS.length - 1 ? <Button onClick={goNext}>{t("addData.nav.next")}</Button> : null}
           </div>
         </div>
       </Card>
