@@ -472,6 +472,24 @@
         "createDraft": "New Build 초안 만들기: {{title}}",
         "addReportBlock": "Report 참고 노트로 추가"
       }
+    },
+    "session": {
+      "unsafeBaseUrl": "안전하지 않은 base URL입니다.",
+      "excludedMalformed": "형식 오류로 제외: {{ref}}",
+      "excludedRefs": "제외된 근거: {{refs}}",
+      "excludedActions": "제외된 action: {{actions}}",
+      "llmFailed": "LLM 호출에 실패했습니다.",
+      "demoEvidenceFailed": "데모 evidence 조회에 실패했습니다.",
+      "contextChangedSql": "화면 문맥이 바뀌어 이 SQL을 실행할 수 없습니다.",
+      "contextChangedAction": "화면 문맥이 바뀌어 이 action을 실행할 수 없습니다.",
+      "contextChangedApply": "화면 문맥이 바뀌어 이 action을 적용할 수 없습니다.",
+      "opened": "화면을 열었습니다.",
+      "addedToReport": "Report 참고 노트로 추가했습니다.",
+      "actionFailed": "action을 적용하지 못했습니다.",
+      "patchApplied": "BuildSpec에 적용했고 Builder /validate를 통과했습니다.",
+      "patchAppliedInvalid": "BuildSpec에 적용했지만 Builder /validate에 실패했습니다: {{errors}}",
+      "patchFailed": "BuildSpec patch 적용에 실패했습니다.",
+      "draftSaved": "New Build 초안에 저장했습니다."
     }
   },
   "quality": {
@@ -657,6 +675,18 @@
       "backToData": "데이터 설정으로 돌아가기",
       "defaultCredNote": "이 제공 기관은 현재 Builder 기본 자격 증명으로 사용 중입니다. 별도 사용자 자격 증명을 등록하면 이 기관 호출에 우선 적용됩니다.",
       "needsCredNote": "이 제공 기관을 사용하려면 자격 증명을 등록해야 합니다."
+    },
+    "labels": {
+      "bok": "한국은행 ECOS (BOK)",
+      "datago": "공공데이터포털 (data.go.kr)",
+      "kosis": "통계청 KOSIS",
+      "krx": "한국거래소 (KRX)",
+      "law": "국가법령정보센터",
+      "localdata": "지역정보포털 (LocalData)",
+      "lofin": "지방재정365 (LOFIN)",
+      "semas": "소상공인시장진흥공단 (SEMAS)",
+      "seoul": "서울 열린데이터광장",
+      "sgis": "통계지리정보서비스 (SGIS)"
     }
   },
   "home": {
@@ -1300,5 +1330,20 @@
       "noCatalog": "카탈로그를 조회할 수 없어 BuildSpec 생성을 중단했습니다.",
       "emptyOutput": "빈 출력이 반환되었습니다."
     }
+  },
+  "status": {
+    "new": "새 초안",
+    "draft": "초안",
+    "dirty": "수정됨",
+    "validated": "검증됨",
+    "invalid": "오류 있음",
+    "queued": "대기 중",
+    "running": "실행 중",
+    "cancelling": "취소 중",
+    "succeeded": "성공",
+    "failed": "실패",
+    "cancelled": "취소됨",
+    "publishing": "게시 중",
+    "published": "게시됨"
   }
 }
