@@ -7,8 +7,14 @@
  * 임시 기동하고, Studio를 VITE_USE_REAL_BUILDER=true로 띄운 Playwright
  * real 슈트(@real-builder)를 실행한다. 종료 시 Builder를 정리한다.
  *
- * 사용: node scripts/run-real-e2e.mjs [--builder-root <path>] [--keep]
- * 기본 --builder-root는 ../kpubdata-builder(웍스페이스 레이아웃).
+ * 사용: node scripts/run-real-e2e.mjs [--builder-root <path>] [--kpubdata-root <path>] [--keep]
+ * 기본 --builder-root는 ../kpubdata-builder, --kpubdata-root는 ../kpubdata(웍스페이스 레이아웃).
+ *
+ * kpubdata 레포가 있으면 Builder를 **replay 모드**로 띄운다(KPUBDATA_MODE=replay).
+ * 기록된 fixture를 재생하므로 Public API source도 외부 네트워크와 data.go.kr
+ * 서비스키 없이 결정적으로 빌드된다 — 그 경로를 검증하는 스펙은
+ * REAL_BUILDER_REPLAY가 설정될 때만 실행된다. 레포가 없으면 기존처럼
+ * file source 시나리오만 돈다.
  */
 import { spawn, spawnSync } from "node:child_process";
 import { mkdtempSync, existsSync } from "node:fs";
@@ -21,6 +27,13 @@ const rootIndex = args.indexOf("--builder-root");
 const builderRoot = resolve(
   rootIndex !== -1 ? args[rootIndex + 1] : join(process.cwd(), "..", "kpubdata-builder"),
 );
+const kpubdataIndex = args.indexOf("--kpubdata-root");
+const kpubdataRoot = resolve(
+  kpubdataIndex !== -1 ? args[kpubdataIndex + 1] : join(process.cwd(), "..", "kpubdata"),
+);
+// fixture는 kpubdata 레포에만 있고 배포 wheel에는 없다.
+const replayDir = join(kpubdataRoot, "tests", "fixtures");
+const replayAvailable = existsSync(replayDir);
 
 if (!existsSync(join(builderRoot, "pyproject.toml"))) {
   console.error(`builder root not found: ${builderRoot} (pass --builder-root)`);
@@ -31,6 +44,11 @@ const port = "8902";
 const dataDir = mkdtempSync(join(tmpdir(), "kpubdata-real-e2e-"));
 console.log(`[real-e2e] builder root: ${builderRoot}`);
 console.log(`[real-e2e] builder data: ${dataDir}`);
+console.log(
+  replayAvailable
+    ? `[real-e2e] kpubdata replay fixtures: ${replayDir}`
+    : `[real-e2e] kpubdata replay fixtures not found at ${replayDir} — Public API 시나리오는 건너뜁니다`,
+);
 
 const builder = spawn(
   "uv",
@@ -42,6 +60,15 @@ const builder = spawn(
       KPUBDATA_BUILDER_DEV_MODE: "true",
       // Studio dev 서버(5174) 오리진 허용 — CORS는 default-deny(ADR 0006).
       KPUBDATA_BUILDER_ALLOWED_ORIGINS: "http://localhost:5174",
+      ...(replayAvailable
+        ? {
+            KPUBDATA_MODE: "replay",
+            KPUBDATA_REPLAY_DIR: replayDir,
+            // spec 실행기는 전송 계층에 닿기 전에 provider key를 요구한다. replay는
+            // 매칭에서 인증 파라미터를 제외하므로 값 자체는 의미가 없다.
+            KPUBDATA_DATAGO_API_KEY: process.env.KPUBDATA_DATAGO_API_KEY ?? "replay-dummy",
+          }
+        : {}),
     },
   },
 );
@@ -78,6 +105,7 @@ const e2e = spawnSync(
       ...process.env,
       REAL_BUILDER_E2E: "1",
       REAL_BUILDER_URL: `http://localhost:${port}`,
+      ...(replayAvailable ? { REAL_BUILDER_REPLAY: "1" } : {}),
     },
   },
 );
