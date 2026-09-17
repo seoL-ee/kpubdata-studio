@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { QualityState, ValidationStatus } from "./model";
 
 const STATUS_CLASS: Record<ValidationStatus, string> = {
@@ -34,14 +35,17 @@ const STATE_LABEL: Record<QualityState, string> = {
   FAIL: "FAIL",
   WARN: "WARN",
   PASS: "PASS",
-  NOT_EVALUATED: "평가 없음",
-  UNAVAILABLE: "결과 없음(unavailable)",
+  NOT_EVALUATED: "quality.badge.notEvaluated",
+  UNAVAILABLE: "quality.badge.unavailable",
 };
 
 export function QualityStateBadge({ state }: { state: QualityState }) {
+  const { t } = useTranslation();
+  // PASS/WARN/FAIL은 Builder 어휘라 그대로 두고, 설명성 라벨만 번역한다.
+  const label = STATE_LABEL[state].startsWith("quality.badge.") ? t(STATE_LABEL[state]) : STATE_LABEL[state];
   return (
     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATE_CLASS[state]}`}>
-      {STATE_LABEL[state]}
+      {label}
     </span>
   );
 }

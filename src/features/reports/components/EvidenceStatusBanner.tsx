@@ -4,14 +4,15 @@
  * 어떤 상태여도 저장된 Report 내용을 지우거나 자동으로 최신 run으로 바꾸지 않는다 —
  * 이 배너는 상태를 알리고, STALE일 때만 "새 Report 만들기" 진입점을 보여준다.
  */
+import { useTranslation } from "react-i18next";
 import { Card } from "@/shared/ui";
 import type { EvidenceStalenessResult } from "../staleness";
 
-const COPY: Record<EvidenceStalenessResult["status"], { title: string; tone: "default" | "warn" | "error" }> = {
-  current: { title: "CURRENT — 기준 run이 최신 상태입니다.", tone: "default" },
-  stale: { title: "STALE — 기준 run은 유효하지만 더 새로운 Run이 있습니다.", tone: "warn" },
-  orphan: { title: "ORPHAN — 기준 run을 더 이상 찾을 수 없습니다(삭제되었거나 접근 불가).", tone: "error" },
-  unavailable: { title: "UNAVAILABLE — evidence를 다시 확인하지 못했습니다.", tone: "warn" },
+const COPY: Record<EvidenceStalenessResult["status"], { titleKey: string; tone: "default" | "warn" | "error" }> = {
+  current: { titleKey: "current", tone: "default" },
+  stale: { titleKey: "stale", tone: "warn" },
+  orphan: { titleKey: "orphan", tone: "error" },
+  unavailable: { titleKey: "unavailable", tone: "warn" },
 };
 
 const TONE_CLASS: Record<"default" | "warn" | "error", string> = {
@@ -31,10 +32,11 @@ export function EvidenceStatusBanner({
   onRecheck: () => void;
   onCreateFromLatest?: () => void;
 }) {
+  const { t } = useTranslation();
   if (loading) {
     return (
       <Card className="flex items-center justify-between gap-3 py-3 text-sm text-muted-foreground">
-        <span>기준 evidence를 다시 확인하는 중…</span>
+        <span>{t("reports.evidenceBanner.rechecking")}</span>
       </Card>
     );
   }
@@ -44,7 +46,7 @@ export function EvidenceStatusBanner({
   return (
     <Card className={`flex flex-wrap items-center justify-between gap-3 border py-3 text-sm ${TONE_CLASS[copy.tone]}`}>
       <div>
-        <p className="font-medium">{copy.title}</p>
+        <p className="font-medium">{t(`reports.evidenceBanner.status.${copy.titleKey}`)}</p>
         {result.reason ? <p className="mt-0.5 text-xs text-muted-foreground">{result.reason}</p> : null}
       </div>
       <div className="flex items-center gap-2">
@@ -53,7 +55,7 @@ export function EvidenceStatusBanner({
           onClick={onRecheck}
           className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted"
         >
-          다시 확인
+          {t("reports.evidenceBanner.recheck")}
         </button>
         {result.status === "stale" && onCreateFromLatest ? (
           <button
@@ -61,7 +63,7 @@ export function EvidenceStatusBanner({
             onClick={onCreateFromLatest}
             className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted"
           >
-            최신 Run으로 새 Report 만들기
+            {t("reports.evidenceBanner.newFromLatest")}
           </button>
         ) : null}
       </div>

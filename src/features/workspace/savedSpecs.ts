@@ -9,6 +9,7 @@
  * 저장 전 `redactSecrets()`(#206, assistant/scrub.ts)를 적용해 API Key/토큰으로 보이는
  * 값이 로컬 저장소에 평문으로 남지 않게 한다.
  */
+import { i18n } from "@/shared/i18n";
 import { redactSecrets } from "@/features/assistant/scrub";
 import { ownedStorageKey } from "@/features/auth/storageOwner";
 import type { BuildSpec } from "@/shared/lib/types";
@@ -75,13 +76,13 @@ function readEnvelope(): StoreEnvelope {
  */
 function writeEnvelope(envelope: StoreEnvelope): SaveResult {
   if (!isStorageAvailable()) {
-    return { ok: false, reason: "이 브라우저에서 로컬 저장소를 사용할 수 없습니다(프라이빗 모드 등)." };
+    return { ok: false, reason: i18n.t("workspace.storage.noStorage") };
   }
   let serialized: string;
   try {
     serialized = JSON.stringify(envelope);
   } catch {
-    return { ok: false, reason: "BuildSpec을 저장 형식으로 변환하지 못했습니다." };
+    return { ok: false, reason: i18n.t("workspace.storage.serializeFailed") };
   }
   try {
     localStorage.setItem(ownedStorageKey(STORE_KEY), serialized);
@@ -93,8 +94,8 @@ function writeEnvelope(envelope: StoreEnvelope): SaveResult {
     return {
       ok: false,
       reason: isQuota
-        ? "저장 공간이 부족합니다. 사용하지 않는 Saved BuildSpec을 삭제한 뒤 다시 시도하세요."
-        : "BuildSpec을 저장하지 못했습니다.",
+        ? i18n.t("workspace.storage.quotaExceeded")
+        : i18n.t("workspace.storage.saveFailed"),
     };
   }
 }
@@ -149,7 +150,7 @@ export function saveSpec(entry: SavedBuildSpec, options: { force?: boolean } = {
     return {
       ok: false,
       conflict: true,
-      reason: "다른 탭 또는 창에서 이 BuildSpec을 먼저 저장했습니다. 최신 내용을 다시 불러온 뒤 저장하세요.",
+      reason: i18n.t("workspace.storage.staleWrite"),
     };
   }
 
@@ -157,7 +158,7 @@ export function saveSpec(entry: SavedBuildSpec, options: { force?: boolean } = {
   if (!existing && keys.length >= SAVED_SPEC_LIMIT) {
     return {
       ok: false,
-      reason: `저장 가능한 BuildSpec 수(${SAVED_SPEC_LIMIT}개)를 초과했습니다. 사용하지 않는 항목을 먼저 삭제하세요.`,
+      reason: i18n.t("workspace.storage.limitExceeded", { limit: SAVED_SPEC_LIMIT }),
     };
   }
 
@@ -205,7 +206,7 @@ export function createSavedSpec(input: CreateSavedSpecInput): { entry: SavedBuil
 /** 이름만 바꿔 저장한다. */
 export function renameSavedSpec(id: string, name: string): SaveResult {
   const entry = getSavedSpec(id);
-  if (!entry) return { ok: false, reason: "Saved BuildSpec을 찾을 수 없습니다." };
+  if (!entry) return { ok: false, reason: i18n.t("workspace.storage.notFound") };
   return saveSpec({ ...entry, name }, { force: true });
 }
 
@@ -221,7 +222,7 @@ export function duplicateSavedSpec(id: string, nameOverride?: string): { entry: 
   const cloned: SavedBuildSpec = {
     ...structuredClone(source),
     id: newId(),
-    name: nameOverride ?? `${source.name} (복제본)`,
+    name: nameOverride ?? i18n.t("workspace.storage.copyOf", { name: source.name }),
     createdAt: now,
     updatedAt: now,
     revision: 0,

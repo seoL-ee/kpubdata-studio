@@ -17,6 +17,7 @@ import { ErrorNotice, EvidenceSection } from "@/features/kubi/KubiContent";
 import { MarkdownContent } from "@/features/kubi/MarkdownContent";
 import { useKubiSession } from "@/features/kubi/useKubiSession";
 import { Button, Card } from "@/shared/ui";
+import { useTranslation } from "react-i18next";
 
 export interface KubiRunAnalysisProps {
   onClose: () => void;
@@ -26,6 +27,7 @@ export interface KubiRunAnalysisProps {
 
 /** Selected Run summary 바로 아래, Pipeline/Stage Progress 위에 표시되는 inline Kubi 분석 카드. */
 export function KubiRunAnalysis({ onClose, onAskMore }: KubiRunAnalysisProps) {
+  const { t } = useTranslation();
   const session = useKubiSession();
   const { isConfigured } = useAssistConfig();
   // API Key 미설정 상태를 최우선으로 처리한다 — session.isDemoAvailable(mock Builder 모드에서
@@ -47,9 +49,9 @@ export function KubiRunAnalysis({ onClose, onAskMore }: KubiRunAnalysisProps) {
   return (
     <Card className="border-accent/50">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold">Kubi Run 분석</h3>
+        <h3 className="text-sm font-semibold">{t("kubi.runAnalysis.title")}</h3>
         <button type="button" onClick={onClose} className="text-xs font-medium text-muted-foreground underline">
-          닫기
+          {t("kubi.runAnalysis.close")}
         </button>
       </div>
 
@@ -58,9 +60,9 @@ export function KubiRunAnalysis({ onClose, onAskMore }: KubiRunAnalysisProps) {
         // turn이 생기지 않는다). API Key 입력 UI를 여기 복제하지 않고, 기존 Kubi Drawer로
         // 안내만 한다. 이 상태에서는 "더 질문하기"도 보여주지 않는다(아래에서 canAsk로 게이팅).
         <div className="mt-3 space-y-2">
-          <p className="text-xs text-muted-foreground">Kubi를 사용하려면 API Key 설정이 필요합니다.</p>
+          <p className="text-xs text-muted-foreground">{t("kubi.runAnalysis.needsKey")}</p>
           <Button size="sm" variant="secondary" onClick={onAskMore}>
-            Kubi 설정 열기
+            {t("kubi.runAnalysis.openSettings")}
           </Button>
         </div>
       ) : (
@@ -68,16 +70,16 @@ export function KubiRunAnalysis({ onClose, onAskMore }: KubiRunAnalysisProps) {
           {!turn ? (
             <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
               <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              분석 준비 중…
+              {t("kubi.runAnalysis.preparing")}
             </div>
           ) : (
             <div className="mt-3 space-y-2.5 text-sm">
               {turn.status === "loading" ? (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  생각 중…
+                  {t("kubi.runAnalysis.thinking")}
                   <Button size="sm" variant="ghost" onClick={() => session.cancel(turn.id)}>
-                    취소
+                    {t("kubi.runAnalysis.cancel")}
                   </Button>
                 </div>
               ) : null}
@@ -106,7 +108,7 @@ export function KubiRunAnalysis({ onClose, onAskMore }: KubiRunAnalysisProps) {
 
           <div className="mt-3">
             <Button size="sm" variant="secondary" onClick={onAskMore}>
-              더 질문하기
+              {t("kubi.runAnalysis.askMore")}
             </Button>
           </div>
         </>

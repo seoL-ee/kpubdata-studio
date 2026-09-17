@@ -55,9 +55,9 @@ function ContextBar({ context, pageLabel, qualityLabel, sources, onContextChange
             </p>
           </div>
         ))}
-        <label className="rounded-lg border border-border bg-muted/40 px-2.5 py-2"><span className="block text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">STAGE</span><select aria-label="Kubi 분석 Stage" className="mt-0.5 w-full bg-transparent text-xs font-medium" value={context.stage ?? ""} onChange={(event) => onContextChange("stage", event.target.value || undefined)} disabled={stageSelectDisabled}><option value="">{context.runId ? t("kubi.context.stageAll") : t("kubi.context.stageDisabled")}</option><option value="bronze">Bronze</option><option value="silver">Silver</option><option value="gold">Gold</option></select></label>
+        <label className="rounded-lg border border-border bg-muted/40 px-2.5 py-2"><span className="block text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">STAGE</span><select aria-label={t("kubi.context.stageAria")} className="mt-0.5 w-full bg-transparent text-xs font-medium" value={context.stage ?? ""} onChange={(event) => onContextChange("stage", event.target.value || undefined)} disabled={stageSelectDisabled}><option value="">{context.runId ? t("kubi.context.stageAll") : t("kubi.context.stageDisabled")}</option><option value="bronze">Bronze</option><option value="silver">Silver</option><option value="gold">Gold</option></select></label>
       </div>
-      {context.runId && sources.length > 1 ? <label className="mt-2 block text-xs text-muted-foreground">{t("kubi.context.sourceLabel")}<select aria-label="Kubi 분석 Source" className="ml-2 rounded border border-input bg-card px-2 py-1 text-foreground" value={context.source ?? ""} onChange={(event) => onContextChange("source", event.target.value || undefined)}><option value="">{t("kubi.context.sourceFirst")}</option>{sources.map((source) => <option key={source} value={source}>{source}</option>)}</select></label> : null}
+      {context.runId && sources.length > 1 ? <label className="mt-2 block text-xs text-muted-foreground">{t("kubi.context.sourceLabel")}<select aria-label={t("kubi.context.sourceAria")} className="ml-2 rounded border border-input bg-card px-2 py-1 text-foreground" value={context.source ?? ""} onChange={(event) => onContextChange("source", event.target.value || undefined)}><option value="">{t("kubi.context.sourceFirst")}</option>{sources.map((source) => <option key={source} value={source}>{source}</option>)}</select></label> : null}
       <p className="mt-2 text-[11px] text-muted-foreground">{!context.runId ? t("kubi.context.hintNoRun") : sources.length > 1 && !context.source ? t("kubi.context.hintMultiSource") : !context.stage ? t("kubi.context.hintNoStage") : context.stage === "bronze" ? t("kubi.context.hintBronze") : t("kubi.context.hintSqlReady", { stage: context.stage === "gold" ? "Gold" : "Silver" })}</p>
     </div>
   );
@@ -319,7 +319,7 @@ function ActionCard({
       <div className={`${isNavigation ? "" : "mt-2"} flex flex-wrap items-center gap-2`}>
         {state.status === "pending_approval" ? (
           <>
-            <Button size="sm" aria-label={isNavigation ? "승인" : undefined} disabled={isStale} onClick={() => session.approveAction(turn.id, index)}>
+            <Button size="sm" aria-label={isNavigation ? t("kubi.content.approve") : undefined} disabled={isStale} onClick={() => session.approveAction(turn.id, index)}>
               {isNavigation ? t("kubi.action.open") : t("kubi.action.approve")}
             </Button>
             <Button className={isNavigation ? "sr-only" : undefined} size="sm" variant="ghost" onClick={() => session.rejectAction(turn.id, index)}>

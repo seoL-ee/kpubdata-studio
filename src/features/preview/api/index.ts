@@ -5,6 +5,7 @@
  * UI 개발/검증용 결정적 mock 데이터를 반환한다. Builder가 반환한 소스별 샘플 행과 스키마를
  * UI가 바로 사용할 수 있는 `{ rows, schema }` 형태로 변환한다(runs/api의 실연동 분기 패턴과 동일).
  */
+import { i18n } from "@/shared/i18n";
 import { serializeSpec } from "@/features/build-spec/specMapping";
 import {
   builderApi,
@@ -20,7 +21,7 @@ export interface PreviewSourceFailure {
 
 export class PreviewSourceFailureError extends Error {
   constructor(readonly failures: PreviewSourceFailure[]) {
-    super(`모든 미리보기 소스가 실패했습니다: ${formatFailures(failures)}`);
+    super(i18n.t("preview.allSourcesFailed", { failures: formatFailures(failures) }));
     this.name = "PreviewSourceFailureError";
   }
 }
@@ -53,7 +54,7 @@ function formatFailures(failures: readonly PreviewSourceFailure[]): string {
 function sourceFailure(source: PreviewResponse["previews"][number]): PreviewSourceFailure {
   return {
     sourceKey: source.source_key,
-    error: source.error ?? "원인을 알 수 없는 소스 오류",
+    error: source.error ?? i18n.t("preview.unknownSourceError"),
   };
 }
 

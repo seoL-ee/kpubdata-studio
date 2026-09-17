@@ -1,6 +1,7 @@
 /**
  * Recent Runs 탭 (#264, #303) — 최근 빌드 실행 이력과 Builds 상세 링크.
  */
+import { useTranslation } from "react-i18next";
 import { Card, EmptyState, Skeleton, LinkButton } from "@/shared/ui";
 import type { MonitoringRecentRun } from "@/shared/lib/builderApi.schema";
 import {
@@ -16,12 +17,13 @@ export function RecentRunsTab({
   loading: MonitoringLoadingState;
   runs: MonitoringRecentRun[] | undefined;
 }) {
+  const { t } = useTranslation();
   if (loading === "error") {
     return (
       <Card variant="error">
-        <p className="font-semibold">데이터를 가져올 수 없습니다</p>
+        <p className="font-semibold">{t("monitoring.recent.errorTitle")}</p>
         <p className="mt-2 text-sm text-muted-foreground">
-          잠시 후 다시 시도해 주세요.
+          {t("monitoring.recent.errorRetry")}
         </p>
       </Card>
     );
@@ -35,9 +37,9 @@ export function RecentRunsTab({
     return (
       <Card>
         <EmptyState
-          title="최근 실행 이력이 없습니다"
-          description="아직 빌드가 실행되지 않았습니다."
-          actionLabel="새 빌드 만들기"
+          title={t("monitoring.recent.emptyTitle")}
+          description={t("monitoring.recent.emptyDesc")}
+          actionLabel={t("monitoring.recent.emptyCta")}
           actionHref="/builds/new"
         />
       </Card>
@@ -47,9 +49,9 @@ export function RecentRunsTab({
   return (
     <Card className="p-0">
       <div className="p-6 border-b border-border">
-        <h3 className="text-lg font-semibold">최근 빌드 실행</h3>
+        <h3 className="text-lg font-semibold">{t("monitoring.recent.title")}</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          최근 실행된 빌드들의 상태와 결과를 확인할 수 있습니다.
+          {t("monitoring.recent.desc")}
         </p>
       </div>
       <ul>
@@ -75,11 +77,11 @@ export function RecentRunsTab({
                 {run.started_at ? new Date(run.started_at).toLocaleString("ko-KR") : "—"}
               </div>
               <div className="text-muted-foreground">
-                {duration !== null ? `${duration}초` : "—"}
+                {duration !== null ? t("monitoring.recent.seconds", { seconds: duration }) : "—"}
               </div>
               <div className="text-right">
                 <LinkButton variant="secondary" size="sm" to={`/builds/${run.run_id}`}>
-                  보기
+                  {t("monitoring.recent.view")}
                 </LinkButton>
               </div>
             </li>

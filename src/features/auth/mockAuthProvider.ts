@@ -10,6 +10,7 @@
  * password는 함수 인자로만 잠깐 존재했다가 버려진다 — store/localStorage/sessionStorage/
  * 로그 어디에도 저장하지 않는다.
  */
+import { i18n } from "@/shared/i18n";
 import { AuthError, type AuthProvider, type AuthSession, type SignInInput, type SignUpInput } from "./types";
 
 function fabricateMockToken(): string {
@@ -30,7 +31,7 @@ export const mockAuthProvider: AuthProvider = {
 
   async signIn({ email, password }: SignInInput): Promise<AuthSession> {
     if (!looksLikeDemoValidPassword(password)) {
-      throw new AuthError("이메일 또는 비밀번호가 올바르지 않습니다.");
+      throw new AuthError(i18n.t("auth.mock.badCredentials"));
     }
     return {
       token: fabricateMockToken(),

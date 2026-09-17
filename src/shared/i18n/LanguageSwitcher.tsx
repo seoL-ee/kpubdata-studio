@@ -15,7 +15,7 @@ import {
 } from "./index";
 
 export function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const current = normalizeLanguage(i18n.language);
 
   const next: AppLanguage =
@@ -27,7 +27,7 @@ export function LanguageSwitcher() {
     <button
       type="button"
       onClick={() => changeLanguage(next)}
-      aria-label={`${LANGUAGE_LABELS[next]}로 전환`}
+      aria-label={t("languageSwitcher.switchTo", { language: LANGUAGE_LABELS[next] })}
       title={LANGUAGE_LABELS[next]}
       data-testid="language-switcher"
       data-current-language={current}

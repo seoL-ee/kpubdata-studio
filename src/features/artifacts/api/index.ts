@@ -6,6 +6,7 @@
  * `GET /builds/{run_id}/manifest`의 authoritative manifest 본문을 그대로 반환한다.
  * mock 모드에서만 결정적 fixture manifest를 사용한다.
  */
+import { i18n } from "@/shared/i18n";
 import { findDemoDataset } from "@/shared/lib/demoDatasets";
 import { builderApi, isRealBuilderEnabled } from "@/shared/lib/builderApi";
 import type { BuildManifest } from "@/shared/lib/types";
@@ -157,7 +158,7 @@ export async function downloadArtifact(
 ): Promise<{ blob: Blob; filename: string }> {
   if (!isRealBuilderEnabled()) {
     throw new Error(
-      "Mock 모드에서는 산출물 파일 다운로드를 시뮬레이션하지 않습니다. 실연동 모드에서 확인하세요.",
+      i18n.t("artifacts.mockNoDownload"),
     );
   }
   return builderApi.downloadArtifactFile(runId, filePath, signal);

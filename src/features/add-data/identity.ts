@@ -10,6 +10,7 @@
  * BuildSpec이 dataset_id/title/description을 요구한다는 사실 자체는 바뀌지 않는다 —
  * 바뀌는 것은 "누가 그 값을 채우는가"뿐이다.
  */
+import { i18n } from "@/shared/i18n";
 import type { CatalogDataset, CatalogProvider } from "@/shared/lib/builderApi";
 
 export function findProvider(providers: readonly CatalogProvider[], name: string): CatalogProvider | undefined {
@@ -66,7 +67,7 @@ export function identityFromCatalog(provider: string, dataset: CatalogDataset): 
     title: dataset.title,
     // BuildSpec.description은 필수 필드다 — catalog가 description을 안 주면(null),
     // 값을 지어내지 않고 provider/dataset 출처만 서술하는 factual한 기본값을 쓴다.
-    description: dataset.description ?? `${provider}/${dataset.name} 데이터셋입니다.`,
+    description: dataset.description ?? i18n.t("addData.identity.fromCatalog", { provider, name: dataset.name }),
   };
 }
 
@@ -80,7 +81,7 @@ export function identityFromCatalog(provider: string, dataset: CatalogDataset): 
 export function identityFromFilename(filename: string): DatasetIdentity {
   const base = filename.replace(/\.[^./\\]+$/, "");
   const title = humanize(base) || filename;
-  return { datasetId: slugify(base), title, description: `업로드한 파일 "${filename}"에서 생성한 데이터셋입니다.` };
+  return { datasetId: slugify(base), title, description: i18n.t("addData.identity.fromFile", { filename }) };
 }
 
 /**
@@ -101,7 +102,7 @@ export function identityFromUrl(endpoint: string): DatasetIdentity {
     const title = humanize(base) || url.hostname;
     // description도 query string/credential이 없는 hostname+path만 사용한다(base) —
     // endpoint 원문을 그대로 쓰면 token 같은 값이 새어 들어갈 수 있다.
-    return { datasetId: slugify(base), title, description: `https://${base} 에서 가져온 데이터셋입니다.` };
+    return { datasetId: slugify(base), title, description: i18n.t("addData.identity.fromUrl", { host: base }) };
   } catch {
     return { datasetId: "", title: "", description: "" };
   }

@@ -6,6 +6,7 @@
  *
  * **공용 키를 VITE_*로 주입하는 것은 절대 금지** — 번들에 평문으로 박힌다.
  */
+import { i18n } from "@/shared/i18n";
 import { createSecretScrubber, type SecretScrubber } from "./scrub";
 
 import { checkLlmBaseUrl, redactApiKey, DEFAULT_LLM_BASE_URL } from "./baseUrl";
@@ -59,15 +60,15 @@ const DEFAULT_BASE_URL = DEFAULT_LLM_BASE_URL;
  */
 export function describeLlmHttpError(status: number): string {
   if (status === 401 || status === 403) {
-    return "LLM API 인증에 실패했습니다. API Key를 다시 확인하세요.";
+    return i18n.t("assistant.provider.auth");
   }
   if (status === 429) {
-    return "LLM API 요청 한도를 초과했습니다(rate limit). 잠시 후 다시 시도하세요.";
+    return i18n.t("assistant.provider.rateLimit");
   }
   if (status >= 500) {
-    return "LLM 서버에 일시적인 오류가 발생했습니다. 잠시 후 다시 시도하세요.";
+    return i18n.t("assistant.provider.serverError");
   }
-  return `LLM API 호출에 실패했습니다. (status ${status})`;
+  return i18n.t("assistant.provider.callFailedStatus", { status });
 }
 
 interface AssistTransport {
@@ -87,7 +88,7 @@ class ByokTransport implements AssistTransport {
     // base URL을 다시 검증한다 — 설정 화면 우회로 안전하지 않은 값이 들어와도 여기서 막는다.
     const check = checkLlmBaseUrl(this.config.baseUrl);
     if (!check.safe) {
-      throw new Error(`LLM base URL이 안전하지 않습니다: ${check.reason}`);
+      throw new Error(i18n.t("assistant.provider.unsafeBaseUrl", { reason: check.reason }));
     }
 
     let response: Response;
@@ -108,7 +109,7 @@ class ByokTransport implements AssistTransport {
     } catch (cause) {
       if (cause instanceof DOMException && cause.name === "AbortError") throw cause;
       throw new Error(
-        redactApiKey(cause instanceof Error ? cause.message : "LLM API 호출에 실패했습니다.", this.config.apiKey),
+        redactApiKey(cause instanceof Error ? cause.message : i18n.t("assistant.provider.callFailed"), this.config.apiKey),
         { cause },
       );
     }

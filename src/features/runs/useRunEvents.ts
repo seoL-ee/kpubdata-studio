@@ -9,6 +9,7 @@
  * 오류"가 아니라 "이 표면은 mock에서 지원하지 않음"이라는 별도 신호이므로 `mockUnsupported`
  * 플래그로 구분해서 노출한다(있는 척 데이터를 지어내지 않는다).
  */
+import { i18n } from "@/shared/i18n";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getBuildEvents, MockUnsupportedError } from "@/features/runs/api/runDetail";
 import { classifyRunApiError } from "@/features/runs/model";
@@ -57,7 +58,7 @@ export function useRunEvents(runId: string | null, pollingEnabled: boolean): Run
       const kind = classifyRunApiError(cause);
       setState({
         status: "error",
-        error: cause instanceof Error ? cause.message : "Run event timeline을 불러오지 못했습니다.",
+        error: cause instanceof Error ? cause.message : i18n.t("runs.errors.eventsFailed"),
         notFound: kind === "not_found",
         permissionDenied: kind === "permission_denied",
         mockUnsupported,

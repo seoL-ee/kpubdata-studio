@@ -1,3 +1,4 @@
+import { i18n } from "@/shared/i18n";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   describePublishFailure,
@@ -40,7 +41,7 @@ export function usePublishJob(): PublishJob {
       if (controller.signal.aborted || operation !== operationRef.current) return;
       if (response.run_id !== runId || response.target !== request.target) {
         setStatus("failed");
-        setFailure({ kind: "unknown", message: "Builder 응답의 Run 또는 target이 요청과 일치하지 않습니다." });
+        setFailure({ kind: "unknown", message: i18n.t("publish.errors.mismatch") });
         return;
       }
       setResult(response);

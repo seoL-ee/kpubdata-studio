@@ -6,21 +6,22 @@
  */
 import { diffSpecs, type SpecChangeKind } from "@/features/build-spec/specDiff";
 import type { BuildSpec } from "@/shared/lib/types";
+import { useTranslation } from "react-i18next";
 import { EmptyState } from "@/shared/ui";
 
-const KIND_META: Record<SpecChangeKind, { label: string; className: string; sign: string }> = {
+const KIND_META: Record<SpecChangeKind, { labelKey: string; className: string; sign: string }> = {
   added: {
-    label: "추가",
+    labelKey: "added",
     className: "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300",
     sign: "+",
   },
   removed: {
-    label: "삭제",
+    labelKey: "removed",
     className: "bg-red-50 text-red-800 dark:bg-red-950/40 dark:text-red-300",
     sign: "−",
   },
   changed: {
-    label: "변경",
+    labelKey: "changed",
     className: "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
     sign: "~",
   },
@@ -40,10 +41,11 @@ export interface SpecDiffProps {
  * @returns 스펙 diff 엘리먼트.
  */
 export function SpecDiff({ before, after }: SpecDiffProps) {
+  const { t } = useTranslation();
   const changes = diffSpecs(before, after);
 
   if (changes.length === 0) {
-    return <EmptyState title="두 스펙에 차이가 없습니다" />;
+    return <EmptyState title={t("specDiff.noDiff")} />;
   }
 
   return (
@@ -55,7 +57,7 @@ export function SpecDiff({ before, after }: SpecDiffProps) {
             <span
               className={`inline-flex w-12 justify-center rounded-full px-2 py-0.5 text-xs font-medium ${meta.className}`}
             >
-              {meta.sign} {meta.label}
+              {meta.sign} {t(`specDiff.${meta.labelKey}`)}
             </span>
             <span className="font-mono text-foreground">{change.path}</span>
             <span className="text-muted-foreground">

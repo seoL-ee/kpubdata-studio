@@ -6,6 +6,7 @@
  * 옮기지 않는다. Evidence 상태 판정/재확인 로직은 기존 `EvidenceStatusBanner`를 그대로
  * 재사용한다(새로 만들지 않음).
  */
+import { useTranslation } from "react-i18next";
 import { formatDateTime } from "@/features/datasets/model";
 import { Card } from "@/shared/ui";
 import type { EvidenceStalenessResult } from "../staleness";
@@ -38,6 +39,7 @@ export function ReportContextSidebar({
   kubiBlockCount: number;
   pendingKubiNoteCount: number;
 }) {
+  const { t } = useTranslation();
   const qualityBlock = report.blocks.find(
     (block): block is BuilderEvidenceBlock => block.provenance === "BUILDER_EVIDENCE" && block.section === "quality",
   );
@@ -54,7 +56,7 @@ export function ReportContextSidebar({
           <Row label="Base Run" value={report.baseRunId} />
           {sourceKeys.length > 0 ? <Row label="Source" value={sourceKeys.join(", ")} /> : null}
           <Row label="BuildSpec digest" value={report.buildSpecDigest ?? "N/A"} />
-          <Row label="Evidence 조회 시각" value={formatDateTime(report.evidenceFetchedAt)} />
+          <Row label={t("reports.contextSidebar.evidenceFetchedAt")} value={formatDateTime(report.evidenceFetchedAt)} />
         </div>
       </Card>
 
@@ -75,7 +77,7 @@ export function ReportContextSidebar({
             <Row label="PASS" value={String(qualityCounts.pass)} />
             <Row label="WARN" value={String(qualityCounts.warn)} />
             <Row label="FAIL" value={String(qualityCounts.fail)} />
-            <Row label="평가된 규칙 수" value={String(qualityCounts.evaluated)} />
+            <Row label={t("reports.contextSidebar.evaluatedRules")} value={String(qualityCounts.evaluated)} />
           </div>
         </Card>
       ) : null}
@@ -83,8 +85,11 @@ export function ReportContextSidebar({
       <Card>
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Kubi</p>
         <div className="mt-2 divide-y divide-border">
-          <Row label="Kubi 분석 블록" value={`${kubiBlockCount}개`} />
-          <Row label="대기 중인 Kubi 노트" value={pendingKubiNoteCount > 0 ? `${pendingKubiNoteCount}건` : "없음"} />
+          <Row label={t("reports.contextSidebar.kubiBlocks")} value={t("reports.contextSidebar.countUnit", { count: kubiBlockCount })} />
+          <Row
+            label={t("reports.contextSidebar.pendingNotes")}
+            value={pendingKubiNoteCount > 0 ? t("reports.contextSidebar.noteUnit", { count: pendingKubiNoteCount }) : t("reports.contextSidebar.none")}
+          />
         </div>
       </Card>
     </aside>

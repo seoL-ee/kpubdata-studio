@@ -14,6 +14,7 @@
  * Builder `/validate`의 semantic 오류(예: provider가 존재하지 않음)는 이 모듈의 책임이
  * 아니다 — 그 둘을 여기서 미리 재현하거나 대체하지 않는다.
  */
+import { i18n } from "@/shared/i18n";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { z } from "zod";
 import { fromBuilderSpec, toBuilderSpec, type BuilderSpec } from "@/features/build-spec/specMapping";
@@ -22,7 +23,7 @@ import type { BuildSpec } from "@/shared/lib/types";
 /** YAML 파서가 텍스트를 파싱하지 못했을 때(문법 오류). */
 export class YamlSyntaxError extends Error {
   constructor(readonly cause: unknown) {
-    super(cause instanceof Error ? cause.message : "YAML 구문을 파싱하지 못했습니다.");
+    super(cause instanceof Error ? cause.message : i18n.t("buildSpec.yaml.parseFailed"));
     this.name = "YamlSyntaxError";
   }
 }
@@ -30,7 +31,7 @@ export class YamlSyntaxError extends Error {
 /** 파싱은 됐지만 canonical BuildSpec 모양이 아닐 때(구조 오류, Builder semantic 오류와 다름). */
 export class BuildSpecShapeError extends Error {
   constructor(readonly issues: string[]) {
-    super(`BuildSpec 구조가 올바르지 않습니다: ${issues.join(", ")}`);
+    super(i18n.t("buildSpec.yaml.invalidShape", { issues: issues.join(", ") }));
     this.name = "BuildSpecShapeError";
   }
 }

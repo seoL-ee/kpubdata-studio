@@ -8,6 +8,7 @@
  */
 
 /** 파싱 결과: 성공 시 `data`, 실패 시 한국어 오류 메시지. */
+import { i18n } from "@/shared/i18n";
 import { jsonRecordSchema } from "@/shared/lib/schemas";
 import type { JsonValue } from "@/shared/lib/types";
 
@@ -26,12 +27,12 @@ export function parseSourceParams(sourceParams: string): ParsedSourceParams {
   try {
     const parsed = JSON.parse(sourceParams) as unknown;
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return { error: "파라미터는 JSON 객체여야 합니다. 예: {\"region\": \"seoul\"}" };
+      return { error: i18n.t("buildSpec.params.mustBeObject") };
     }
     const result = jsonRecordSchema.safeParse(parsed);
-    if (!result.success) return { error: "파라미터 JSON에는 유한한 number와 JSON 값만 사용할 수 있습니다." };
+    if (!result.success) return { error: i18n.t("buildSpec.params.finiteOnly") };
     return { data: result.data as Record<string, JsonValue> };
   } catch {
-    return { error: "파라미터가 올바른 JSON이 아닙니다. 형식을 확인하세요." };
+    return { error: i18n.t("buildSpec.params.invalidJson") };
   }
 }

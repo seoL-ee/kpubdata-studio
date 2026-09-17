@@ -4,6 +4,7 @@
  * 4중 게이트의 1단계(zod 파싱)만 담당한다. "모양"은 맞지만 "내용"(실존 dataset/run 등)이
  * 맞는지는 `crossCheck.ts`가 담당한다.
  */
+import { i18n } from "@/shared/i18n";
 import { kubiEvidenceRefSchema, kubiStructuredResponseSchema } from "./schema";
 import type { KubiStructuredResponse } from "./types";
 
@@ -62,7 +63,7 @@ function sanitizeEvidenceRefs(candidate: unknown): { malformed: string[] } {
 export function parseKubiResponse(rawOutput: string): ParseKubiResponseResult {
   const trimmed = rawOutput.trim();
   if (!trimmed) {
-    return { ok: false, message: "LLM이 빈 응답을 반환했습니다." };
+    return { ok: false, message: i18n.t("kubi.parse.empty") };
   }
 
   const jsonMatch = trimmed.match(/```json\s*\n([\s\S]*?)\n```/) ?? trimmed.match(/\{[\s\S]*\}/);
@@ -72,7 +73,7 @@ export function parseKubiResponse(rawOutput: string): ParseKubiResponseResult {
   try {
     candidate = JSON.parse(jsonText);
   } catch {
-    return { ok: false, message: "LLM 응답을 JSON으로 해석할 수 없습니다." };
+    return { ok: false, message: i18n.t("kubi.parse.notJson") };
   }
 
   // evidenceRefs만 항목 단위로 관대하게 정리한다. answer/generatedSql/suggestedActions는
@@ -85,7 +86,7 @@ export function parseKubiResponse(rawOutput: string): ParseKubiResponseResult {
       .slice(0, 5)
       .map((issue) => `${issue.path.join(".") || "root"}: ${issue.message}`)
       .join("; ");
-    return { ok: false, message: `LLM 응답 형식이 예상과 다릅니다: ${issues}` };
+    return { ok: false, message: i18n.t("kubi.parse.shapeMismatch", { issues }) };
   }
 
   return {

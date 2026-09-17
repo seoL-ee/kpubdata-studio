@@ -5,6 +5,7 @@
  * 결정적 mock 실행 결과를 반환한다. Builder의 /build는 현재 동기식이므로 비동기 job
  * 폴링은 Builder 측 job 엔드포인트가 생기면 확장한다(#39).
  */
+import { i18n } from "@/shared/i18n";
 import { saveBuildSpec } from "@/features/build-spec/specStore";
 import { serializeSpec } from "@/features/build-spec/specMapping";
 import { builderApi, isRealBuilderEnabled, type BuildSummary } from "@/shared/lib/builderApi";
@@ -192,7 +193,7 @@ async function runAsyncBuild(
       status: "failed",
       startedAt,
       finishedAt,
-      error: job.error ?? "빌드 잡이 실패했습니다.",
+      error: job.error ?? i18n.t("runs.build.jobFailed"),
     };
   }
   const response = job.response;
@@ -202,7 +203,7 @@ async function runAsyncBuild(
   if (response && response.status !== "ok") {
     const outcomeReason = response.outcomes.find((outcome) => outcome.error)?.error;
     const reason =
-      response.error || outcomeReason || "일부 소스 빌드가 실패했습니다.";
+      response.error || outcomeReason || i18n.t("runs.build.someSourcesFailed");
     return {
       id: finalRunId,
       spec,
@@ -236,7 +237,7 @@ async function runSyncBuild(
   if (response.status !== "ok") {
     const outcomeReason = response.outcomes.find((outcome) => outcome.error)?.error;
     const reason =
-      ("error" in response && response.error) || outcomeReason || "일부 소스 빌드가 실패했습니다.";
+      ("error" in response && response.error) || outcomeReason || i18n.t("runs.build.someSourcesFailed");
     return { id: finalRunId, spec, status: "failed", startedAt, finishedAt, error: reason };
   }
   return { id: finalRunId, spec, status: "succeeded", startedAt, finishedAt };

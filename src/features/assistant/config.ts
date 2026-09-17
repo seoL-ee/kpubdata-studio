@@ -5,12 +5,13 @@
  * 마찰이 크므로 "이 브라우저에 저장" 옵트인을 명시적 경고와 함께 제공한다.
  * 기본값은 저장하지 않는 쪽이다.
  */
+import { i18n } from "@/shared/i18n";
 import { create } from "zustand";
 import { checkLlmBaseUrl } from "./baseUrl";
 
 const STORAGE_KEY = "kpubdata-assist-key";
 const STORAGE_WARNING =
-  "LLM API 키가 이 브라우저에 평문으로 저장됩니다. XSS 공격 시 탈취될 수 있습니다. 신뢰하지 않는 확장 프로그램이 있다면 저장하지 마세요.";
+  i18n.t("assistant.config.persistWarning");
 
 interface AssistConfigState {
   apiKey: string;

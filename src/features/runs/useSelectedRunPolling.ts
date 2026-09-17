@@ -19,6 +19,7 @@
  * interval polling을 잇는다 — 새 scheduler를 만들지 않는다. tab이 hidden이면 interval
  * tick이 새 request를 시작하지 않고, visible로 돌아오면 즉시 한 번 refresh한다.
  */
+import { i18n } from "@/shared/i18n";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isTerminalBuilderStatus, POLL_INTERVAL_MS } from "@/features/runs/api";
 import { classifyRunApiError } from "@/features/runs/model";
@@ -74,7 +75,7 @@ export function useSelectedRunPolling(runId: string | null): SelectedRunLiveStat
       // 이미 확인된 job이 있으면 그 상태를 "실패"로 바꾸지 않고 그대로 유지한 채 warning만
       // 얹는다 — polling도 non-terminal job 기준으로 계속된다(kind가 여전히 "job"이므로).
       // 아직 확인된 job이 하나도 없을 때만(최초 조회 실패) 별도 error 신호로 표시한다.
-      const message = cause instanceof Error ? cause.message : "run 상태를 갱신하지 못했습니다.";
+      const message = cause instanceof Error ? cause.message : i18n.t("runs.errors.pollFailed");
       if (lastJobRef.current) {
         setState({ kind: "job", job: lastJobRef.current, warning: message });
       } else {
