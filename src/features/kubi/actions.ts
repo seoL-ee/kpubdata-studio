@@ -11,6 +11,11 @@ import { loadBuildSpec, saveBuildSpec } from "@/features/build-spec/specStore";
 import { saveDraft } from "@/features/build-spec/draftStorage";
 import { validateSpec } from "@/features/validation/api";
 import { hasSecretPlaceholder, isSecretKey, redactSecrets } from "@/features/assistant/scrub";
+import { i18n } from "@/shared/i18n";
+
+/** 이 파일의 문구는 모두 `kubi.actions.*` 아래에 있다(#350). */
+const t = (key: string, params?: Record<string, unknown>): string =>
+  i18n.t(`kubi.actions.${key}`, params ?? {});
 import { jsonValueHasRedactedSecret } from "@/features/add-data/paramsRedaction";
 import { buildFormValuesSchema } from "@/shared/lib/schemas";
 import type { BuildSpec, JsonValue } from "@/shared/lib/types";
@@ -59,7 +64,7 @@ function applyPointerOp(target: Record<string, unknown>, op: BuildSpecPatchOp): 
   for (let i = 0; i < segments.length - 1; i++) {
     const next = cursor[segments[i]];
     if (typeof next !== "object" || next === null) {
-      throw new Error(`경로 "${op.path}"의 상위 필드가 없습니다.`);
+      throw new Error(t("missingParent", { path: op.path }));
     }
     cursor = next as Record<string, unknown>;
   }
@@ -84,7 +89,7 @@ export function previewBuildSpecPatch(
   if (!before) {
     return {
       ok: false,
-      reason: `run "${action.runId}"의 원본 BuildSpec을 이 브라우저에서 찾을 수 없습니다. Builder는 spec을 영속화하지 않으므로, 이 run을 Studio에서 실행/편집한 적이 있어야 patch를 적용할 수 있습니다.`,
+      reason: t("specNotFound", { runId: action.runId }),
     };
   }
 
@@ -94,7 +99,7 @@ export function previewBuildSpecPatch(
   if (jsonValueHasRedactedSecret(before)) {
     return {
       ok: false,
-      reason: "저장된 BuildSpec에서 시크릿 값이 제거되어 있어(로컬 보관 정책) Kubi가 patch할 수 없습니다. serviceKey/apiKey/token 등은 Provider 설정 화면에서 다시 입력하세요.",
+      reason: t("secretsRedacted"),
     };
   }
 
@@ -102,7 +107,7 @@ export function previewBuildSpecPatch(
   if (invalidPath) {
     return {
       ok: false,
-      reason: `허용되지 않은 경로 "${invalidPath.path}"입니다. title/description/metadata/sources[].params/sources[].alias/exports[].options만 patch할 수 있습니다.`,
+      reason: t("pathNotAllowed", { path: invalidPath.path }),
     };
   }
 
@@ -112,7 +117,7 @@ export function previewBuildSpecPatch(
   if (credentialPath) {
     return {
       ok: false,
-      reason: `경로 "${credentialPath.path}"는 credential성 필드로 보여 Kubi가 patch할 수 없습니다. serviceKey/apiKey/token 등은 Provider 설정 화면에서 직접 변경하세요.`,
+      reason: t("credentialPath", { path: credentialPath.path }),
     };
   }
 
@@ -122,12 +127,12 @@ export function previewBuildSpecPatch(
     if (jsonValueHasRedactedSecret(clone)) {
       return {
         ok: false,
-        reason: "patch 결과에 redaction marker가 남아 있어 적용할 수 없습니다. 해당 credential을 실제 값으로 다시 입력하세요.",
+        reason: t("redactionMarker"),
       };
     }
     return { ok: true, before, after: clone as unknown as BuildSpec };
   } catch (cause) {
-    return { ok: false, reason: cause instanceof Error ? cause.message : "patch를 적용할 수 없습니다." };
+    return { ok: false, reason: cause instanceof Error ? cause.message : t("patchFailed") };
   }
 }
 
@@ -146,7 +151,7 @@ export async function applyBuildSpecPatch(
   // `[REDACTED]`(specStore/savedSpecs) · `__KPD_*_REDACTED__`(draft) · `__SCRUBBED_*` 모두
   // 차단한다 — 어느 marker든 남은 채로 validate하면 literal placeholder가 Builder로 간다.
   if (jsonValueHasRedactedSecret(after)) {
-    return { valid: false, errors: ["해결되지 않은 시크릿 플레이스홀더가 포함되어 있습니다."] };
+    return { valid: false, errors: [t("unresolvedPlaceholder")] };
   }
   const result = await validate(after);
   if (result.valid) saveBuildSpec(runId, after);
@@ -155,7 +160,7 @@ export async function applyBuildSpecPatch(
 
 function assertSafeGeneratedValue(value: unknown): void {
   if (hasSecretPlaceholder(value)) {
-    throw new Error("해결되지 않은 시크릿 플레이스홀더가 포함되어 있습니다.");
+    throw new Error(t("unresolvedPlaceholder"));
   }
 }
 
@@ -164,11 +169,11 @@ function assertSafeSourceParams(value: string): void {
   try {
     const parsed = JSON.parse(value) as unknown;
     if (JSON.stringify(redactSecrets(parsed)) !== JSON.stringify(parsed)) {
-      throw new Error("Kubi가 생성한 sourceParams에는 credential 값을 포함할 수 없습니다.");
+      throw new Error(t("paramsCredential"));
     }
   } catch (error) {
     if (error instanceof SyntaxError) {
-      throw new Error("Kubi가 생성한 sourceParams는 JSON 객체여야 합니다.", {
+      throw new Error(t("paramsNotObject"), {
         cause: error,
       });
     }
@@ -239,16 +244,16 @@ export function actionHref(action: KubiAction): string | null {
 export function describeAction(action: KubiAction): string {
   switch (action.type) {
     case "OPEN_PROVIDER":
-      return `Provider "${action.provider}" 화면 열기`;
+      return t("describe.openProvider", { provider: action.provider });
     case "OPEN_BUILD":
-      return `Build "${action.runId}" 상세 열기`;
+      return t("describe.openBuild", { runId: action.runId });
     case "OPEN_QUALITY":
-      return `Quality Center에서 "${action.datasetId}" 보기`;
+      return t("describe.openQuality", { datasetId: action.datasetId });
     case "PATCH_BUILDSPEC":
-      return `run "${action.runId}"의 BuildSpec에 ${action.patch.length}건 변경 제안`;
+      return t("describe.patchSpec", { runId: action.runId, count: action.patch.length });
     case "CREATE_BUILD_DRAFT":
-      return `New Build 초안 만들기: ${action.values.title}`;
+      return t("describe.createDraft", { title: action.values.title });
     case "ADD_REPORT_BLOCK":
-      return "Report 참고 노트로 추가";
+      return t("describe.addReportBlock");
   }
 }

@@ -452,6 +452,26 @@
       "q35": "방금 답변을 좀 더 자세히 설명해줘.",
       "q36": "이걸 바탕으로 다음 단계를 추천해줘.",
       "q37": "관련해서 더 확인할 데이터가 있어?"
+    },
+    "actions": {
+      "missingParent": "경로 \"{{path}}\"의 상위 필드가 없습니다.",
+      "specNotFound": "run \"{{runId}}\"의 원본 BuildSpec을 이 브라우저에서 찾을 수 없습니다. Builder는 spec을 영속화하지 않으므로, 이 run을 Studio에서 실행/편집한 적이 있어야 patch를 적용할 수 있습니다.",
+      "secretsRedacted": "저장된 BuildSpec에서 시크릿 값이 제거되어 있어(로컬 보관 정책) Kubi가 patch할 수 없습니다. serviceKey/apiKey/token 등은 Provider 설정 화면에서 다시 입력하세요.",
+      "pathNotAllowed": "허용되지 않은 경로 \"{{path}}\"입니다. title/description/metadata/sources[].params/sources[].alias/exports[].options만 patch할 수 있습니다.",
+      "credentialPath": "경로 \"{{path}}\"는 credential성 필드로 보여 Kubi가 patch할 수 없습니다. serviceKey/apiKey/token 등은 Provider 설정 화면에서 직접 변경하세요.",
+      "redactionMarker": "patch 결과에 redaction marker가 남아 있어 적용할 수 없습니다. 해당 credential을 실제 값으로 다시 입력하세요.",
+      "patchFailed": "patch를 적용할 수 없습니다.",
+      "unresolvedPlaceholder": "해결되지 않은 시크릿 플레이스홀더가 포함되어 있습니다.",
+      "paramsCredential": "Kubi가 생성한 sourceParams에는 credential 값을 포함할 수 없습니다.",
+      "paramsNotObject": "Kubi가 생성한 sourceParams는 JSON 객체여야 합니다.",
+      "describe": {
+        "openProvider": "Provider \"{{provider}}\" 화면 열기",
+        "openBuild": "Build \"{{runId}}\" 상세 열기",
+        "openQuality": "Quality Center에서 \"{{datasetId}}\" 보기",
+        "patchSpec": "run \"{{runId}}\"의 BuildSpec에 {{count}}건 변경 제안",
+        "createDraft": "New Build 초안 만들기: {{title}}",
+        "addReportBlock": "Report 참고 노트로 추가"
+      }
     }
   },
   "quality": {
@@ -1250,6 +1270,35 @@
       "noBucketDesc": "시간대별 빌드 통계를 표시할 데이터가 없습니다.",
       "bucketTitle": "시간대별 빌드 통계",
       "bucketTooltip": "{{at}}: 성공 {{success}}, 실패 {{failed}}, 취소 {{cancelled}}"
+    }
+  },
+  "publish": {
+    "errors": {
+      "destinationRequired": "Hugging Face destination을 입력하세요.",
+      "destinationFormat": "destination은 owner/dataset 형식이어야 합니다.",
+      "readinessNotFound": "요청한 Run의 게시 준비 상태를 찾을 수 없습니다.",
+      "runNotFound": "요청한 Run을 찾을 수 없습니다.",
+      "notReady": "게시 준비가 되지 않은 Run입니다.",
+      "unknown": "게시 요청을 완료하지 못했습니다.",
+      "inProgress": "같은 게시 작업이 이미 진행 중입니다.",
+      "retryBlocked": "이전 게시 결과를 확인할 수 없어 자동 재시도가 차단되었습니다. Builder 운영자에게 상태 확인을 요청하세요.",
+      "visibilityConflict": "같은 Run과 destination이 다른 공개 설정으로 이미 게시되었습니다.",
+      "externalFailed": "외부 게시 서비스에서 작업을 완료하지 못했습니다. 결과가 불명확할 수 있으므로 자동 재시도하지 않습니다.",
+      "readinessChanged": "게시 직전 Builder 재검증에서 준비 상태가 변경되었습니다. readiness를 다시 확인하세요.",
+      "forbidden": "이 Run을 게시할 권한이 없습니다.",
+      "notFound": "선택한 Run을 Builder에서 찾을 수 없습니다.",
+      "network": "Builder 응답을 받지 못했습니다. 원격 게시 결과는 확인되지 않았습니다."
+    }
+  },
+  "assistant": {
+    "generate": {
+      "unknownProvider": "sources[{{index}}].provider: 카탈로그에 없는 provider '{{provider}}'입니다.",
+      "unknownDataset": "sources[{{index}}].dataset: provider '{{provider}}'에 없는 dataset '{{dataset}}'입니다.",
+      "yamlParse": "YAML을 파싱하지 못했습니다.",
+      "mockDisabled": "mock 모드에서는 생성 기능이 비활성화됩니다 (ST-A8, #211)",
+      "noValidate": "Builder /validate 연결이 없어 BuildSpec 생성을 중단했습니다.",
+      "noCatalog": "카탈로그를 조회할 수 없어 BuildSpec 생성을 중단했습니다.",
+      "emptyOutput": "빈 출력이 반환되었습니다."
     }
   }
 }
