@@ -1205,5 +1205,51 @@
     "qualityError": "Quality 조회 실패",
     "shownCount": "{{count}}개 표시",
     "resetFilters": "필터 초기화"
+  },
+  "monitoring": {
+    "error": {
+      "title": "데이터를 가져올 수 없습니다",
+      "retry": "잠시 후 다시 시도해 주세요."
+    },
+    "api": {
+      "unavailable": "사용 불가",
+      "degraded": "성능 저하",
+      "healthy": "정상",
+      "latencyUnavailable": "Latency: 측정 불가",
+      "noSamples": "· 표본 없음"
+    },
+    "measure": {
+      "unavailable": "측정 불가",
+      "measuring": "측정 중"
+    },
+    "queue": {
+      "waiting": "대기 중",
+      "running": "실행 중",
+      "total": "전체"
+    },
+    "workers": {
+      "active": "활성",
+      "capacity": "용량",
+      "utilization": "활용률"
+    },
+    "store": {
+      "available": "정상",
+      "partial": "부분 가용",
+      "unavailable": "사용 불가",
+      "lastWrite": "마지막 쓰기: {{at}}",
+      "lastWriteNone": "마지막 쓰기: 없음"
+    },
+    "builds": {
+      "emptyTitle": "빌드 기록이 없습니다",
+      "emptyDesc": "아직 빌드가 실행되지 않았습니다.",
+      "success": "성공",
+      "failed": "실패",
+      "cancelled": "취소",
+      "excluded": "일부 run이 권한 제한으로 집계에서 제외되었습니다 (제외 {{count}}건).",
+      "noBucketTitle": "데이터가 없습니다",
+      "noBucketDesc": "시간대별 빌드 통계를 표시할 데이터가 없습니다.",
+      "bucketTitle": "시간대별 빌드 통계",
+      "bucketTooltip": "{{at}}: 성공 {{success}}, 실패 {{failed}}, 취소 {{cancelled}}"
+    }
   }
 }

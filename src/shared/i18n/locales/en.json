@@ -1205,5 +1205,51 @@
     "qualityError": "Quality lookup failed",
     "shownCount": "{{count}} shown",
     "resetFilters": "Reset filters"
+  },
+  "monitoring": {
+    "error": {
+      "title": "Could not fetch the data",
+      "retry": "Please try again in a moment."
+    },
+    "api": {
+      "unavailable": "Unavailable",
+      "degraded": "Degraded",
+      "healthy": "Healthy",
+      "latencyUnavailable": "Latency: not measured",
+      "noSamples": "· no samples"
+    },
+    "measure": {
+      "unavailable": "Not measured",
+      "measuring": "Measuring"
+    },
+    "queue": {
+      "waiting": "Waiting",
+      "running": "Running",
+      "total": "Total"
+    },
+    "workers": {
+      "active": "Active",
+      "capacity": "Capacity",
+      "utilization": "Utilization"
+    },
+    "store": {
+      "available": "Healthy",
+      "partial": "Partially available",
+      "unavailable": "Unavailable",
+      "lastWrite": "Last write: {{at}}",
+      "lastWriteNone": "Last write: none"
+    },
+    "builds": {
+      "emptyTitle": "No build history",
+      "emptyDesc": "No build has run yet.",
+      "success": "Succeeded",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "excluded": "Some runs were excluded from the aggregate for permission reasons ({{count}} excluded).",
+      "noBucketTitle": "No data",
+      "noBucketDesc": "There is no data to chart build statistics over time.",
+      "bucketTitle": "Builds over time",
+      "bucketTooltip": "{{at}}: {{success}} succeeded, {{failed}} failed, {{cancelled}} cancelled"
+    }
   }
 }

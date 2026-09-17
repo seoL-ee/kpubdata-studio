@@ -2,6 +2,7 @@
  * Build Statistics 탭 (#264, #303) — bucket 합산 총계와 시간대별 차트.
  * builder는 총계를 내려주지 않는다(#516) — bucket 합으로 화면에서 계산한다.
  */
+import { useTranslation } from "react-i18next";
 import { Card, EmptyState, Skeleton } from "@/shared/ui";
 import type {
   MonitoringBucket,
@@ -16,13 +17,12 @@ export function BuildStatisticsTab({
   loading: MonitoringLoadingState;
   builds: MonitoringBuildsResponse | undefined;
 }) {
+  const { t } = useTranslation();
   if (loading === "error") {
     return (
       <Card variant="error">
-        <p className="font-semibold">데이터를 가져올 수 없습니다</p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          잠시 후 다시 시도해 주세요.
-        </p>
+        <p className="font-semibold">{t("monitoring.error.title")}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{t("monitoring.error.retry")}</p>
       </Card>
     );
   }
@@ -45,8 +45,8 @@ export function BuildStatisticsTab({
     return (
       <Card>
         <EmptyState
-          title="빌드 기록이 없습니다"
-          description="아직 빌드가 실행되지 않았습니다."
+          title={t("monitoring.builds.emptyTitle")}
+          description={t("monitoring.builds.emptyDesc")}
         />
       </Card>
     );
@@ -56,19 +56,19 @@ export function BuildStatisticsTab({
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">성공</span>
+          <span className="text-sm text-muted-foreground">{t("monitoring.builds.success")}</span>
           <span className="text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
             {totals.success}
           </span>
         </Card>
         <Card className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">실패</span>
+          <span className="text-sm text-muted-foreground">{t("monitoring.builds.failed")}</span>
           <span className="text-2xl font-semibold text-red-600 dark:text-red-400">
             {totals.failed}
           </span>
         </Card>
         <Card className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">취소</span>
+          <span className="text-sm text-muted-foreground">{t("monitoring.builds.cancelled")}</span>
           <span className="text-2xl font-semibold text-muted-foreground">
             {totals.cancelled}
           </span>
@@ -78,7 +78,7 @@ export function BuildStatisticsTab({
       {builds.availability === "partial" && (
         <Card variant="error">
           <p className="text-sm text-muted-foreground">
-            일부 run이 권한 제한으로 집계에서 제외되었습니다 (제외 {builds.excluded_count}건).
+            {t("monitoring.builds.excluded", { count: builds.excluded_count })}
           </p>
         </Card>
       )}
@@ -89,12 +89,13 @@ export function BuildStatisticsTab({
 }
 
 function BuildChart({ buckets }: { buckets: MonitoringBucket[] }) {
+  const { t } = useTranslation();
   if (buckets.length === 0) {
     return (
       <Card>
         <EmptyState
-          title="데이터가 없습니다"
-          description="시간대별 빌드 통계를 표시할 데이터가 없습니다."
+          title={t("monitoring.builds.noBucketTitle")}
+          description={t("monitoring.builds.noBucketDesc")}
         />
       </Card>
     );
@@ -107,19 +108,19 @@ function BuildChart({ buckets }: { buckets: MonitoringBucket[] }) {
   return (
     <Card>
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">시간대별 빌드 통계</h3>
+        <h3 className="text-lg font-semibold">{t("monitoring.builds.bucketTitle")}</h3>
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1">
             <div className="h-3 w-3 bg-emerald-500 dark:bg-emerald-600" />
-            <span>성공</span>
+            <span>{t("monitoring.builds.success")}</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="h-3 w-3 bg-red-500 dark:bg-red-600" />
-            <span>실패</span>
+            <span>{t("monitoring.builds.failed")}</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="h-3 w-3 bg-muted" />
-            <span>취소</span>
+            <span>{t("monitoring.builds.cancelled")}</span>
           </div>
         </div>
       </div>
@@ -135,7 +136,12 @@ function BuildChart({ buckets }: { buckets: MonitoringBucket[] }) {
               <div
                 key={index}
                 className="flex flex-1 flex-col gap-0.5 group"
-                title={`${bucket.bucket_start}: 성공 ${bucket.success}, 실패 ${bucket.failed}, 취소 ${bucket.cancelled}`}
+                title={t("monitoring.builds.bucketTooltip", {
+                  at: bucket.bucket_start,
+                  success: bucket.success,
+                  failed: bucket.failed,
+                  cancelled: bucket.cancelled,
+                })}
               >
                 <div className="flex gap-0.5 items-end h-[180px] bg-muted/30 rounded-t relative">
                   <div
