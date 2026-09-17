@@ -16,11 +16,14 @@ import {
   isMissingCategory,
   isSchemaCategory,
 } from "@/features/quality/model";
+import { i18n } from "@/shared/i18n";
 import type { QualityCheckResult, SchemaDriftFinding, StageStatus } from "@/shared/lib/builderApi";
 import type { ReportEvidenceBundle, ReportSourceSchema } from "./evidence";
 import type { BuilderEvidenceSection } from "./types";
 
-const UNAVAILABLE = "확인할 수 없습니다.";
+/** 이 파일의 문장 키는 모두 이 네임스페이스 아래에 있다(#350). */
+const t = (key: string, params?: Record<string, unknown>): string =>
+  i18n.t(`reports.narrative.${key}`, params ?? {});
 
 type StageTriple = { bronze: StageStatus; silver: StageStatus; gold: StageStatus };
 
@@ -30,12 +33,16 @@ const STAGE_LABEL: Record<keyof StageTriple, string> = {
   gold: "Gold",
 };
 
-const STAGE_ICON: Record<StageStatus, string> = {
-  completed: "✓",
-  failed: "✕",
-  not_run: "미실행",
-  unavailable: "확인 불가",
-};
+/** 숫자 구분자는 화면 언어를 따른다 — 문장만 번역하고 숫자를 한국식으로 두면 어색하다. */
+function numberLocale(): string {
+  return i18n.language?.startsWith("en") ? "en-US" : "ko-KR";
+}
+
+function stageIcon(status: StageStatus): string {
+  if (status === "completed") return "✓";
+  if (status === "failed") return "✕";
+  return status === "not_run" ? t("stage.notRun") : t("stage.unavailable");
+}
 
 export interface QualityCounts {
   pass: number;
@@ -50,16 +57,20 @@ export interface QualityCounts {
 
 export function buildOverviewSummary(evidence: ReportEvidenceBundle): string {
   if (!evidence.dataset.ok) {
-    return `\`${evidence.datasetId}\` 정보를 불러오지 못해 개요를 요약할 수 없습니다(${evidence.dataset.reason}).`;
+    return t("overview.loadFailed", {
+      datasetId: evidence.datasetId,
+      reason: evidence.dataset.reason,
+    });
   }
   const dataset = evidence.dataset.value;
-  const providers = [...new Set(dataset.sources.map((s) => s.provider))].join(", ") || UNAVAILABLE;
+  const providers =
+    [...new Set(dataset.sources.map((s) => s.provider))].join(", ") || t("unavailable");
   const runStatus = evidence.run.ok ? evidence.run.value.status : null;
 
   return [
-    `이 보고서는 \`${dataset.title}\`의 Build \`${evidence.runId}\`를 기준으로 작성되었습니다.`,
-    `데이터는 ${providers} Provider의 Source로 구성되어 있습니다.`,
-    runStatus ? `해당 Run은 ${runStatus} 상태로 종료되었습니다.` : `해당 Run의 종료 상태는 ${UNAVAILABLE}`,
+    t("overview.basis", { title: dataset.title, runId: evidence.runId }),
+    t("overview.providers", { providers }),
+    runStatus ? t("overview.runStatus", { status: runStatus }) : t("overview.runStatusUnknown"),
   ].join(" ");
 }
 
@@ -70,12 +81,17 @@ export function buildOverviewSummary(evidence: ReportEvidenceBundle): string {
 function pipelineFlowLine(sourceKey: string, stage: StageTriple): string {
   // 마크다운 렌더러는 한 줄바꿈을 별도 줄로 만들지 않으므로(GFM hard-break 미지원), 소스명과
   // 흐름을 각자 문단으로 나눠 굵은 글씨 줄이 실제로 별도 줄에 보이게 한다.
-  return `**${sourceKey}**\n\nSource → Bronze ${STAGE_ICON[stage.bronze]} → Silver ${STAGE_ICON[stage.silver]} → Gold ${STAGE_ICON[stage.gold]}`;
+  return t("pipeline.flow", {
+    sourceKey,
+    bronze: stageIcon(stage.bronze),
+    silver: stageIcon(stage.silver),
+    gold: stageIcon(stage.gold),
+  });
 }
 
 function pipelineSourceSentence(sourceKey: string, stage: StageTriple): string {
   if (stage.gold === "completed") {
-    return `\`${sourceKey}\`는 Bronze → Silver → Gold까지 모두 정상 처리되었습니다.`;
+    return t("pipeline.allCompleted", { sourceKey });
   }
 
   const order: Array<[keyof StageTriple, StageStatus]> = [
@@ -89,20 +105,24 @@ function pipelineSourceSentence(sourceKey: string, stage: StageTriple): string {
     const [failedStage] = order[failedIndex];
     const next = order[failedIndex + 1];
     if (next && next[1] === "not_run") {
-      return `\`${sourceKey}\`는 ${STAGE_LABEL[failedStage]} 단계에서 실패하여 ${STAGE_LABEL[next[0]]} 단계가 실행되지 않았습니다.`;
+      return t("pipeline.failedAndSkipped", {
+        sourceKey,
+        failedStage: STAGE_LABEL[failedStage],
+        skippedStage: STAGE_LABEL[next[0]],
+      });
     }
-    return `\`${sourceKey}\`는 ${STAGE_LABEL[failedStage]} 단계에서 실패했습니다.`;
+    return t("pipeline.failed", { sourceKey, stage: STAGE_LABEL[failedStage] });
   }
 
   const stalled = order.find(([, status]) => status !== "completed");
   if (stalled) {
     const [name, status] = stalled;
     return status === "not_run"
-      ? `\`${sourceKey}\`는 ${STAGE_LABEL[name]} 단계가 아직 실행되지 않았습니다.`
-      : `\`${sourceKey}\`는 ${STAGE_LABEL[name]} 단계 상태를 확인할 수 없습니다.`;
+      ? t("pipeline.notRun", { sourceKey, stage: STAGE_LABEL[name] })
+      : t("pipeline.stageUnknown", { sourceKey, stage: STAGE_LABEL[name] });
   }
 
-  return `\`${sourceKey}\`의 처리 상태를 확인할 수 없습니다.`;
+  return t("pipeline.unknown", { sourceKey });
 }
 
 export function buildPipelineSummary(evidence: ReportEvidenceBundle): string {
@@ -116,7 +136,7 @@ export function buildPipelineSummary(evidence: ReportEvidenceBundle): string {
       : [];
 
   if (sources.length === 0) {
-    return `처리 흐름 정보를 ${UNAVAILABLE}`;
+    return t("pipeline.noSources");
   }
 
   const flows = sources.map(([key, stage]) => pipelineFlowLine(key, stage)).join("\n\n");
@@ -143,52 +163,88 @@ export function computeQualityCounts(evidence: ReportEvidenceBundle): QualityCou
 function qualityResultSentence(result: QualityCheckResult): string {
   const source = `\`${result.source_key}\``;
   const column = result.column ? `\`${result.column}\`` : null;
+  // PASS/WARN/FAIL은 Builder가 쓰는 값 그대로다 — 번역하지 않는다.
   const verb = result.status === "pass" ? "PASS" : result.status === "warn" ? "WARN" : "FAIL";
+  const passed = result.status === "pass";
 
   if (isMissingCategory(result.category) && result.rule === "max_null_ratio") {
     const actual = formatQualityValue(result.rule, result.actual);
     const threshold = formatQualityValue(result.rule, result.threshold);
-    const compare = result.status === "pass" ? "이내여서" : "초과해";
-    return `${source}의 ${column ?? "대상 컬럼"} 결측률은 ${actual}로 기준값 ${threshold} ${compare} ${verb}했습니다.`;
+    // 통과/미통과는 문장 구조가 달라 연결어만 갈아끼우지 않고 문장 전체를 분리한다.
+    return t(passed ? "quality.missingRatioPass" : "quality.missingRatioFail", {
+      source,
+      column: column ?? t("quality.targetColumn"),
+      actual,
+      threshold,
+      verb,
+    });
   }
   if (isSchemaCategory(result.category) && result.rule === "required_column") {
-    if (result.status === "pass") return `${source}에서 필수 컬럼 ${column ?? ""}이 확인되어 ${verb}했습니다.`;
-    return `${source}에서는 필수 컬럼 ${column ?? ""}이 확인되지 않아 ${verb}했습니다.${result.detail ? ` (${result.detail})` : ""}`;
+    if (passed) {
+      return t("quality.requiredColumnPass", { source, column: column ?? "", verb });
+    }
+    return t("quality.requiredColumnFail", {
+      source,
+      column: column ?? "",
+      verb,
+      detail: result.detail ? ` (${result.detail})` : "",
+    });
   }
   if (result.rule === "min_rows") {
     const actual = formatQualityValue(result.rule, result.actual);
     const threshold = formatQualityValue(result.rule, result.threshold);
-    return `${source}의 행 수는 ${actual}로 기준값 ${threshold} ${result.status === "pass" ? "이상이어서" : "미달해"} ${verb}했습니다.`;
+    return t(passed ? "quality.minRowsPass" : "quality.minRowsFail", {
+      source,
+      actual,
+      threshold,
+      verb,
+    });
   }
   if (isDuplicateCategory(result.category)) {
     const actual = formatQualityValue(result.rule, result.actual);
     const threshold = formatQualityValue(result.rule, result.threshold);
-    return `${source}의 중복률은 ${actual}로 기준값 ${threshold} ${result.status === "pass" ? "이내여서" : "초과해"} ${verb}했습니다.`;
+    return t(passed ? "quality.duplicatePass" : "quality.duplicateFail", {
+      source,
+      actual,
+      threshold,
+      verb,
+    });
   }
 
   // 알 수 없는 rule은 의미를 추측하지 않고 실제값/기준값을 그대로 서술한다.
   const actual = formatQualityValue(result.rule, result.actual);
   const threshold = formatQualityValue(result.rule, result.threshold);
-  return `${source}의 \`${result.rule}\`${column ? ` (${column})` : ""} 결과는 ${verb}입니다(실제값 ${actual}, 기준값 ${threshold}).${result.detail ? ` ${result.detail}` : ""}`;
+  return t("quality.unknownRule", {
+    source,
+    rule: result.rule,
+    column: column ? ` (${column})` : "",
+    verb,
+    actual,
+    threshold,
+    detail: result.detail ? ` ${result.detail}` : "",
+  });
 }
 
 function schemaDriftSentence(drift: SchemaDriftFinding[]): string {
   if (drift.length === 0) return "";
-  return `Schema drift: ${drift.map((d) => `\`${d.column ?? "N/A"}\` ${d.kind}(${d.detail})`).join(", ")}`;
+  const findings = drift
+    .map((d) => `\`${d.column ?? "N/A"}\` ${d.kind}(${d.detail})`)
+    .join(", ");
+  return t("quality.drift", { findings });
 }
 
 export function buildQualitySummary(evidence: ReportEvidenceBundle): string {
   if (!evidence.quality.ok) {
-    return `Quality 결과를 불러오지 못해 요약할 수 없습니다(${evidence.quality.reason}).`;
+    return t("quality.loadFailed", { reason: evidence.quality.reason });
   }
   const quality = evidence.quality.value;
   if (quality.availability === "unavailable") {
-    return `이 run은 Quality 평가가 제공되지 않습니다(availability=unavailable). PASS로 간주하지 않습니다.`;
+    return t("quality.notProvided");
   }
 
   const results = flattenQualityResults(quality);
   if (results.length === 0) {
-    return `기준 Run에서는 평가된 품질 규칙이 없습니다(evaluated_checks=0).`;
+    return t("quality.noneEvaluated");
   }
 
   const pass = results.filter((r) => r.status === "pass").length;
@@ -196,10 +252,12 @@ export function buildQualitySummary(evidence: ReportEvidenceBundle): string {
   const fail = results.filter((r) => r.status === "fail").length;
   // WARN이 0건이면 문장에서 생략한다(예시처럼 PASS/FAIL만 자연스럽게 언급) — 그래도 evaluated_checks
   // 분모는 항상 실제 건수를 그대로 쓴다.
-  const parts = [`${pass}건은 PASS`, warn > 0 ? `${warn}건은 WARN` : null, `${fail}건은 FAIL`].filter(
-    (part): part is string => part !== null,
-  );
-  const header = `기준 Run에서는 총 ${results.length}건의 품질 검사가 평가되었습니다. 이 중 ${parts.join(", ")}입니다.`;
+  const parts = [
+    t("quality.countPass", { count: pass }),
+    warn > 0 ? t("quality.countWarn", { count: warn }) : null,
+    t("quality.countFail", { count: fail }),
+  ].filter((part): part is string => part !== null);
+  const header = t("quality.header", { total: results.length, breakdown: parts.join(", ") });
   const detail = results.map(qualityResultSentence).join(" ");
   const drift = schemaDriftSentence(flattenSchemaDrift(quality));
 
@@ -214,18 +272,22 @@ function schemaSourceSentence(sourceKey: string, schema: ReportSourceSchema): st
   const source = `\`${sourceKey}\``;
   if (schema.origin === "silver") {
     const columns = schema.columns.map((c) => `\`${c.name}\``).join(", ");
-    return `${source} Silver 결과에서는 ${columns} 컬럼이 확인되었습니다.`;
+    return t("schema.silver", { source, columns });
   }
   if (schema.origin === "gold_names_only") {
-    const columns = (schema.columnNamesOnly ?? []).map((name) => `\`${name}\``).join(", ") || UNAVAILABLE;
-    return `${source}는 Silver schema를 확인할 수 없어 Gold 결과의 컬럼 이름만 확인됩니다: ${columns}.`;
+    const columns =
+      (schema.columnNamesOnly ?? []).map((name) => `\`${name}\``).join(", ") || t("unavailable");
+    return t("schema.goldNamesOnly", { source, columns });
   }
-  return `${source}는 해당 단계의 Schema를 확인할 수 없습니다.${schema.reason ? ` (${schema.reason})` : ""}`;
+  return t("schema.unknown", {
+    source,
+    reason: schema.reason ? ` (${schema.reason})` : "",
+  });
 }
 
 export function buildSchemaSummary(evidence: ReportEvidenceBundle): string {
   const entries = Object.entries(evidence.schemas);
-  if (entries.length === 0) return `Schema 정보를 불러올 source가 없어 ${UNAVAILABLE}`;
+  if (entries.length === 0) return t("schema.noSources");
   return entries.map(([sourceKey, schema]) => schemaSourceSentence(sourceKey, schema)).join("\n\n");
 }
 
@@ -235,14 +297,19 @@ export function buildSchemaSummary(evidence: ReportEvidenceBundle): string {
 
 export function buildDataSummarySummary(evidence: ReportEvidenceBundle): string {
   if (!evidence.dataset.ok) {
-    return `Row count 정보를 ${UNAVAILABLE}(${evidence.dataset.reason})`;
+    return t("dataSummary.unavailable", { reason: evidence.dataset.reason });
   }
   const dataset = evidence.dataset.value;
   const rows = Object.entries(dataset.row_counts);
-  const totalLine = `확인 가능한 Source의 총 행 수는 ${dataset.total_row_count.toLocaleString("ko-KR")}건입니다.`;
-  if (rows.length === 0) return `${totalLine} source별 세부 정보는 ${UNAVAILABLE}`;
-  const bySource = rows.map(([key, count]) => `\`${key}\` ${count.toLocaleString("ko-KR")}건`).join(", ");
-  return `${totalLine} ${bySource}으로 구성됩니다.`;
+  const locale = numberLocale();
+  const totalLine = t("dataSummary.total", {
+    total: dataset.total_row_count.toLocaleString(locale),
+  });
+  if (rows.length === 0) return `${totalLine} ${t("dataSummary.noBreakdown")}`;
+  const bySource = rows
+    .map(([key, count]) => t("dataSummary.sourceRows", { key, count: count.toLocaleString(locale) }))
+    .join(", ");
+  return `${totalLine} ${t("dataSummary.composedOf", { bySource })}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -251,11 +318,14 @@ export function buildDataSummarySummary(evidence: ReportEvidenceBundle): string 
 
 export function buildOutputSummary(evidence: ReportEvidenceBundle): string {
   if (!evidence.output.ok) {
-    return `**Output 확인 불가**\n\n${evidence.output.reason}`;
+    return `**${t("output.unavailableTitle")}**\n\n${evidence.output.reason}`;
   }
   const files = evidence.output.value.files;
-  if (files.length === 0) return `이 run에 대해 보고된 output 파일이 없습니다.`;
-  return `이 run에는 총 ${files.length}개의 output 파일이 있습니다: ${files.map((f) => `\`${f}\``).join(", ")}.`;
+  if (files.length === 0) return t("output.none");
+  return t("output.list", {
+    count: files.length,
+    files: files.map((f) => `\`${f}\``).join(", "),
+  });
 }
 
 // ---------------------------------------------------------------------------

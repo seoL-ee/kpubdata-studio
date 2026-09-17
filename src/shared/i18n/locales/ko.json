@@ -758,6 +758,68 @@
       "rename": "이름변경",
       "duplicate": "복제",
       "delete": "삭제"
+    },
+    "narrative": {
+      "unavailable": "확인할 수 없습니다.",
+      "stage": {
+        "notRun": "미실행",
+        "unavailable": "확인 불가"
+      },
+      "overview": {
+        "loadFailed": "`{{datasetId}}` 정보를 불러오지 못해 개요를 요약할 수 없습니다({{reason}}).",
+        "basis": "이 보고서는 `{{title}}`의 Build `{{runId}}`를 기준으로 작성되었습니다.",
+        "providers": "데이터는 {{providers}} Provider의 Source로 구성되어 있습니다.",
+        "runStatus": "해당 Run은 {{status}} 상태로 종료되었습니다.",
+        "runStatusUnknown": "해당 Run의 종료 상태는 확인할 수 없습니다."
+      },
+      "pipeline": {
+        "flow": "**{{sourceKey}}**\n\nSource → Bronze {{bronze}} → Silver {{silver}} → Gold {{gold}}",
+        "allCompleted": "`{{sourceKey}}`는 Bronze → Silver → Gold까지 모두 정상 처리되었습니다.",
+        "failedAndSkipped": "`{{sourceKey}}`는 {{failedStage}} 단계에서 실패하여 {{skippedStage}} 단계가 실행되지 않았습니다.",
+        "failed": "`{{sourceKey}}`는 {{stage}} 단계에서 실패했습니다.",
+        "notRun": "`{{sourceKey}}`는 {{stage}} 단계가 아직 실행되지 않았습니다.",
+        "stageUnknown": "`{{sourceKey}}`는 {{stage}} 단계 상태를 확인할 수 없습니다.",
+        "unknown": "`{{sourceKey}}`의 처리 상태를 확인할 수 없습니다.",
+        "noSources": "처리 흐름 정보를 확인할 수 없습니다."
+      },
+      "quality": {
+        "loadFailed": "Quality 결과를 불러오지 못해 요약할 수 없습니다({{reason}}).",
+        "notProvided": "이 run은 Quality 평가가 제공되지 않습니다(availability=unavailable). PASS로 간주하지 않습니다.",
+        "noneEvaluated": "기준 Run에서는 평가된 품질 규칙이 없습니다(evaluated_checks=0).",
+        "header": "기준 Run에서는 총 {{total}}건의 품질 검사가 평가되었습니다. 이 중 {{breakdown}}입니다.",
+        "countPass": "{{count}}건은 PASS",
+        "countWarn": "{{count}}건은 WARN",
+        "countFail": "{{count}}건은 FAIL",
+        "targetColumn": "대상 컬럼",
+        "missingRatioPass": "{{source}}의 {{column}} 결측률은 {{actual}}로 기준값 {{threshold}} 이내여서 {{verb}}했습니다.",
+        "missingRatioFail": "{{source}}의 {{column}} 결측률은 {{actual}}로 기준값 {{threshold}} 초과해 {{verb}}했습니다.",
+        "requiredColumnPass": "{{source}}에서 필수 컬럼 {{column}}이 확인되어 {{verb}}했습니다.",
+        "requiredColumnFail": "{{source}}에서는 필수 컬럼 {{column}}이 확인되지 않아 {{verb}}했습니다.{{detail}}",
+        "minRowsPass": "{{source}}의 행 수는 {{actual}}로 기준값 {{threshold}} 이상이어서 {{verb}}했습니다.",
+        "minRowsFail": "{{source}}의 행 수는 {{actual}}로 기준값 {{threshold}} 미달해 {{verb}}했습니다.",
+        "duplicatePass": "{{source}}의 중복률은 {{actual}}로 기준값 {{threshold}} 이내여서 {{verb}}했습니다.",
+        "duplicateFail": "{{source}}의 중복률은 {{actual}}로 기준값 {{threshold}} 초과해 {{verb}}했습니다.",
+        "unknownRule": "{{source}}의 `{{rule}}`{{column}} 결과는 {{verb}}입니다(실제값 {{actual}}, 기준값 {{threshold}}).{{detail}}",
+        "drift": "Schema drift: {{findings}}"
+      },
+      "schema": {
+        "silver": "{{source}} Silver 결과에서는 {{columns}} 컬럼이 확인되었습니다.",
+        "goldNamesOnly": "{{source}}는 Silver schema를 확인할 수 없어 Gold 결과의 컬럼 이름만 확인됩니다: {{columns}}.",
+        "unknown": "{{source}}는 해당 단계의 Schema를 확인할 수 없습니다.{{reason}}",
+        "noSources": "Schema 정보를 불러올 source가 없어 확인할 수 없습니다."
+      },
+      "dataSummary": {
+        "unavailable": "Row count 정보를 확인할 수 없습니다.({{reason}})",
+        "total": "확인 가능한 Source의 총 행 수는 {{total}}건입니다.",
+        "noBreakdown": "source별 세부 정보는 확인할 수 없습니다.",
+        "sourceRows": "`{{key}}` {{count}}건",
+        "composedOf": "{{bySource}}으로 구성됩니다."
+      },
+      "output": {
+        "unavailableTitle": "Output 확인 불가",
+        "none": "이 run에 대해 보고된 output 파일이 없습니다.",
+        "list": "이 run에는 총 {{count}}개의 output 파일이 있습니다: {{files}}."
+      }
     }
   },
   "artifacts": {
