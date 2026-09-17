@@ -548,7 +548,54 @@
   "provider": {
     "status": {
       "needsCred": "This provider requires credentials.",
-      "noCred": "This provider can be used without credentials."
+      "noCred": "This provider can be used without credentials.",
+      "permission": {
+        "title": "Check credentials or API access approval",
+        "detail": "The stored credentials reached the API but access was denied. A provider can grant access per dataset or API, so confirm whether the dataset you picked actually works in its preview."
+      },
+      "failure": {
+        "auth": {
+          "title": "Check the credentials",
+          "detail": "Confirm the stored credentials are still valid, then test again."
+        },
+        "network": {
+          "title": "Network connection error",
+          "detail": "Builder could not reach the provider. Check the network."
+        },
+        "timeout": {
+          "title": "Connection timed out",
+          "detail": "The provider did not respond in time. Try again in a moment."
+        },
+        "provider": {
+          "title": "Provider responded with an error",
+          "detail": "The provider could not process the connection check."
+        },
+        "unknown": {
+          "title": "Connection status could not be determined",
+          "detail": "Builder received an unclassified error while checking the API."
+        }
+      },
+      "scopeNote": "This is a provider-level connection check. Whether the dataset you picked actually works is confirmed in the preview step.",
+      "readiness": {
+        "previewNote": "Whether the dataset API actually works is confirmed in the Add Data preview.",
+        "noAuthLabel": "No credentials needed",
+        "noAuthDetail": "This provider can be used without credentials.",
+        "userKeyLabel": "API key registered",
+        "userKeyDetail": "Credentials for this provider are in place.",
+        "serverDefaultLabel": "Ready to connect",
+        "serverDefaultDetail": "This provider currently uses Builder's default credentials.",
+        "missingKeyLabel": "No API key",
+        "missingKeyDetail": "Datasets from this provider may require an API key."
+      },
+      "probe": {
+        "connected": "Connected",
+        "notConfigured": "Not configured",
+        "notConfiguredTitle": "Credentials required",
+        "notConfiguredDetail": "This provider requires credentials. Connect it in provider settings.",
+        "unknown": "Needs a connection check",
+        "needsCheck": "Needs a check",
+        "failed": "Connection error"
+      }
     },
     "errors": {
       "loadProvider": "Could not load provider information",
@@ -793,6 +840,38 @@
     },
     "meta": {
       "note": "Some metadata fields (record count, schema, source, etc.) in this run's manifest are"
+    }
+  },
+  "glossary": {
+    "dataset": "Data produced by a build and managed as a single unit in KPubData.",
+    "build": "The job that collects and processes data from the sources and settings you chose.",
+    "run": "One recorded execution of a build. A dataset can have many runs.",
+    "buildSpec": "The portable execution spec telling Builder which sources to fetch and how to process them.",
+    "provider": "An external data source or API that Builder can connect to.",
+    "credential": "Authentication such as an API key, needed to fetch data from a provider.",
+    "preview": "A look at part of the data and its validation results before running a build.",
+    "bronze": "The stage that keeps collected data as close to the original as possible.",
+    "silver": "The stage where bronze data is cleaned and standardized for analysis and quality checks.",
+    "gold": "The final stage, shaped for a particular use.",
+    "quality": "The results of the data quality rules Builder actually evaluated.",
+    "schemaDrift": "A change in data structure — columns added, removed or retyped — compared with before.",
+    "evidence": "The Builder dataset, run and quality facts a Kubi answer or report is based on.",
+    "context": "The dataset, run, source and stage scope Kubi uses to interpret your question.",
+    "generatedSql": "The query SQL Kubi generated from the silver or gold schema you selected.",
+    "artifact": "A data file or other output produced by a build run.",
+    "manifest": "The metadata record of a run and the artifacts it produced.",
+    "readiness": "Builder's check of the conditions that must hold before publishing.",
+    "helpLabel": "{{term}} glossary help"
+  },
+  "legend": {
+    "stageLabel": "Data stage descriptions",
+    "qualityLabel": "Quality status descriptions",
+    "quality": {
+      "pass": "No problem found in the rules that were evaluated",
+      "warn": "A result exists but there is a quality issue worth checking",
+      "fail": "A quality rule was not met",
+      "na": "No value was evaluated or the rule does not apply. Not a PASS",
+      "unavailable": "Builder cannot provide a result. Different from FAIL"
     }
   }
 }
