@@ -5,10 +5,10 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   plugins: [react()],
   test: {
-    // 개별 테스트 한도. vitest 기본 5초는 vitest.setup.ts 의 RTL 대기 한도(10초)보다
-    // 짧아, 느린 러너에서는 RTL 이 기다리기도 전에 테스트 래퍼가 먼저 끊긴다 —
-    // 그러면 "무엇을 기다리다 실패했는지"가 사라진 메시지만 남는다.
-    testTimeout: 20_000,
+    // 개별 테스트 한도. vitest.setup.ts 의 RTL 대기 한도(30초)보다 커야 한다 — 짧으면
+    // 느린 러너에서 RTL 이 기다리기도 전에 테스트 래퍼가 먼저 끊고,
+    // "무엇을 기다리다 실패했는지"가 사라진 메시지만 남는다.
+    testTimeout: 60_000,
     environment: "jsdom",
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
