@@ -681,6 +681,35 @@
       "title": "See your work at a glance",
       "desc": "Monitor recent datasets, build status, and quality alerts",
       "guide": "User Guide"
+    },
+    "kpi": {
+      "datasets": "How many build datasets you can currently reach.",
+      "succeeded": "Build runs that finished successfully in the last 24 hours.",
+      "qualityWarn": "Runs with at least one WARN in a quality check in the last 24 hours.",
+      "running": "Build jobs running right now.",
+      "definitionLabel": "{{label}} definition",
+      "unavailable": "Unavailable"
+    },
+    "recent": {
+      "eyebrow": "Recent builds",
+      "title": "Recent runs",
+      "errorTitle": "Could not load the build list",
+      "errorDesc": "Please try again later",
+      "emptyTitle": "No builds yet",
+      "emptyDesc": "Create your first build",
+      "emptyCta": "New build",
+      "view": "View"
+    },
+    "quality": {
+      "eyebrow": "Quality",
+      "title": "Recent quality status",
+      "unavailableTitle": "Some quality information is unavailable",
+      "unavailableDesc": "Builder did not provide quality results for the recent runs. A failed build is not treated as a quality FAIL.",
+      "emptyTitle": "No quality warnings in the builds checked recently",
+      "emptyDesc": "None of the recent quality results available right now need a closer look.",
+      "needsCheck": "Needs a quality check",
+      "incomplete": "Quality results for some runs could not be checked.",
+      "center": "Open Quality Center"
     }
   },
   "addData": {
@@ -737,7 +766,27 @@
       "logout": "Sign out",
       "notLoggedIn": "Not signed in. Real integration mode requires sign-in for Builder calls.",
       "login": "Sign in",
-      "mockNote": "In mock mode, login state is for UI demonstration only. Account/permission backend is"
+      "mockNote": "In mock mode, login state is for UI demonstration only. The account and permission backend arrives with the real integration."
+    },
+    "providers": {
+      "title": "Data provider credentials",
+      "manage": "Manage in provider settings",
+      "mockNote": "In mock mode the provider page demonstrates the flow. Real credentials are held safely on the server by Builder in real-integration mode.",
+      "loading": "Checking provider configuration…",
+      "summary": "{{configured}} of {{total}} providers that need credentials are configured.",
+      "listLabel": "provider configuration status",
+      "configured": "Configured",
+      "notConfigured": "Not configured"
+    },
+    "byok": {
+      "title": "Kubi · BYOK LLM key",
+      "configure": "Configure in Kubi",
+      "desc": "The LLM key for the Kubi assistant is yours to manage, separately from data provider credentials (bring your own key). By default it lives in memory only and is gone after a refresh.",
+      "keySet": "Key set",
+      "keyUnset": "No key",
+      "customBaseUrl": "Custom base URL",
+      "persistOn": "Browser storage is on — the LLM API key is stored in this browser in plain text. An XSS attack could steal it, so turn it off on machines you do not trust.",
+      "persistOff": "Browser storage: off (memory only). You can turn it on explicitly from the Kubi screen."
     }
   },
   "auth": {

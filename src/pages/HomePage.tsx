@@ -536,25 +536,31 @@ function ExistingUserHome({
  * 다른 칸은 정상 값을 유지하고, 전체를 한꺼번에 에러로 덮지 않는다. null 값은
  * KpiCard가 "확인 불가"로 렌더한다(임의 숫자 합성 없음).
  */
+/** 날짜 표기는 화면 언어를 따른다. */
+function dateLocale(): string {
+  return i18n.language?.startsWith("en") ? "en-US" : "ko-KR";
+}
+
 function KpiCards({ stats, kpi }: { stats: DashboardStats; kpi: KpiPhases }) {
+  const { t } = useTranslation();
   return (
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <KpiCard label="DATASETS" help="현재 접근할 수 있는 전체 빌드 Dataset 수입니다." value={stats.datasetCount} loading={kpi.datasets === "loading"} />
+      <KpiCard label="DATASETS" help={t("home.kpi.datasets")} value={stats.datasetCount} loading={kpi.datasets === "loading"} />
       <KpiCard
         label="SUCCEEDED (24H)"
-        help="최근 24시간 동안 성공적으로 완료된 Build Run 수입니다."
+        help={t("home.kpi.succeeded")}
         value={stats.buildSuccess}
         loading={kpi.monitoring === "loading"}
         variant="success"
       />
       <KpiCard
         label="QUALITY WARN (24H)"
-        help="최근 24시간 Quality 검사에서 WARN이 하나 이상 확인된 Run 수입니다."
+        help={t("home.kpi.qualityWarn")}
         value={stats.qualityWarn}
         loading={kpi.quality === "loading"}
         variant="error"
       />
-      <KpiCard label="RUNNING" help="현재 실행 중인 Build 작업 수입니다." value={stats.running} loading={kpi.monitoring === "loading"} />
+      <KpiCard label="RUNNING" help={t("home.kpi.running")} value={stats.running} loading={kpi.monitoring === "loading"} />
     </section>
   );
 }
@@ -572,10 +578,11 @@ function KpiCard({
   loading: boolean;
   variant?: "default" | "success" | "error";
 }) {
+  const { t } = useTranslation();
   if (loading) {
     return (
       <Card>
-        <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">{label}<HelpTooltip content={help} label={`${label} 정의`} /></span>
+        <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">{label}<HelpTooltip content={help} label={t("home.kpi.definitionLabel", { label })} /></span>
         <Skeleton className="mt-2 h-8 w-16" />
       </Card>
     );
@@ -587,9 +594,9 @@ function KpiCard({
 
   return (
     <Card className="flex items-center justify-between">
-      <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">{label}<HelpTooltip content={help} label={`${label} 정의`} /></span>
+      <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">{label}<HelpTooltip content={help} label={t("home.kpi.definitionLabel", { label })} /></span>
       <span className={`text-2xl font-semibold tracking-tight ${colorClass}`}>
-        {value === null ? "확인 불가" : value}
+        {value === null ? t("home.kpi.unavailable") : value}
       </span>
     </Card>
   );
@@ -604,9 +611,10 @@ function RecentBuildsSection({
   loading: boolean;
   apiState: "loading" | "error" | "success";
 }) {
+  const { t } = useTranslation();
   return (
     <section>
-      <PageHeader eyebrow="최근 빌드" title="최근 실행" className="mb-4" />
+      <PageHeader eyebrow={t("home.recent.eyebrow")} title={t("home.recent.title")} className="mb-4" />
       <Card className="p-0">
         {loading ? (
           <div className="px-6 py-4 space-y-3">
@@ -621,14 +629,14 @@ function RecentBuildsSection({
           </div>
         ) : apiState === "error" ? (
           <EmptyState
-            title="빌드 목록을 불러올 수 없습니다"
-            description="나중에 다시 시도해 주세요"
+            title={t("home.recent.errorTitle")}
+            description={t("home.recent.errorDesc")}
           />
         ) : recentBuilds.length === 0 ? (
           <EmptyState
-            title="아직 빌드가 없습니다"
-            description="새 빌드를 만들어보세요"
-            actionLabel="새 빌드 만들기"
+            title={t("home.recent.emptyTitle")}
+            description={t("home.recent.emptyDesc")}
+            actionLabel={t("home.recent.emptyCta")}
             actionHref="/builds/new"
           />
         ) : (
@@ -641,11 +649,11 @@ function RecentBuildsSection({
                 <span className="font-medium">{run.title ?? run.id}</span>
                 <span className="capitalize text-muted-foreground">{run.status}</span>
                 <span className="text-muted-foreground">
-                  {run.startedAt ? new Date(run.startedAt).toLocaleString("ko-KR") : "—"}
+                  {run.startedAt ? new Date(run.startedAt).toLocaleString(dateLocale()) : "—"}
                 </span>
                 <span className="text-right">
                   <LinkButton variant="secondary" size="sm" to={`/builds/${run.id}`}>
-                    보기
+                    {t("home.recent.view")}
                   </LinkButton>
                 </span>
               </li>
@@ -658,9 +666,10 @@ function RecentBuildsSection({
 }
 
 function QualitySection({ state }: { state: RecentQualityState }) {
+  const { t } = useTranslation();
   return (
     <section>
-      <PageHeader eyebrow="품질" title="최근 품질 상태" className="mb-4" />
+      <PageHeader eyebrow={t("home.quality.eyebrow")} title={t("home.quality.title")} className="mb-4" />
       <Card className="p-0">
         {state.phase === "loading" ? (
           <div className="space-y-3 px-6 py-5">
@@ -668,20 +677,20 @@ function QualitySection({ state }: { state: RecentQualityState }) {
           </div>
         ) : state.phase === "unavailable" || (state.incomplete && state.alerts.length === 0) ? (
           <EmptyState
-            title="일부 품질 정보를 확인할 수 없습니다"
-            description="Builder에서 최근 Run의 Quality 결과를 제공하지 못했습니다. 실패한 Build를 Quality FAIL로 간주하지 않습니다."
+            title={t("home.quality.unavailableTitle")}
+            description={t("home.quality.unavailableDesc")}
           />
         ) : state.alerts.length === 0 ? (
           <EmptyState
-            title="최근 확인한 Build에서 품질 경고가 없습니다"
-            description="현재 확인 가능한 최근 Quality 결과 중 추가 확인이 필요한 WARN/FAIL이 없습니다."
+            title={t("home.quality.emptyTitle")}
+            description={t("home.quality.emptyDesc")}
           />
         ) : (
           <div>
             <div className="px-6 py-4">
-              <h3 className="font-semibold">품질 확인 필요</h3>
+              <h3 className="font-semibold">{t("home.quality.needsCheck")}</h3>
               {state.incomplete ? (
-                <p className="mt-1 text-xs text-muted-foreground">일부 Run의 Quality 결과는 확인하지 못했습니다.</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t("home.quality.incomplete")}</p>
               ) : null}
             </div>
             <ul className="border-t border-border">
@@ -704,7 +713,7 @@ function QualitySection({ state }: { state: RecentQualityState }) {
           </div>
         )}
         <div className="border-t border-border px-6 py-4">
-          <LinkButton variant="secondary" size="sm" to="/quality">Quality Center 보기</LinkButton>
+          <LinkButton variant="secondary" size="sm" to="/quality">{t("home.quality.center")}</LinkButton>
         </div>
       </Card>
     </section>

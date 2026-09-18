@@ -681,6 +681,35 @@
       "title": "작업 현황을 한눈에 확인하세요",
       "desc": "최근 데이터셋, 빌드 상태, 품질 경고를 모니터링합니다",
       "guide": "사용 가이드"
+    },
+    "kpi": {
+      "datasets": "현재 접근할 수 있는 전체 빌드 Dataset 수입니다.",
+      "succeeded": "최근 24시간 동안 성공적으로 완료된 Build Run 수입니다.",
+      "qualityWarn": "최근 24시간 Quality 검사에서 WARN이 하나 이상 확인된 Run 수입니다.",
+      "running": "현재 실행 중인 Build 작업 수입니다.",
+      "definitionLabel": "{{label}} 정의",
+      "unavailable": "확인 불가"
+    },
+    "recent": {
+      "eyebrow": "최근 빌드",
+      "title": "최근 실행",
+      "errorTitle": "빌드 목록을 불러올 수 없습니다",
+      "errorDesc": "나중에 다시 시도해 주세요",
+      "emptyTitle": "아직 빌드가 없습니다",
+      "emptyDesc": "새 빌드를 만들어보세요",
+      "emptyCta": "새 빌드 만들기",
+      "view": "보기"
+    },
+    "quality": {
+      "eyebrow": "품질",
+      "title": "최근 품질 상태",
+      "unavailableTitle": "일부 품질 정보를 확인할 수 없습니다",
+      "unavailableDesc": "Builder에서 최근 Run의 Quality 결과를 제공하지 못했습니다. 실패한 Build를 Quality FAIL로 간주하지 않습니다.",
+      "emptyTitle": "최근 확인한 Build에서 품질 경고가 없습니다",
+      "emptyDesc": "현재 확인 가능한 최근 Quality 결과 중 추가 확인이 필요한 WARN/FAIL이 없습니다.",
+      "needsCheck": "품질 확인 필요",
+      "incomplete": "일부 Run의 Quality 결과는 확인하지 못했습니다.",
+      "center": "Quality Center 보기"
     }
   },
   "addData": {
@@ -737,7 +766,27 @@
       "logout": "로그아웃",
       "notLoggedIn": "로그인되지 않았습니다. 실연동 모드에서는 Builder 호출을 위해 로그인이 필요합니다.",
       "login": "로그인",
-      "mockNote": "mock 모드에서는 로그인 상태가 UI 시연용으로만 동작합니다. 계정/권한 백엔드는"
+      "mockNote": "mock 모드에서는 로그인 상태가 UI 시연용으로만 동작합니다. 계정/권한 백엔드는 실연동과 함께 연동됩니다."
+    },
+    "providers": {
+      "title": "데이터 Provider 자격 증명",
+      "manage": "Provider 설정에서 관리",
+      "mockNote": "mock 모드에서는 Provider 페이지에서 동작을 시연할 수 있습니다. 실제 자격 증명은 실연동 모드에서 Builder가 서버에 안전하게 보관합니다.",
+      "loading": "Provider 구성 상태를 조회하는 중입니다…",
+      "summary": "자격 증명이 필요한 Provider {{total}}개 중 {{configured}}개가 구성되었습니다.",
+      "listLabel": "provider 구성 상태",
+      "configured": "구성됨",
+      "notConfigured": "미구성"
+    },
+    "byok": {
+      "title": "Kubi · BYOK LLM 키",
+      "configure": "Kubi에서 설정",
+      "desc": "Kubi 어시스턴트의 LLM 키는 데이터 Provider 자격 증명과 별도로 사용자가 직접 관리합니다(Bring Your Own Key). 키는 기본적으로 메모리에만 보관되며 새로고침 시 사라집니다.",
+      "keySet": "키 설정됨",
+      "keyUnset": "키 미설정",
+      "customBaseUrl": "사용자 지정 Base URL",
+      "persistOn": "브라우저 저장이 켜져 있습니다 — LLM API 키가 이 브라우저에 평문으로 저장됩니다. XSS 공격 시 탈취될 수 있으니 신뢰하지 않는 환경에서는 끄세요.",
+      "persistOff": "브라우저 저장: 꺼짐(메모리 전용). Kubi 화면에서 명시적으로 켤 수 있습니다."
     }
   },
   "auth": {
