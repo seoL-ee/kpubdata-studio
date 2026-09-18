@@ -26,7 +26,8 @@ test("Public API source로 Source→Configure 단계가 진행된다", async ({ 
 
   // 다음 단계(Configure): 제공자/데이터셋 선택 폼이 렌더링된다.
   await page.getByRole("button", { name: "다음" }).first().click();
-  await expect(page.getByText(t("addData.configure.title"))).toBeVisible();
+  // 같은 문구가 stepper 라벨에도 있어 getByText 는 두 개를 잡는다 — 단계 제목(heading)으로 좁힌다.
+  await expect(page.getByRole("heading", { name: t("addData.configure.title") })).toBeVisible();
   await expect(page.getByLabel(t("addData.configure.providerLabel"))).toBeVisible();
   await expect(page.getByLabel(t("addData.configure.datasetLabel"))).toBeVisible();
 
