@@ -105,7 +105,11 @@ describe("Kubi live Builder-confirmed source picker", () => {
     render(<Harness initialPath="/kubi?run=run-a&stage=gold" />);
 
     // multi-source인데 source 미선택 → Stage 선택 불가(evidence가 fail-closed로 빠지므로).
-    expect(await screen.findByLabelText("Kubi 분석 Stage")).toBeDisabled();
+    //
+    // findBy*는 "요소가 생겼는가"만 기다리고 **속성이 정해졌는가는 기다리지 않는다**.
+    // 이 select는 먼저 enabled로 렌더된 뒤 run stage가 도착하면 disabled가 되므로,
+    // 느린 러너에서는 그 사이에 단언이 떨어진다(Node 20 레인 실패). 조건 자체를 기다린다.
+    await waitFor(() => expect(screen.getByLabelText("Kubi 분석 Stage")).toBeDisabled());
     // disabled 상태여도 안내는 유지된다.
     expect(screen.getByText("이 Run에는 source가 여러 개 있습니다. 분석할 source를 먼저 선택하세요.")).toBeInTheDocument();
 
