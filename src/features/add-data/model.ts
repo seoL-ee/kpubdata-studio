@@ -14,6 +14,10 @@ import { endpointHasRedactedSecret, redactUrlEndpoint, urlHasUserinfo } from "@/
 import { jsonValueHasRedactedSecret, redactSourceParamsObject, sourceParamsHasRedactedSecret } from "@/features/add-data/paramsRedaction";
 import { buildSpecSchema } from "@/shared/lib/schemas";
 import type { BuildSpec, JsonValue, SourceFormat, SourceKind, SourceRef } from "@/shared/lib/types";
+import { i18n } from "@/shared/i18n";
+
+/** 이 파일의 문구는 모두 `addData.model.*` 아래에 있다(#350). */
+const t = (key: string): string => i18n.t(`addData.model.${key}`);
 
 export interface PublicApiDraft {
   provider: string;
@@ -112,13 +116,13 @@ interface CandidateResult {
  */
 function buildCandidateFromDraft(draft: AddDataDraft): CandidateResult {
   if (!draft.sourceKind) {
-    return { error: "Source를 먼저 선택해주세요." };
+    return { error: t("sourceRequired") };
   }
   if (draft.exportFormats.length === 0) {
-    return { error: "출력 형식을 최소 1개 선택해주세요." };
+    return { error: t("exportRequired") };
   }
   if (!draft.datasetId || !draft.title || !draft.description) {
-    return { error: "데이터셋 ID/제목/설명을 입력해주세요." };
+    return { error: t("metadataRequired") };
   }
 
   let source;
@@ -128,13 +132,13 @@ function buildCandidateFromDraft(draft: AddDataDraft): CandidateResult {
   let sentinelError: string | undefined;
   if (draft.sourceKind === "public_api") {
     if (!draft.publicApi.provider || !draft.publicApi.dataset) {
-      return { error: "Provider와 Dataset을 선택해주세요." };
+      return { error: t("providerDatasetRequired") };
     }
     // 저장된 초안을 복원했는데 sourceParams의 secret 값이 이미 sentinel로 지워져
     // 있으면 fail-closed — placeholder를 실제 파라미터처럼 Builder에 제출하지 않는다
     // (#283 후속 리뷰 §1). 사용자가 값을 다시 입력해야 Preview/Build가 가능하다.
     if (sourceParamsHasRedactedSecret(draft.publicApi.sourceParams)) {
-      sentinelError = "저장된 초안에서 시크릿이 포함된 파라미터 값이 제거되었습니다. Query/Config를 다시 입력해주세요.";
+      sentinelError = t("paramsRedacted");
     }
     const parsedParams = parseSourceParams(draft.publicApi.sourceParams);
     if (parsedParams.error) return { error: parsedParams.error };
@@ -145,7 +149,7 @@ function buildCandidateFromDraft(draft: AddDataDraft): CandidateResult {
     };
   } else if (draft.sourceKind === "file") {
     if (!draft.file.uploadId || !draft.file.format) {
-      return { error: "먼저 파일을 업로드해주세요." };
+      return { error: t("uploadRequired") };
     }
     source = {
       kind: "file" as const,
@@ -156,19 +160,19 @@ function buildCandidateFromDraft(draft: AddDataDraft): CandidateResult {
     };
   } else {
     if (!draft.url.endpoint) {
-      return { error: "Endpoint를 입력해주세요." };
+      return { error: t("endpointRequired") };
     }
     // 저장된 초안을 복원했는데 endpoint의 secret query parameter가 이미 REDACTED로
     // 지워져 있으면 fail-closed — placeholder를 실제 endpoint/credential처럼 Builder에
     // 제출하지 않는다(Epic #246). 사용자가 값을 다시 입력해야 Preview/Build가 가능하다.
     if (endpointHasRedactedSecret(draft.url.endpoint)) {
-      sentinelError = "저장된 초안에서 시크릿이 포함된 URL 값이 제거되었습니다. Endpoint를 다시 입력해주세요.";
+      sentinelError = t("urlRedacted");
     }
     // URL Auth(userinfo credential)는 계약에 없는 기능이다(#283 후속 리뷰 §4) —
     // `user:pass@host` 형태는 조용히 지원하는 대신 항상 오류로 막는다.
     if (urlHasUserinfo(draft.url.endpoint)) {
       return {
-        error: "URL에 사용자 정보(예: user:pass@host)를 포함할 수 없습니다. Endpoint에 자격 증명을 넣지 마세요.",
+        error: t("urlUserInfo"),
       };
     }
     if (!/^https:\/\//i.test(draft.url.endpoint)) {
@@ -247,7 +251,7 @@ function buildCandidateFromDraft(draft: AddDataDraft): CandidateResult {
 export function buildSpecFromDraft(draft: AddDataDraft): BuildSpecResult {
   const { candidate, error: candidateError } = buildCandidateFromDraft(draft);
   if (candidateError) return { error: candidateError };
-  if (!candidate) return { error: "빌드 스펙을 생성하지 못했습니다." };
+  if (!candidate) return { error: t("specBuildFailed") };
 
   // 현재 GUI 값 + canonicalBase 보존 필드 + primary source merge를 모두 반영한
   // 최종 candidate에 sentinel이 남아 있는지 검사한다(#283 후속 리뷰 §2). primary
@@ -255,12 +259,12 @@ export function buildSpecFromDraft(draft: AddDataDraft): BuildSpecResult {
   // sentinel은 이미 덮어써져 있으므로 여기서 걸리지 않는다 — 반면 sources[1+](trailing)
   // 등 GUI가 편집하지 않는 영역에 sentinel이 남아 있으면 계속 fail-closed로 막는다.
   if (jsonValueHasRedactedSecret(candidate)) {
-    return { error: "저장된 초안에 복원할 수 없는 secret placeholder가 있습니다. 원본 credential을 다시 입력해 주세요." };
+    return { error: t("unresolvedPlaceholder") };
   }
 
   const result = buildSpecSchema.safeParse(candidate);
   if (!result.success) {
-    return { error: result.error.issues[0]?.message ?? "빌드 스펙이 올바르지 않습니다." };
+    return { error: result.error.issues[0]?.message ?? t("specInvalid") };
   }
   return { spec: result.data as BuildSpec };
 }

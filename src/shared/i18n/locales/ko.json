@@ -816,6 +816,20 @@
       "next": "다음",
       "saved": "저장됨 ✓",
       "saveDraft": "초안 저장"
+    },
+    "model": {
+      "sourceRequired": "Source를 먼저 선택해주세요.",
+      "exportRequired": "출력 형식을 최소 1개 선택해주세요.",
+      "metadataRequired": "데이터셋 ID/제목/설명을 입력해주세요.",
+      "providerDatasetRequired": "Provider와 Dataset을 선택해주세요.",
+      "paramsRedacted": "저장된 초안에서 시크릿이 포함된 파라미터 값이 제거되었습니다. Query/Config를 다시 입력해주세요.",
+      "uploadRequired": "먼저 파일을 업로드해주세요.",
+      "endpointRequired": "Endpoint를 입력해주세요.",
+      "urlRedacted": "저장된 초안에서 시크릿이 포함된 URL 값이 제거되었습니다. Endpoint를 다시 입력해주세요.",
+      "urlUserInfo": "URL에 사용자 정보(예: user:pass@host)를 포함할 수 없습니다. Endpoint에 자격 증명을 넣지 마세요.",
+      "specBuildFailed": "빌드 스펙을 생성하지 못했습니다.",
+      "unresolvedPlaceholder": "저장된 초안에 복원할 수 없는 secret placeholder가 있습니다. 원본 credential을 다시 입력해 주세요.",
+      "specInvalid": "빌드 스펙이 올바르지 않습니다."
     }
   },
   "settings": {
@@ -1438,5 +1452,18 @@
     "openDetail": "Build 상세 보기",
     "openArtifacts": "결과물 보기",
     "editSpec": "스펙 수정"
+  },
+  "monitoringPage": {
+    "title": "시스템 모니터링",
+    "desc": "실행 이력과 시스템 리소스 상태를 실시간으로 확인합니다.",
+    "forbiddenTitle": "권한이 없습니다",
+    "forbiddenDesc": "모니터링 데이터를 조회하려면 로그인이 필요합니다.",
+    "lastUpdate": "마지막 업데이트: {{at}}",
+    "loading": "데이터 로드 중...",
+    "autoRefreshOn": "자동 새로고침 ON",
+    "autoRefreshOff": "자동 새로고침 OFF",
+    "refresh": "새로고침",
+    "degradedTitle": "시스템 상태 저하",
+    "degradedDesc": "일부 하위 시스템이 partial/unavailable 상태입니다. 각 카드의 상태 배지를 확인하세요."
   }
 }
