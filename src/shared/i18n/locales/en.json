@@ -736,6 +736,36 @@
       "requestParamsLabel": "Request parameters (JSON)",
       "applyExample": "Apply example values",
       "fileUploadTitle": "File Upload"
+    },
+    "steps": {
+      "source": "Choose data",
+      "configure": "Configure import",
+      "preview": "Preview · validate",
+      "review": "Review · build"
+    },
+    "errors": {
+      "catalog": "Could not load the Builder catalog.",
+      "upload": "File upload failed.",
+      "yamlSyntax": "YAML syntax error: {{message}}",
+      "yamlApply": "Could not apply the YAML.",
+      "spec": "Build spec error",
+      "preview": "The preview request failed.",
+      "validate": "The validation request failed."
+    },
+    "page": {
+      "title": "Add data",
+      "desc": "Set up what to import, check and validate the real data in preview, then start the build."
+    },
+    "draft": {
+      "prompt": "There is a saved draft. Continue editing it?",
+      "restore": "Restore",
+      "discard": "Discard"
+    },
+    "nav": {
+      "back": "Back",
+      "next": "Next",
+      "saved": "Saved ✓",
+      "saveDraft": "Save draft"
     }
   },
   "settings": {
@@ -993,6 +1023,71 @@
       "kubiOtherRun": "Reference analysis - based on a run other than this report's (dataset: {{dataset}}, run: {{run}})",
       "kubiOtherRunHtml": "Reference analysis - based on another run (dataset: {{dataset}}, run: {{run}})",
       "reasonLabel": "Rationale"
+    },
+    "block": {
+      "status": {
+        "partial": "Partially confirmed",
+        "unavailable": "Unavailable"
+      },
+      "section": {
+        "overview": "1. Data overview",
+        "pipeline": "2. Pipeline",
+        "quality": "3. Quality",
+        "schema": "4. Data structure",
+        "data_summary": "5. Data volume",
+        "output": "6. Output"
+      },
+      "showDetail": "Show supporting detail",
+      "kubiTitle": "Kubi analysis · AI-written",
+      "remove": "Remove",
+      "edit": "Edit",
+      "delete": "Delete",
+      "context": "Dataset: {{dataset}} · Run: {{run}}",
+      "otherContext": "Reference analysis · based on a different dataset/run than this report (not merged automatically).",
+      "generatedAt": "Generated {{at}}",
+      "reason": "Rationale: {{reason}}",
+      "linkedEvidence": "Linked evidence: {{refs}}"
+    },
+    "kubiPanel": {
+      "preset": {
+        "comprehensive": {
+          "label": "Generate AI analysis for the report",
+          "question": "Give me an overall analysis of the dataset and run this report is based on."
+        },
+        "quality": {
+          "label": "Interpret quality issues",
+          "question": "Interpret the quality issues found so far."
+        },
+        "pipeline": {
+          "label": "Analyze pipeline failure",
+          "question": "If this build's pipeline failed, analyze why."
+        },
+        "ideas": {
+          "label": "Ideas for using the data",
+          "question": "Suggest ideas for how this data could be used."
+        },
+        "caveats": {
+          "label": "Write caveats and limits",
+          "question": "Summarize the caveats and limitations of using this data."
+        }
+      },
+      "mockDisclaimer": "This is a mock response, not a real AI analysis.",
+      "reason": "AI analysis for the report",
+      "reasonDemo": "[DEMO] report analysis (mock response)",
+      "chatTitle": "Ask directly · based on this report ({{dataset}} · {{run}})",
+      "close": "Close",
+      "intro": "You can generate an AI interpretation to add to the report, based on this report's dataset/run and the Builder evidence.",
+      "needsKey": "Kubi analysis needs your own LLM API key.",
+      "openAiSettings": "Open AI settings",
+      "generateDemo": "Generate demo report analysis",
+      "askDirectly": "Ask directly",
+      "aiSettings": "AI settings",
+      "generating": "Generating…",
+      "cancel": "Cancel",
+      "error": "Could not generate the analysis.",
+      "evidence": "Evidence",
+      "addToReport": "Add to report",
+      "regenerate": "Regenerate"
     }
   },
   "artifacts": {
@@ -1061,5 +1156,54 @@
       "na": "No value was evaluated or the rule does not apply. Not a PASS",
       "unavailable": "Builder cannot provide a result. Different from FAIL"
     }
+  },
+  "discover": {
+    "page": {
+      "title": "Discover data",
+      "desc": "Search providers and datasets in the Builder catalog, then start a build straight from what you pick."
+    },
+    "errors": {
+      "catalog": "Could not load the catalog.",
+      "catalogTitle": "Could not load the catalog"
+    },
+    "searchLabel": "Search dataset or agency",
+    "allProviders": "All providers ({{count}})",
+    "providerOption": "{{label}} ({{count}})",
+    "serviceKeyOnly": "Needs a service key only ({{count}})",
+    "resetFilters": "Reset filters",
+    "empty": {
+      "title": "The Builder catalog is empty",
+      "desc": "No provider or dataset is registered. Check the Builder configuration."
+    },
+    "noMatch": {
+      "title": "No dataset matches",
+      "desc": "Try a different search term or filter."
+    },
+    "serviceKeyBadge": "Service key required",
+    "startWith": "Start with this data",
+    "shownCount": "{{count}} shown"
+  },
+  "catalog": {
+    "page": {
+      "desc": "Find datasets with exact search and filters."
+    },
+    "errors": {
+      "list": "Could not load the dataset list.",
+      "listTitle": "Could not load the dataset list"
+    },
+    "searchLabel": "Search dataset / provider",
+    "searchPlaceholder": "Search dataset or agency",
+    "allProviders": "All providers",
+    "stageLabel": "Stage status",
+    "allStages": "All stages",
+    "allValidations": "All validations",
+    "noMatch": {
+      "title": "No dataset matches",
+      "desc": "Try a different search term or filter."
+    },
+    "openDetail": "Open details for {{title}}",
+    "qualityError": "Quality lookup failed",
+    "shownCount": "{{count}} shown",
+    "resetFilters": "Reset filters"
   }
 }

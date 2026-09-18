@@ -7,6 +7,8 @@
  * `/catalog`(원본)와 `/datasets`(빌드 결과)를 섞지 않는다.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { i18n } from "@/shared/i18n";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { loadCatalog } from "@/features/discover/api";
 import {
@@ -32,6 +34,7 @@ const selectClassName =
   "h-9 rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function DiscoverPage() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [state, setState] = useState<CatalogState>({ status: "loading" });
@@ -45,7 +48,7 @@ export function DiscoverPage() {
         if (controller.signal.aborted) return;
         setState({
           status: "error",
-          error: cause instanceof Error ? cause.message : "카탈로그를 불러오지 못했습니다.",
+          error: cause instanceof Error ? cause.message : i18n.t("discover.errors.catalog"),
         });
       });
     return () => controller.abort();
@@ -90,19 +93,19 @@ export function DiscoverPage() {
     <main className="flex flex-1 flex-col gap-5 px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
       <PageHeader
         eyebrow="Discover"
-        title="데이터 탐색"
-        description="Builder 카탈로그에서 provider와 데이터셋을 정확 검색하고, 선택한 데이터로 바로 빌드를 시작하세요."
+        title={t("discover.page.title")}
+        description={t("discover.page.desc")}
       />
 
       <Card className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="min-w-56 flex-1 lg:max-w-[390px]">
             <label htmlFor="discover-search" className="sr-only">
-              데이터셋명·기관 검색
+              {t("discover.searchLabel")}
             </label>
             <TextInput
               id="discover-search"
-              placeholder="데이터셋명·기관 검색"
+              placeholder={t("discover.searchLabel")}
               value={query}
               onChange={(event) => updateParam("q", event.target.value)}
             />
@@ -115,10 +118,10 @@ export function DiscoverPage() {
               value={provider}
               onChange={(event) => updateParam("provider", event.target.value)}
             >
-              <option value="">Provider 전체 ({entries.length}개)</option>
+              <option value="">{t("discover.allProviders", { count: entries.length })}</option>
               {providerOptions.map((item) => (
                 <option key={item} value={item}>
-                  {providerLabel(item)} ({providerCounts.get(item) ?? 0}개)
+                  {t("discover.providerOption", { label: providerLabel(item), count: providerCounts.get(item) ?? 0 })}
                 </option>
               ))}
             </select>
@@ -129,11 +132,11 @@ export function DiscoverPage() {
               checked={onlyRequiresKey}
               onChange={(event) => updateParam("key", event.target.checked ? "1" : "")}
             />
-            서비스 키 필요만 ({serviceKeyCount}개)
+            {t("discover.serviceKeyOnly", { count: serviceKeyCount })}
           </label>
           {hasActiveFilters ? (
             <Button variant="ghost" size="sm" onClick={() => setSearchParams({})} className="ml-auto">
-              필터 초기화
+              {t("discover.resetFilters")}
             </Button>
           ) : null}
         </div>
@@ -145,14 +148,14 @@ export function DiscoverPage() {
             ))}
           </div>
         ) : state.status === "error" ? (
-          <ErrorState title="카탈로그를 불러오지 못했습니다" message={state.error} onRetry={load} />
+          <ErrorState title={t("discover.errors.catalogTitle")} message={state.error} onRetry={load} />
         ) : entries.length === 0 ? (
           <EmptyState
-            title="Builder 카탈로그가 비어 있습니다"
-            description="등록된 provider/dataset이 없습니다. Builder 설정을 확인해 주세요."
+            title={t("discover.empty.title")}
+            description={t("discover.empty.desc")}
           />
         ) : visibleEntries.length === 0 ? (
-          <EmptyState title="조건에 맞는 데이터셋이 없습니다" description="검색어나 필터를 변경해 보세요." />
+          <EmptyState title={t("discover.noMatch.title")} description={t("discover.noMatch.desc")} />
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {visibleEntries.map((entry) => (
@@ -165,12 +168,12 @@ export function DiscoverPage() {
                   <span className="rounded-full bg-muted px-2 py-0.5">{providerLabel(entry.provider)}</span>
                   {entry.dataset.requires_service_key ? (
                     <span className="rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">
-                      서비스 키 필요
+                      {t("discover.serviceKeyBadge")}
                     </span>
                   ) : null}
                 </div>
                 <Button size="sm" onClick={() => startWithDataset(entry)} className="mt-auto">
-                  이 데이터로 시작하기
+                  {t("discover.startWith")}
                 </Button>
               </Card>
             ))}
@@ -178,7 +181,7 @@ export function DiscoverPage() {
         )}
 
         {state.status === "loaded" ? (
-          <p className="text-xs text-muted-foreground">{visibleEntries.length}개 표시</p>
+          <p className="text-xs text-muted-foreground">{t("discover.shownCount", { count: visibleEntries.length })}</p>
         ) : null}
       </Card>
     </main>

@@ -736,6 +736,36 @@
       "requestParamsLabel": "요청 파라미터 (JSON)",
       "applyExample": "예시값 적용",
       "fileUploadTitle": "파일 업로드"
+    },
+    "steps": {
+      "source": "데이터 선택",
+      "configure": "가져오기 설정",
+      "preview": "Preview · 검증",
+      "review": "검토 · Build"
+    },
+    "errors": {
+      "catalog": "Builder catalog를 불러오지 못했습니다.",
+      "upload": "파일 업로드에 실패했습니다.",
+      "yamlSyntax": "YAML 구문 오류: {{message}}",
+      "yamlApply": "YAML을 적용하지 못했습니다.",
+      "spec": "빌드 스펙 오류",
+      "preview": "Preview 요청에 실패했습니다.",
+      "validate": "검증 요청에 실패했습니다."
+    },
+    "page": {
+      "title": "데이터 추가",
+      "desc": "가져오기에 필요한 설정을 준비하고, Preview에서 실제 데이터를 확인·검증한 뒤 Build를 시작합니다."
+    },
+    "draft": {
+      "prompt": "저장된 초안이 있습니다. 이어서 편집할까요?",
+      "restore": "불러오기",
+      "discard": "삭제"
+    },
+    "nav": {
+      "back": "이전",
+      "next": "다음",
+      "saved": "저장됨 ✓",
+      "saveDraft": "초안 저장"
     }
   },
   "settings": {
@@ -993,6 +1023,71 @@
       "kubiOtherRun": "참고 분석 - 현재 Report와 다른 Run 기준 (dataset: {{dataset}}, run: {{run}})",
       "kubiOtherRunHtml": "참고 분석 - 다른 Run 기준 (dataset: {{dataset}}, run: {{run}})",
       "reasonLabel": "판단 근거"
+    },
+    "block": {
+      "status": {
+        "partial": "일부만 확인됨",
+        "unavailable": "확인할 수 없음"
+      },
+      "section": {
+        "overview": "1. 데이터 개요",
+        "pipeline": "2. 처리 흐름",
+        "quality": "3. 품질 진단",
+        "schema": "4. 데이터 구조",
+        "data_summary": "5. 데이터 규모",
+        "output": "6. Output"
+      },
+      "showDetail": "상세 근거 보기",
+      "kubiTitle": "Kubi 분석 · AI 작성",
+      "remove": "제거",
+      "edit": "편집",
+      "delete": "삭제",
+      "context": "기준 Dataset: {{dataset}} · 기준 Run: {{run}}",
+      "otherContext": "참고 분석 · 현재 Report의 기준 dataset/run과 다릅니다(자동으로 합치지 않음).",
+      "generatedAt": "생성 시각 {{at}}",
+      "reason": "판단 근거: {{reason}}",
+      "linkedEvidence": "연결된 Evidence: {{refs}}"
+    },
+    "kubiPanel": {
+      "preset": {
+        "comprehensive": {
+          "label": "보고서용 AI 분석 생성",
+          "question": "이 Report가 기준으로 하는 Dataset/Run을 종합적으로 분석해줘."
+        },
+        "quality": {
+          "label": "품질 문제 해석",
+          "question": "현재 확인된 Quality 이슈를 해석해줘."
+        },
+        "pipeline": {
+          "label": "Pipeline 실패 원인 분석",
+          "question": "이 Build의 Pipeline이 실패했다면 원인을 분석해줘."
+        },
+        "ideas": {
+          "label": "데이터 활용 아이디어",
+          "question": "이 데이터를 어떻게 활용할 수 있을지 아이디어를 제안해줘."
+        },
+        "caveats": {
+          "label": "주의사항·한계 작성",
+          "question": "이 데이터를 사용할 때 주의사항과 한계를 정리해줘."
+        }
+      },
+      "mockDisclaimer": "실제 AI 분석이 아닌 mock 응답입니다.",
+      "reason": "보고서용 AI 분석",
+      "reasonDemo": "[DEMO] 보고서용 분석(mock 응답)",
+      "chatTitle": "직접 질문하기 · 현재 Report 기준({{dataset}} · {{run}})",
+      "close": "닫기",
+      "intro": "현재 Report의 Dataset/Run과 Builder Evidence를 기준으로 보고서에 추가할 AI 해석을 생성할 수 있습니다.",
+      "needsKey": "Kubi 분석에는 개인 LLM API Key가 필요합니다.",
+      "openAiSettings": "AI 설정 열기",
+      "generateDemo": "데모 보고서 분석 생성",
+      "askDirectly": "직접 질문하기",
+      "aiSettings": "AI 설정",
+      "generating": "생성 중…",
+      "cancel": "취소",
+      "error": "분석을 생성하지 못했습니다.",
+      "evidence": "근거",
+      "addToReport": "보고서에 추가",
+      "regenerate": "다시 생성"
     }
   },
   "artifacts": {
@@ -1061,5 +1156,54 @@
       "na": "평가값이 없거나 적용되지 않음. PASS가 아님",
       "unavailable": "Builder가 결과를 제공할 수 없는 상태. FAIL과 다름"
     }
+  },
+  "discover": {
+    "page": {
+      "title": "데이터 탐색",
+      "desc": "Builder 카탈로그에서 provider와 데이터셋을 정확 검색하고, 선택한 데이터로 바로 빌드를 시작하세요."
+    },
+    "errors": {
+      "catalog": "카탈로그를 불러오지 못했습니다.",
+      "catalogTitle": "카탈로그를 불러오지 못했습니다"
+    },
+    "searchLabel": "데이터셋명·기관 검색",
+    "allProviders": "Provider 전체 ({{count}}개)",
+    "providerOption": "{{label}} ({{count}}개)",
+    "serviceKeyOnly": "서비스 키 필요만 ({{count}}개)",
+    "resetFilters": "필터 초기화",
+    "empty": {
+      "title": "Builder 카탈로그가 비어 있습니다",
+      "desc": "등록된 provider/dataset이 없습니다. Builder 설정을 확인해 주세요."
+    },
+    "noMatch": {
+      "title": "조건에 맞는 데이터셋이 없습니다",
+      "desc": "검색어나 필터를 변경해 보세요."
+    },
+    "serviceKeyBadge": "서비스 키 필요",
+    "startWith": "이 데이터로 시작하기",
+    "shownCount": "{{count}}개 표시"
+  },
+  "catalog": {
+    "page": {
+      "desc": "정확 검색과 필터로 데이터셋을 찾습니다."
+    },
+    "errors": {
+      "list": "데이터셋 목록을 불러오지 못했습니다.",
+      "listTitle": "데이터셋 목록을 불러오지 못했습니다"
+    },
+    "searchLabel": "Dataset / Provider 검색",
+    "searchPlaceholder": "데이터셋명·기관 검색",
+    "allProviders": "Provider 전체",
+    "stageLabel": "Stage 상태",
+    "allStages": "Stage 전체",
+    "allValidations": "Validation 전체",
+    "noMatch": {
+      "title": "조건에 맞는 데이터셋이 없습니다",
+      "desc": "검색어나 필터를 변경해 보세요."
+    },
+    "openDetail": "{{title}} 상세 열기",
+    "qualityError": "Quality 조회 실패",
+    "shownCount": "{{count}}개 표시",
+    "resetFilters": "필터 초기화"
   }
 }
