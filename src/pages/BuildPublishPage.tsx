@@ -1,3 +1,5 @@
+import { i18n } from "@/shared/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { getBuild } from "@/features/runs/api/getBuild";
@@ -38,19 +40,21 @@ type RunContextState =
   | { status: "loaded"; data: RunContext }
   | { status: "error"; message: string };
 
-const BUILD_STATUS_LABEL: Record<BuildRunStatus, string> = {
-  queued: "대기 중",
-  running: "실행 중",
-  cancelling: "취소 중",
-  succeeded: "완료",
-  failed: "실패",
-  cancelled: "취소됨",
+/** 라벨이 아니라 키만 담는다 — 모듈 상수에 문장을 넣으면 언어가 굳는다(#350). */
+const BUILD_STATUS_KEY: Record<BuildRunStatus, string> = {
+  queued: "buildPublish.statusQueued",
+  running: "buildPublish.statusRunning",
+  cancelling: "buildPublish.statusCancelling",
+  succeeded: "buildPublish.statusSucceeded",
+  failed: "buildPublish.statusFailed",
+  cancelled: "buildPublish.statusCancelled",
 };
 
 const inputClassName =
   "h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function BuildPublishPage() {
+  const { t } = useTranslation();
   const { buildId: runId = "" } = useParams();
   const [searchParams] = useSearchParams();
   // `?dataset=`은 있으면 보조 표시 힌트로만 쓴다 — 없다고 실제 존재하는 Run을
@@ -66,7 +70,7 @@ export function BuildPublishPage() {
 
   useEffect(() => {
     if (!runId) {
-      setRunContext({ status: "error", message: "게시할 Run ID가 없습니다." });
+      setRunContext({ status: "error", message: i18n.t("buildPublish.noRunId") });
       return;
     }
     let active = true;
@@ -90,7 +94,7 @@ export function BuildPublishPage() {
         if (!active) return;
         setRunContext({
           status: "error",
-          message: cause instanceof Error ? cause.message : "이 Run의 정보를 확인할 수 없습니다.",
+          message: cause instanceof Error ? cause.message : i18n.t("buildPublish.runInfoError"),
         });
       });
     return () => {
@@ -100,7 +104,7 @@ export function BuildPublishPage() {
 
   useEffect(() => {
     if (!runId) {
-      setReadiness({ status: "error", message: "게시할 Run ID가 없습니다." });
+      setReadiness({ status: "error", message: i18n.t("buildPublish.noRunId") });
       return;
     }
     const controller = new AbortController();
@@ -112,7 +116,7 @@ export function BuildPublishPage() {
       .then((data) => {
         if (!active) return;
         if (data.run_id !== runId || data.target !== "huggingface") {
-          setReadiness({ status: "error", message: "Builder readiness 응답이 선택한 Run과 일치하지 않습니다." });
+          setReadiness({ status: "error", message: i18n.t("buildPublish.readinessMismatch") });
           return;
         }
         setReadiness({ status: "loaded", data });
@@ -131,14 +135,14 @@ export function BuildPublishPage() {
   const datasetLabel = runCtx?.datasetTitle ?? (datasetHint || null);
   const buildCompletionText =
     runContext.status === "loading"
-      ? "확인 중…"
+      ? t("buildPublish.checking")
       : runCtx
         ? runCtx.status === "succeeded"
           ? runCtx.finishedAt
-            ? `완료 · ${formatDateTime(runCtx.finishedAt)}`
-            : "완료"
-          : `${BUILD_STATUS_LABEL[runCtx.status]}${runCtx.finishedAt ? ` · ${formatDateTime(runCtx.finishedAt)}` : ""}`
-        : "확인되지 않음";
+            ? t("buildPublish.completedAt", { time: formatDateTime(runCtx.finishedAt) })
+            : t("buildPublish.completed")
+          : `${t(BUILD_STATUS_KEY[runCtx.status])}${runCtx.finishedAt ? ` · ${formatDateTime(runCtx.finishedAt)}` : ""}`
+        : t("buildPublish.unconfirmed");
 
   const destinationError = validatePublishDestination(destination);
   const builderReady = readiness.status === "loaded" && readiness.data.ready && readiness.data.blockers.length === 0;
@@ -165,29 +169,29 @@ export function BuildPublishPage() {
   return (
     <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
       <PageHeader
-        eyebrow="게시"
-        title={`${datasetLabel || runId || "Run"} 게시`}
-        description="Builder가 선택한 Run의 준비 상태를 확인한 뒤 Hugging Face에 게시합니다."
+        eyebrow={t("buildPublish.eyebrow")}
+        title={t("buildPublish.title", { name: datasetLabel || runId || "Run" })}
+        description={t("buildPublish.desc")}
       />
 
       <Card>
-        <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">선택한 Run</p>
+        <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t("buildPublish.selectedRun")}</p>
         <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
-          <div><dt className="text-muted-foreground">Dataset</dt><dd>{datasetLabel || (runContext.status === "loading" ? "확인 중…" : "확인되지 않음")}</dd></div>
+          <div><dt className="text-muted-foreground">Dataset</dt><dd>{datasetLabel || (runContext.status === "loading" ? t("buildPublish.checking") : t("buildPublish.unconfirmed"))}</dd></div>
           <div><dt className="text-muted-foreground">Run ID</dt><dd className="break-all font-mono">{runId || "—"}</dd></div>
-          <div><dt className="text-muted-foreground">Build 완료</dt><dd>{buildCompletionText}</dd></div>
+          <div><dt className="text-muted-foreground">{t("buildPublish.buildCompleted")}</dt><dd>{buildCompletionText}</dd></div>
           <div><dt className="text-muted-foreground">Target</dt><dd>Hugging Face</dd></div>
         </dl>
-        <p className="mt-3 text-xs text-muted-foreground">이 화면은 URL의 exact Run ID로 Dataset과 Build 완료 상태를 확인하며, latest Run으로 바꾸지 않습니다.</p>
+        <p className="mt-3 text-xs text-muted-foreground">{t("buildPublish.exactRunNote")}</p>
         {runContext.status === "error" ? (
-          <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">이 Run의 Dataset 정보를 불러오지 못했습니다. Run ID로 게시 준비 상태는 아래에서 계속 확인할 수 있습니다.</p>
+          <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{t("buildPublish.datasetLoadWarn")}</p>
         ) : null}
       </Card>
 
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div><h2 className="text-sm font-semibold">Builder readiness</h2><p className="mt-1 text-xs text-muted-foreground">Run·Gold·license·PII policy·서버 credential을 Builder가 판정합니다.</p></div>
-          <Button variant="secondary" size="sm" disabled={readiness.status === "loading" || publish.status === "publishing"} onClick={() => setReadinessVersion((value) => value + 1)}>다시 확인</Button>
+          <div><h2 className="text-sm font-semibold">Builder readiness</h2><p className="mt-1 text-xs text-muted-foreground">{t("buildPublish.readinessNote")}</p></div>
+          <Button variant="secondary" size="sm" disabled={readiness.status === "loading" || publish.status === "publishing"} onClick={() => setReadinessVersion((value) => value + 1)}>{t("buildPublish.recheck")}</Button>
         </div>
         {readiness.status === "loading" ? <Skeleton className="mt-4 h-20 w-full" /> : null}
         {readiness.status === "error" ? <div className="mt-4" role="alert"><p className="text-sm text-red-700 dark:text-red-300">{readiness.message}</p></div> : null}
@@ -195,58 +199,58 @@ export function BuildPublishPage() {
           <div className="mt-4 space-y-4">
             <p className="text-sm font-medium">
               {builderReady
-                ? "Builder 게시 준비 완료"
+                ? t("buildPublish.readyLabel")
                 : readiness.data.blockers.length > 0
-                  ? "Builder blocker가 있어 게시할 수 없습니다."
+                  ? t("buildPublish.blockedLabel")
                   // ready: false인데 blockers가 비어 있으면("빈 카드") "blocker가 있다"고
                   // 잘못 단정하지 않는다 — Builder가 사유를 제공하지 않은 것과 실제 blocker가
                   // 있는 것은 다른 상태다(UI audit #4).
-                  : "Builder가 이 Run을 게시 준비되지 않음으로 판정했지만 구체적인 사유(blocker)를 제공하지 않았습니다."}
+                  : t("buildPublish.notReadyNoReason")}
             </p>
             {readiness.data.blockers.length > 0 ? <IssueList title="Blockers" issues={readiness.data.blockers} tone="error" /> : null}
             {readiness.data.warnings.length > 0 ? <IssueList title="Warnings" issues={readiness.data.warnings} tone="warning" /> : null}
-            {readiness.data.blockers.some((issue) => issue.code === "credential_unavailable") ? <p className="text-xs text-muted-foreground">이 blocker는 source Provider credential이 아니라 Builder 서버의 Hugging Face publish credential을 뜻합니다. Studio는 token을 입력하거나 저장하지 않습니다.</p> : null}
+            {readiness.data.blockers.some((issue) => issue.code === "credential_unavailable") ? <p className="text-xs text-muted-foreground">{t("buildPublish.credentialNote")}</p> : null}
           </div>
         ) : null}
       </Card>
 
       <Card>
-        <h2 className="text-sm font-semibold">게시 설정</h2>
-        <p className="mt-1 text-xs text-muted-foreground">Readiness와 별개인 로컬 입력 검증입니다. Builder readiness는 destination이나 공개 설정을 검증하지 않습니다.</p>
+        <h2 className="text-sm font-semibold">{t("buildPublish.settingsTitle")}</h2>
+        <p className="mt-1 text-xs text-muted-foreground">{t("buildPublish.settingsNote")}</p>
         <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_220px]">
           <label className="text-sm font-medium">Hugging Face destination
             <input aria-label="Hugging Face destination" className={`mt-2 ${inputClassName}`} placeholder="owner/dataset" value={destination} disabled={publish.status === "publishing"} onChange={(event) => updateDestination(event.target.value)} />
-            <span className={`mt-1 block text-xs ${destinationError ? "text-red-700 dark:text-red-300" : "text-muted-foreground"}`}>{destinationError ?? "Builder가 허용하는 owner/dataset 식별자"}</span>
+            <span className={`mt-1 block text-xs ${destinationError ? "text-red-700 dark:text-red-300" : "text-muted-foreground"}`}>{destinationError ?? t("buildPublish.destinationHint")}</span>
           </label>
           <label className="flex items-center gap-3 self-center rounded-lg border border-border p-4 text-sm">
-            <input aria-label="비공개 Dataset" type="checkbox" checked={isPrivate} disabled={publish.status === "publishing"} onChange={(event) => updatePrivate(event.target.checked)} className="h-4 w-4 accent-emerald-600" />
-            <span><strong className="block">비공개 Dataset</strong><span className="text-xs text-muted-foreground">기본값: 비공개</span></span>
+            <input aria-label={t("buildPublish.privateLabel")} type="checkbox" checked={isPrivate} disabled={publish.status === "publishing"} onChange={(event) => updatePrivate(event.target.checked)} className="h-4 w-4 accent-emerald-600" />
+            <span><strong className="block">{t("buildPublish.privateLabel")}</strong><span className="text-xs text-muted-foreground">{t("buildPublish.privateDefault")}</span></span>
           </label>
         </div>
       </Card>
 
       {!confirmation ? (
-        <Button className="self-start" disabled={!canReview} onClick={() => setConfirmation(request)}>최종 확인</Button>
+        <Button className="self-start" disabled={!canReview} onClick={() => setConfirmation(request)}>{t("buildPublish.review")}</Button>
       ) : (
-        <Card className="border-emerald-300 dark:border-emerald-900" aria-label="게시 최종 확인">
-          <h2 className="text-sm font-semibold">게시 최종 확인</h2>
+        <Card className="border-emerald-300 dark:border-emerald-900" aria-label={t("buildPublish.confirmTitle")}>
+          <h2 className="text-sm font-semibold">{t("buildPublish.confirmTitle")}</h2>
           <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
             <div><dt className="text-muted-foreground">Run ID</dt><dd className="font-mono">{runId}</dd></div>
             <div><dt className="text-muted-foreground">Target</dt><dd>huggingface</dd></div>
             <div><dt className="text-muted-foreground">Destination</dt><dd>{confirmation.destination}</dd></div>
-            <div><dt className="text-muted-foreground">공개 설정</dt><dd>{confirmation.options?.private === false ? "Public" : "Private"}</dd></div>
+            <div><dt className="text-muted-foreground">{t("buildPublish.visibility")}</dt><dd>{confirmation.options?.private === false ? "Public" : "Private"}</dd></div>
           </dl>
-          <p className="mt-4 text-sm text-muted-foreground">Builder의 POST 응답이 성공하기 전에는 게시 완료로 표시하지 않습니다.</p>
+          <p className="mt-4 text-sm text-muted-foreground">{t("buildPublish.confirmNote")}</p>
           <div className="mt-4 flex flex-wrap gap-3">
-            <Button loading={publish.status === "publishing"} disabled={!builderReady || Boolean(validatePublishDestination(confirmation.destination))} onClick={() => void publish.start(runId, confirmation)}>게시 실행</Button>
-            {publish.status !== "publishing" ? <Button variant="secondary" onClick={() => setConfirmation(undefined)}>설정 수정</Button> : <Button variant="secondary" onClick={publish.stopWaiting}>응답 기다리기 중단</Button>}
+            <Button loading={publish.status === "publishing"} disabled={!builderReady || Boolean(validatePublishDestination(confirmation.destination))} onClick={() => void publish.start(runId, confirmation)}>{t("buildPublish.publishNow")}</Button>
+            {publish.status !== "publishing" ? <Button variant="secondary" onClick={() => setConfirmation(undefined)}>{t("buildPublish.editSettings")}</Button> : <Button variant="secondary" onClick={publish.stopWaiting}>{t("buildPublish.stopWaiting")}</Button>}
           </div>
         </Card>
       )}
 
       {publish.status === "published" && publish.result ? (
         <Card variant="success" role="status">
-          <div className="flex items-center gap-2"><StatusBadge status="published" /><strong>Builder 게시 완료</strong></div>
+          <div className="flex items-center gap-2"><StatusBadge status="published" /><strong>{t("buildPublish.publishedTitle")}</strong></div>
           <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
             <div><dt className="text-muted-foreground">Run ID</dt><dd className="font-mono">{publish.result.run_id}</dd></div>
             <div><dt className="text-muted-foreground">Destination</dt><dd>{publish.result.destination}</dd></div>
@@ -256,8 +260,8 @@ export function BuildPublishPage() {
           <div className="mt-4 break-all text-sm">Reference: {isSafePublishReference(publish.result.reference) ? <a href={publish.result.reference} target="_blank" rel="noreferrer" className="text-emerald-700 underline dark:text-emerald-300">{publish.result.reference}</a> : <span>{publish.result.reference}</span>}</div>
         </Card>
       ) : null}
-      {publish.status === "failed" ? <Card variant="error" role="alert"><strong>게시 실패</strong><p className="mt-2 text-sm">{publish.failure?.message}</p>{publish.failure?.kind === "publish_state_unknown" ? <p className="mt-2 text-xs">자동 재시도하지 마세요.</p> : null}</Card> : null}
-      {publish.status === "aborted" ? <Card role="status"><strong>응답 대기를 중단했습니다.</strong><p className="mt-2 text-sm text-muted-foreground">브라우저 요청만 중단했으며 원격 게시 작업을 취소한 것은 아닙니다. 게시 결과는 확인되지 않았습니다.</p></Card> : null}
+      {publish.status === "failed" ? <Card variant="error" role="alert"><strong>{t("buildPublish.publishFailed")}</strong><p className="mt-2 text-sm">{publish.failure?.message}</p>{publish.failure?.kind === "publish_state_unknown" ? <p className="mt-2 text-xs">{t("buildPublish.noAutoRetry")}</p> : null}</Card> : null}
+      {publish.status === "aborted" ? <Card role="status"><strong>{t("buildPublish.abortedTitle")}</strong><p className="mt-2 text-sm text-muted-foreground">{t("buildPublish.abortedBody")}</p></Card> : null}
     </main>
   );
 }
