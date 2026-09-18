@@ -82,7 +82,7 @@ describe("ProviderPage credential 상태", () => {
     await selectProvider("datago");
 
     expect(
-      await screen.findByText("자격 증명 저장소가 아직 구성되지 않았습니다", undefined, { timeout: 4000 }),
+      await screen.findByText("자격 증명 저장소가 아직 구성되지 않았습니다"),
     ).toBeInTheDocument();
     // 일반 오류 문구나 등록/삭제 컨트롤로 오인되지 않는다.
     expect(screen.queryByText("자격 증명 상태를 불러오지 못했습니다")).not.toBeInTheDocument();
@@ -99,7 +99,7 @@ describe("ProviderPage credential 상태", () => {
     renderProviders();
     await selectProvider("datago");
 
-    expect(await screen.findByText("자격 증명 상태를 불러오지 못했습니다", undefined, { timeout: 4000 })).toBeInTheDocument();
+    expect(await screen.findByText("자격 증명 상태를 불러오지 못했습니다")).toBeInTheDocument();
     expect(screen.queryByText("자격 증명 저장소가 아직 구성되지 않았습니다")).not.toBeInTheDocument();
   });
 
@@ -122,14 +122,14 @@ describe("ProviderPage credential 상태", () => {
     fireEvent.click(await screen.findByRole("button", { name: "등록하기" }));
     fireEvent.change(screen.getByPlaceholderText("API Key를 입력하세요"), { target: { value: "secret" } });
     fireEvent.click(screen.getByRole("button", { name: "저장" }));
-    expect(await screen.findByText("Credential 저장에 실패했습니다", undefined, { timeout: 4000 })).toBeInTheDocument();
+    expect(await screen.findByText("Credential 저장에 실패했습니다")).toBeInTheDocument();
     expect(screen.queryByText(/master key/)).not.toBeInTheDocument();
 
     configured = true;
     fireEvent.click(screen.getAllByText("datago")[0].closest("li") as HTMLElement);
     expect(await screen.findByRole("button", { name: "삭제" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "삭제" }));
-    expect(await screen.findByText("Credential 삭제에 실패했습니다", undefined, { timeout: 4000 })).toBeInTheDocument();
+    expect(await screen.findByText("Credential 삭제에 실패했습니다")).toBeInTheDocument();
     expect(screen.queryByText(/master key/)).not.toBeInTheDocument();
   });
 });

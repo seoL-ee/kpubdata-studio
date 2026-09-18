@@ -161,7 +161,7 @@ describe("HomePage 대시보드 KPI", () => {
     expect(await within(kpiCard("SUCCEEDED (24H)")).findByText("9")).toBeInTheDocument();
     // 5xx는 apiFetch가 지수 백오프로 재시도하므로 catch까지 시간이 걸린다.
     expect(
-      await within(kpiCard("DATASETS")).findByText("확인 불가", undefined, { timeout: 4000 }),
+      await within(kpiCard("DATASETS")).findByText("확인 불가", undefined),
     ).toBeInTheDocument();
   });
 
@@ -184,7 +184,7 @@ describe("HomePage 대시보드 KPI", () => {
     expect(await within(kpiCard("DATASETS")).findByText("12")).toBeInTheDocument();
     expect(await within(kpiCard("QUALITY WARN (24H)")).findByText("4")).toBeInTheDocument();
     expect(
-      await within(kpiCard("SUCCEEDED (24H)")).findByText("확인 불가", undefined, { timeout: 4000 }),
+      await within(kpiCard("SUCCEEDED (24H)")).findByText("확인 불가", undefined),
     ).toBeInTheDocument();
     expect(within(kpiCard("RUNNING")).getByText("확인 불가")).toBeInTheDocument();
   });
@@ -258,7 +258,7 @@ describe("HomePage 대시보드 KPI", () => {
     renderHome();
 
     expect(
-      await screen.findByText("빌드 목록을 불러올 수 없습니다", undefined, { timeout: 4000 }),
+      await screen.findByText("빌드 목록을 불러올 수 없습니다", undefined),
     ).toBeInTheDocument();
     expect(await within(kpiCard("DATASETS")).findByText("12")).toBeInTheDocument();
     expect(await within(kpiCard("SUCCEEDED (24H)")).findByText("9")).toBeInTheDocument();
@@ -455,7 +455,7 @@ describe("HomePage 신규 사용자 판정", () => {
 
     expect(await screen.findByText(DASHBOARD_HEADING)).toBeInTheDocument();
     expect(
-      await within(kpiCard("DATASETS")).findByText("확인 불가", undefined, { timeout: 4000 }),
+      await within(kpiCard("DATASETS")).findByText("확인 불가", undefined),
     ).toBeInTheDocument();
     expect(screen.queryByText(NEW_USER_HEADING)).not.toBeInTheDocument();
   });

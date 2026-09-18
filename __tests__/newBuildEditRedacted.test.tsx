@@ -69,7 +69,7 @@ function renderEdit() {
 async function gotoStep(heading: string) {
   fireEvent.click(screen.getByRole("button", { name: "다음" }));
   // 단계마다 catalog fetch effect가 끼어 재렌더가 늦을 수 있어(병렬 실행 부하) 여유를 둔다.
-  await screen.findByRole("heading", { name: heading }, { timeout: 4000 });
+  await screen.findByRole("heading", { name: heading });
 }
 
 describe("Build Edit — 복원된 redaction marker fail-closed (S07)", () => {

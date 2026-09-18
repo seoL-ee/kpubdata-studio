@@ -122,16 +122,16 @@ describe("New Build draft persistence (#10)", () => {
 
     // 파라미터 단계로 이동하면 필드에 raw secret이 아니라 marker가 보인다.
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
-    await screen.findByRole("heading", { name: "데이터 소스" }, { timeout: 4000 });
+    await screen.findByRole("heading", { name: "데이터 소스" });
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
-    await screen.findByRole("heading", { name: "파라미터" }, { timeout: 4000 });
+    await screen.findByRole("heading", { name: "파라미터" });
     const fieldValue = (screen.getByLabelText(/요청 파라미터/) as HTMLTextAreaElement).value;
     expect(fieldValue).toContain("__KPD_PARAMS_SECRET_REDACTED__");
     expect(fieldValue).not.toContain(secret);
 
     // 미리보기 진입 시 fail-closed — Builder로 marker를 제출하지 않는다.
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
-    await screen.findByRole("heading", { name: "미리보기" }, { timeout: 4000 });
+    await screen.findByRole("heading", { name: "미리보기" });
     fireEvent.click(screen.getByRole("button", { name: "미리보기 새로고침" }));
     expect(
       await screen.findByText(/시크릿이 포함된 파라미터 값이 제거되었습니다/),
@@ -141,9 +141,9 @@ describe("New Build draft persistence (#10)", () => {
 
     // Validate 경로도 동일하게 fail-closed — Builder `/validate` 미호출.
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
-    await screen.findByRole("heading", { name: "출력 형식" }, { timeout: 4000 });
+    await screen.findByRole("heading", { name: "출력 형식" });
     fireEvent.click(screen.getByRole("button", { name: "다음" }));
-    await screen.findByRole("heading", { name: "검증·실행" }, { timeout: 4000 });
+    await screen.findByRole("heading", { name: "검증·실행" });
     fireEvent.click(screen.getByRole("button", { name: "다시 검증" }));
     expect(
       await screen.findByText(/시크릿이 포함된 파라미터 값이 제거되었습니다/),
