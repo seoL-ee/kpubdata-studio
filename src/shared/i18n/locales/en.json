@@ -472,6 +472,24 @@
         "createDraft": "Create a new build draft: {{title}}",
         "addReportBlock": "Add as a report reference note"
       }
+    },
+    "session": {
+      "unsafeBaseUrl": "That base URL is not safe.",
+      "excludedMalformed": "Excluded as malformed: {{ref}}",
+      "excludedRefs": "Excluded evidence: {{refs}}",
+      "excludedActions": "Excluded actions: {{actions}}",
+      "llmFailed": "The LLM call failed.",
+      "demoEvidenceFailed": "Could not load the demo evidence.",
+      "contextChangedSql": "The screen context changed, so this SQL can no longer run.",
+      "contextChangedAction": "The screen context changed, so this action can no longer run.",
+      "contextChangedApply": "The screen context changed, so this action can no longer be applied.",
+      "opened": "Opened the screen.",
+      "addedToReport": "Added as a report reference note.",
+      "actionFailed": "The action could not be applied.",
+      "patchApplied": "Applied to the BuildSpec and it passed Builder /validate.",
+      "patchAppliedInvalid": "Applied to the BuildSpec but Builder /validate failed: {{errors}}",
+      "patchFailed": "The BuildSpec patch could not be applied.",
+      "draftSaved": "Saved to a new build draft."
     }
   },
   "quality": {
@@ -657,6 +675,18 @@
       "backToData": "Back to data settings",
       "defaultCredNote": "This provider currently uses Builder default credentials. Registering a separate user credential takes priority for calls to this provider.",
       "needsCredNote": "Credentials must be registered to use this provider."
+    },
+    "labels": {
+      "bok": "Bank of Korea ECOS",
+      "datago": "Public Data Portal (data.go.kr)",
+      "kosis": "Statistics Korea KOSIS",
+      "krx": "Korea Exchange (KRX)",
+      "law": "Korea Law Information Center",
+      "localdata": "LocalData",
+      "lofin": "LOFIN local finance",
+      "semas": "SEMAS",
+      "seoul": "Seoul Open Data Plaza",
+      "sgis": "SGIS statistical geographic information"
     }
   },
   "home": {
@@ -1300,5 +1330,20 @@
       "noCatalog": "BuildSpec generation stopped: the catalog could not be read.",
       "emptyOutput": "The output was empty."
     }
+  },
+  "status": {
+    "new": "New draft",
+    "draft": "Draft",
+    "dirty": "Modified",
+    "validated": "Validated",
+    "invalid": "Has errors",
+    "queued": "Queued",
+    "running": "Running",
+    "cancelling": "Cancelling",
+    "succeeded": "Succeeded",
+    "failed": "Failed",
+    "cancelled": "Cancelled",
+    "publishing": "Publishing",
+    "published": "Published"
   }
 }

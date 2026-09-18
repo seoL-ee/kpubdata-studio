@@ -32,6 +32,14 @@ import {
 } from "./actions";
 import type { KubiAction } from "./schema";
 import type { KubiActionRunState, KubiContext, KubiTurn } from "./types";
+import { i18n } from "@/shared/i18n";
+
+/**
+ * 이 파일의 문구는 모두 `kubi.session.*` 아래에 있다(#350).
+ * 이름이 `t`가 아닌 이유: 이 파일은 `KubiTurn`을 `t`로 받는 콜백이 여럿이라 가려진다.
+ */
+const msg = (key: string, params?: Record<string, unknown>): string =>
+  i18n.t(`kubi.session.${key}`, params ?? {});
 
 function newTurnId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
@@ -154,7 +162,7 @@ export function useKubiSession(): UseKubiSessionResult {
         updateTurn(turnId, (t) => ({
           ...t,
           status: "error",
-          error: { kind: "bad_base_url", message: baseUrlError ?? "안전하지 않은 base URL입니다." },
+          error: { kind: "bad_base_url", message: baseUrlError ?? msg("unsafeBaseUrl") },
         }));
         return;
       }
@@ -207,7 +215,7 @@ export function useKubiSession(): UseKubiSessionResult {
         // cross-check가 제거한 근거와 같은 자리에 함께 보여준다 — answer는 살린다.
         const malformedRefs = parsed.malformedEvidenceRefs;
         const rejectedRefs = [
-          ...malformedRefs.map((ref) => `형식 오류로 제외: ${ref}`),
+          ...malformedRefs.map((ref) => msg("excludedMalformed", { ref })),
           ...checked.rejectedRefs,
         ];
         const hasRejections =
@@ -225,8 +233,10 @@ export function useKubiSession(): UseKubiSessionResult {
                 kind: "hallucinated_refs",
                 message: [
                   checked.rejectedSqlReason,
-                  rejectedRefs.length ? `제외된 근거: ${rejectedRefs.join(", ")}` : null,
-                  checked.rejectedActions.length ? `제외된 action: ${checked.rejectedActions.join(", ")}` : null,
+                  rejectedRefs.length ? msg("excludedRefs", { refs: rejectedRefs.join(", ") }) : null,
+                  checked.rejectedActions.length
+                    ? msg("excludedActions", { actions: checked.rejectedActions.join(", ") })
+                    : null,
                 ]
                   .filter(Boolean)
                   .join(" "),
@@ -243,7 +253,7 @@ export function useKubiSession(): UseKubiSessionResult {
         updateTurn(turnId, (t) => ({
           ...t,
           status: "error",
-          error: { kind: "llm_error", message: cause instanceof Error ? cause.message : "LLM 호출에 실패했습니다." },
+          error: { kind: "llm_error", message: cause instanceof Error ? cause.message : msg("llmFailed") },
         }));
       } finally {
         controllersRef.current.delete(turnId);
@@ -289,7 +299,7 @@ export function useKubiSession(): UseKubiSessionResult {
         updateTurn(turnId, (t) => ({
           ...t,
           status: "error",
-          error: { kind: "llm_error", message: cause instanceof Error ? cause.message : "데모 evidence 조회에 실패했습니다." },
+          error: { kind: "llm_error", message: cause instanceof Error ? cause.message : msg("demoEvidenceFailed") },
         }));
       } finally {
         controllersRef.current.delete(turnId);
@@ -310,7 +320,7 @@ export function useKubiSession(): UseKubiSessionResult {
       if (!contextsMatch(turn.context, liveContext)) {
         updateTurn(turnId, (t) => ({
           ...t,
-          query: { status: "error", code: "invalid_context", message: "화면 문맥이 바뀌어 이 SQL을 실행할 수 없습니다." },
+          query: { status: "error", code: "invalid_context", message: msg("contextChangedSql") },
         }));
         return;
       }
@@ -355,7 +365,7 @@ export function useKubiSession(): UseKubiSessionResult {
       const action = turn?.response?.suggestedActions[index];
       if (!turn || !action) return;
       if (!contextsMatch(turn.context, liveContext)) {
-        setActionState(turnId, index, { status: "error", message: "화면 문맥이 바뀌어 이 action을 실행할 수 없습니다." });
+        setActionState(turnId, index, { status: "error", message: msg("contextChangedAction") });
         return;
       }
 
@@ -368,15 +378,15 @@ export function useKubiSession(): UseKubiSessionResult {
       try {
         if (action.type === "OPEN_PROVIDER" || action.type === "OPEN_BUILD" || action.type === "OPEN_QUALITY") {
           goToAction(action);
-          setActionState(turnId, index, { status: "applied", message: "화면을 열었습니다." });
+          setActionState(turnId, index, { status: "applied", message: msg("opened") });
         } else if (action.type === "ADD_REPORT_BLOCK") {
           applyAddReportBlock(action, turn.context);
-          setActionState(turnId, index, { status: "applied", message: "Report 참고 노트로 추가했습니다." });
+          setActionState(turnId, index, { status: "applied", message: msg("addedToReport") });
         }
       } catch (cause) {
         setActionState(turnId, index, {
           status: "error",
-          message: cause instanceof Error ? cause.message : "action을 적용하지 못했습니다.",
+          message: cause instanceof Error ? cause.message : msg("actionFailed"),
         });
       }
     },
@@ -399,7 +409,7 @@ export function useKubiSession(): UseKubiSessionResult {
       const action = turn?.response?.suggestedActions[index];
       if (!turn || !action) return;
       if (!contextsMatch(turn.context, liveContext)) {
-        setActionState(turnId, index, { status: "error", message: "화면 문맥이 바뀌어 이 action을 적용할 수 없습니다." });
+        setActionState(turnId, index, { status: "error", message: msg("contextChangedApply") });
         return;
       }
 
@@ -416,13 +426,13 @@ export function useKubiSession(): UseKubiSessionResult {
           setActionState(turnId, index, {
             status: "applied",
             message: result.valid
-              ? "BuildSpec에 적용했고 Builder /validate를 통과했습니다."
-              : `BuildSpec에 적용했지만 Builder /validate에 실패했습니다: ${result.errors.join("; ")}`,
+              ? msg("patchApplied")
+              : msg("patchAppliedInvalid", { errors: result.errors.join("; ") }),
           });
         } catch (cause) {
           setActionState(turnId, index, {
             status: "error",
-            message: cause instanceof Error ? cause.message : "BuildSpec patch 적용에 실패했습니다.",
+            message: cause instanceof Error ? cause.message : msg("patchFailed"),
           });
         }
         return;
@@ -431,7 +441,7 @@ export function useKubiSession(): UseKubiSessionResult {
       if (action.type === "CREATE_BUILD_DRAFT") {
         try {
           applyCreateBuildDraft(action);
-          setActionState(turnId, index, { status: "applied", message: "New Build 초안에 저장했습니다." });
+          setActionState(turnId, index, { status: "applied", message: msg("draftSaved") });
           navigate("/builds/new");
         } catch (cause) {
           setActionState(turnId, index, {
