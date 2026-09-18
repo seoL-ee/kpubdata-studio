@@ -43,6 +43,7 @@ import { WorkspacePage } from "@/pages/WorkspacePage";
  * @param element - 보호할 페이지 요소.
  * @returns 경계로 감싼 요소.
  */
+/** `feature`는 화면 이름이 아니라 i18n 키다(#350) — 폴백에서 현재 언어로 해석한다. */
 function withFeatureBoundary(feature: string, element: ReactElement): ReactElement {
   return <FeatureErrorBoundary feature={feature}>{element}</FeatureErrorBoundary>;
 }
@@ -70,108 +71,108 @@ export const router = createBrowserRouter([
       children: [
       {
         index: true,
-        element: withFeatureBoundary("홈", <HomePage />),
+        element: withFeatureBoundary("router.features.home", <HomePage />),
       },
       // 새 IA(#247)의 WORKSPACE 그룹. Discover는 #249에서 구현됨. Workspace는 아직
       // placeholder이며 #260에서 실제 화면으로 교체된다.
       {
         path: "discover",
-        element: withFeatureBoundary("Discover", <DiscoverPage />),
+        element: withFeatureBoundary("router.features.Discover", <DiscoverPage />),
       },
       {
         path: "workspace",
-        element: withFeatureBoundary("Workspace", <WorkspacePage />),
+        element: withFeatureBoundary("router.features.Workspace", <WorkspacePage />),
       },
       // 새 IA의 DATA 그룹. Add Data/Dataset Catalog/Quality는 #250/#253/#254에서 구현된다.
       {
         path: "add",
-        element: withFeatureBoundary("Add Data", <AddDataPage />),
+        element: withFeatureBoundary("router.features.AddData", <AddDataPage />),
       },
       {
         path: "datasets",
-        element: withFeatureBoundary("Dataset Catalog", <DatasetCatalogPage />),
+        element: withFeatureBoundary("router.features.DatasetCatalog", <DatasetCatalogPage />),
       },
       {
         path: "datasets/:datasetId",
-        element: withFeatureBoundary("Dataset 상세", <DatasetDetailPage />),
+        element: withFeatureBoundary("router.features.datasetDetail", <DatasetDetailPage />),
       },
       {
         path: "builds",
-        element: withFeatureBoundary("빌드 목록", <BuildsPage />),
+        element: withFeatureBoundary("router.features.builds", <BuildsPage />),
       },
       {
         path: "builds/new",
-        element: withFeatureBoundary("새 빌드 만들기", <NewBuildPage />),
+        element: withFeatureBoundary("router.features.newBuild", <NewBuildPage />),
       },
       {
         path: "quality",
-        element: withFeatureBoundary("Quality", <QualityPage />),
+        element: withFeatureBoundary("router.features.Quality", <QualityPage />),
       },
       // Build 단위 중심 라우트 (제안 §3.3): 상세 → 편집/실행/결과물/게시.
       // 레거시 딥링크(#255 §5): /builds/:buildId도 동일한 master-detail(BuildsPage)을
       // 열어 canonical form(/builds?run=)과 같은 context를 보여준다.
       {
         path: "builds/:buildId",
-        element: withFeatureBoundary("빌드 상세", <BuildsPage />),
+        element: withFeatureBoundary("router.features.buildDetail", <BuildsPage />),
       },
       {
         // 편집은 New Build와 동일한 에디터를 재사용한다.
         path: "builds/:buildId/edit",
-        element: withFeatureBoundary("빌드 편집", <NewBuildPage />),
+        element: withFeatureBoundary("router.features.buildEdit", <NewBuildPage />),
       },
       {
         path: "builds/:buildId/run",
-        element: withFeatureBoundary("빌드 실행", <BuildRunPage />),
+        element: withFeatureBoundary("router.features.buildRun", <BuildRunPage />),
       },
       {
         path: "builds/:buildId/artifacts",
-        element: withFeatureBoundary("결과물", <BuildArtifactsPage />),
+        element: withFeatureBoundary("router.features.artifacts", <BuildArtifactsPage />),
       },
       {
         path: "builds/:buildId/publish",
-        element: withFeatureBoundary("게시", <BuildPublishPage />),
+        element: withFeatureBoundary("router.features.publish", <BuildPublishPage />),
       },
       // 새 IA의 AI 그룹(#256에서 실제 기능 구현). 전역 Kubi drawer는
       // `src/features/kubi/KubiDrawer.tsx`로 Layout 수준에서 별도 mount된다.
       {
         path: "kubi",
-        element: withFeatureBoundary("Kubi", <KubiPage />),
+        element: withFeatureBoundary("router.features.Kubi", <KubiPage />),
       },
       {
         path: "reports",
-        element: withFeatureBoundary("Reports", <ReportsPage />),
+        element: withFeatureBoundary("router.features.Reports", <ReportsPage />),
       },
       {
         path: "reports/:reportId",
-        element: withFeatureBoundary("Report 편집", <ReportEditorPage />),
+        element: withFeatureBoundary("router.features.reportEditor", <ReportEditorPage />),
       },
       // 새 IA의 SYSTEM 그룹(#259/#264에서 실제 기능 구현).
       {
         path: "provider",
-        element: withFeatureBoundary("Provider", <ProviderPage />),
+        element: withFeatureBoundary("router.features.Provider", <ProviderPage />),
       },
       {
         path: "monitoring",
-        element: withFeatureBoundary("Monitoring", <MonitoringPage />),
+        element: withFeatureBoundary("router.features.Monitoring", <MonitoringPage />),
       },
       // 레거시 단독 라우트: 내비게이션에서는 제거됐지만 딥링크 호환을 위해 유지한다(#247 결정:
       // 새 IA로 리다이렉트하지 않고 그대로 유지 — Validate/Preview/Artifacts는 New Build
       // Wizard 내부 패널로 통합 예정이며, 통합 시점까지는 기존 화면이 fallback 역할을 한다).
       {
         path: "validate",
-        element: withFeatureBoundary("검증", <ValidatePage />),
+        element: withFeatureBoundary("router.features.validate", <ValidatePage />),
       },
       {
         path: "preview",
-        element: withFeatureBoundary("미리보기", <PreviewPage />),
+        element: withFeatureBoundary("router.features.preview", <PreviewPage />),
       },
       {
         path: "artifacts",
-        element: withFeatureBoundary("결과물", <ArtifactsPage />),
+        element: withFeatureBoundary("router.features.artifacts", <ArtifactsPage />),
       },
       {
         path: "settings",
-        element: withFeatureBoundary("설정", <SettingsPage />),
+        element: withFeatureBoundary("router.features.settings", <SettingsPage />),
       },
     ],
   },

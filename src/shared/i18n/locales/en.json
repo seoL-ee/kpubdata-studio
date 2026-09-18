@@ -1345,5 +1345,98 @@
     "cancelled": "Cancelled",
     "publishing": "Publishing",
     "published": "Published"
+  },
+  "errorBoundary": {
+    "global": {
+      "title": "Something went wrong",
+      "desc": "An unexpected error stopped this screen from rendering. Reloading the page usually fixes it. If it keeps happening, try again in a moment.",
+      "reload": "Reload"
+    },
+    "feature": {
+      "title": "Something went wrong in {{feature}}",
+      "desc": "Only this area is temporarily unavailable. The sidebar and other menus still work. Try again in a moment.",
+      "retry": "Try again"
+    }
+  },
+  "router": {
+    "features": {
+      "AddData": "Add Data",
+      "DatasetCatalog": "Dataset Catalog",
+      "Discover": "Discover",
+      "Kubi": "Kubi",
+      "Monitoring": "Monitoring",
+      "Provider": "Provider",
+      "Quality": "Quality",
+      "Reports": "Reports",
+      "Workspace": "Workspace",
+      "artifacts": "Artifacts",
+      "buildDetail": "Build details",
+      "buildEdit": "Edit build",
+      "buildRun": "Build run",
+      "builds": "Builds",
+      "datasetDetail": "Dataset details",
+      "home": "Home",
+      "newBuild": "New build",
+      "preview": "Preview",
+      "publish": "Publish",
+      "reportEditor": "Report editor",
+      "settings": "Settings",
+      "validate": "Validate"
+    }
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "steps": {
+      "dashboard-builds": {
+        "title": "Check recent builds",
+        "copy": "Review recent runs and their progress, and open build details when you need more."
+      },
+      "dashboard-overview": {
+        "title": "Check your status",
+        "copy": "This dashboard shows your current datasets and build activity."
+      },
+      "dashboard-quality": {
+        "title": "Check quality results",
+        "copy": "Review recent quality warnings and follow up where needed."
+      },
+      "kubi-helper": {
+        "title": "Stuck? Ask Kubi",
+        "copy": "Kubi helps you analyze using the dataset, run and stage on the current screen along with Builder evidence."
+      },
+      "sidebar": {
+        "title": "Tour your workspace",
+        "copy": "The left menu takes you to data discovery, builds and quality, Kubi, and provider settings."
+      },
+      "start-actions": {
+        "title": "Start here",
+        "copy": "Use Discover to find data in the catalog, or Add Data to bring in an API, file or URL yourself."
+      },
+      "workflow": {
+        "title": "How data gets made",
+        "copy": "Find data, set up the import, check and validate the real rows in preview, then build. After that you can review quality results and use the data."
+      }
+    }
+  },
+  "buildRun": {
+    "eyebrow": "Run",
+    "title": "Run {{id}}",
+    "fallbackId": "build",
+    "desc": "Shows the same run status as the builds list and detail screens.",
+    "manageInDetail": "Manage in build details",
+    "status": "Status",
+    "unknownStatus": "Status unknown",
+    "liveUpdating": "Updating live…",
+    "liveFailed": "Live status update failed (temporary) — keeping the last confirmed status.",
+    "liveForbidden": "You do not have permission to read this run's live status — showing the last confirmed status instead.",
+    "detailHint": {
+      "title": "See stage-by-stage progress in build details",
+      "desc": "This screen shows only the canonical run status, the same as the builds list and detail. Stage progress (Bronze/Silver/Gold), the run event timeline and cooperative cancellation live in build details (/builds?run=...)."
+    },
+    "openDetail": "Open build details",
+    "openArtifacts": "View artifacts",
+    "editSpec": "Edit spec"
   }
 }
