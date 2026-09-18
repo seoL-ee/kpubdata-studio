@@ -7,9 +7,15 @@
  * useBuildJob이 Builder 잡의 wire 상태를 노출하며, 취소(로컬 abort)가
  * polling을 즉시 종료하는지 확인한다.
  */
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { executeBuild, listBuilds, specHasFileSource, type BuilderJobStatus } from "@/features/runs/api";
+import {
+  executeBuild,
+  listBuilds,
+  POLL_INTERVAL_MS,
+  specHasFileSource,
+  type BuilderJobStatus,
+} from "@/features/runs/api";
 import { useBuildJob } from "@/features/runs/useBuildJob";
 import { builderApi } from "@/shared/lib/builderApi";
 import type { BuildSpec } from "@/shared/lib/types";
@@ -57,10 +63,42 @@ function mixedSpec(datasetId: string): BuildSpec {
   } as unknown as BuildSpec;
 }
 
+/**
+ * polling loop 은 terminal 에 닿을 때까지 `POLL_INTERVAL_MS`(800ms)를 실제로 기다렸다 —
+ * 케이스당 1.6~2.4초라 이 파일이 스위트에서 가장 느렸다(#376). 가짜 타이머로 그 대기만
+ * 건너뛴다: 폴링 횟수·순서·상태 전이는 그대로라 무엇을 검증하는지는 달라지지 않는다.
+ *
+ * terminal 까지 필요한 폴링 수보다 넉넉히 밀어준다(멈춘 loop 은 어차피 아래 await 에서
+ * 드러난다).
+ */
+const POLL_BUDGET_MS = POLL_INTERVAL_MS * 8;
+
+/**
+ * pending 상태 전이를 flush 한다 — RTL `waitFor` 의 대체재다.
+ *
+ * `waitFor` 는 자체 폴링에 실제 타이머를 쓰는데, vitest 의 가짜 타이머는 RTL 이
+ * 인식하지 못해(jest 전역이 없다) 둘을 같이 쓰면 영원히 기다린다. 여기서는 시계를
+ * 직접 밀어 같은 일을 한다.
+ */
+async function settle(ms = 0): Promise<void> {
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(ms);
+  });
+}
+
+/** 폴링을 기다리는 promise 를 가짜 시계로 끝까지 밀어 결과를 받는다. */
+async function runPolled<T>(start: () => Promise<T>): Promise<T> {
+  const promise = start();
+  await vi.advanceTimersByTimeAsync(POLL_BUDGET_MS);
+  return promise;
+}
+
 beforeEach(() => {
   vi.stubEnv("VITE_USE_REAL_BUILDER", "true");
+  vi.useFakeTimers();
 });
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
   vi.unstubAllEnvs();
 });
@@ -69,8 +107,8 @@ describe("async build job polling (#245)", () => {
   it("submits, polls through queued/running, and maps terminal success", async () => {
     const observed: BuilderJobStatus[] = [];
 
-    const run = await executeBuild(specOf("success"), undefined, (status) =>
-      observed.push(status),
+    const run = await runPolled(() =>
+      executeBuild(specOf("success"), undefined, (status) => observed.push(status)),
     );
 
     expect(run.status).toBe("succeeded");
@@ -81,7 +119,7 @@ describe("async build job polling (#245)", () => {
   });
 
   it("maps a failed terminal job to a failed run with the job error", async () => {
-    const run = await executeBuild(specOf("fail_source"));
+    const run = await runPolled(() => executeBuild(specOf("fail_source")));
 
     expect(run.status).toBe("failed");
     expect(run.error).toBe("upstream API timeout");
@@ -95,8 +133,9 @@ describe("async build job polling (#245)", () => {
     act(() => {
       promise = result.current.start(specOf("success"));
     });
-    await waitFor(() => expect(result.current.status).toBe("running"));
-    await waitFor(() => expect(result.current.builderStatus).toBe("queued"));
+    await settle();
+    expect(result.current.status).toBe("running");
+    expect(result.current.builderStatus).toBe("queued");
 
     act(() => {
       result.current.cancel();
@@ -107,6 +146,7 @@ describe("async build job polling (#245)", () => {
     expect(cancelSpy.mock.calls[0][0]).toMatch(/^success-\d+$/);
 
     // Builder가 cancelling → cancelled로 전이하는 것을 polling으로 관찰해 종결한다.
+    await settle(POLL_BUDGET_MS);
     await act(async () => {
       await promise.catch(() => undefined);
     });
@@ -129,13 +169,15 @@ describe("async build job polling (#245)", () => {
     act(() => {
       promise = result.current.start(specOf("success"));
     });
-    await waitFor(() => expect(result.current.builderStatus).toBe("queued"));
+    await settle();
+    expect(result.current.builderStatus).toBe("queued");
 
     act(() => {
       result.current.cancel();
     });
     expect(cancelSpy).toHaveBeenCalledTimes(1);
 
+    await settle(POLL_BUDGET_MS);
     await act(async () => {
       await promise.catch(() => undefined);
     });
@@ -163,11 +205,13 @@ describe("async build job polling (#245)", () => {
     act(() => {
       promise = result.current.start(fileSpec("f"));
     });
-    await waitFor(() => expect(result.current.status).toBe("running"));
+    await settle();
+    expect(result.current.status).toBe("running");
 
     act(() => {
       result.current.cancel();
     });
+    await settle(POLL_BUDGET_MS);
     await act(async () => {
       await promise.catch(() => undefined);
     });
@@ -228,7 +272,8 @@ describe("async pre-submit cancellation race (F03)", () => {
     act(() => {
       promise = result.current.start(specOf("pub"));
     });
-    await waitFor(() => expect(result.current.status).toBe("running"));
+    await settle();
+    expect(result.current.status).toBe("running");
 
     // submit이 아직 보류 중일 때 Cancel을 여러 번 누른다.
     act(() => {
@@ -252,7 +297,10 @@ describe("async pre-submit cancellation race (F03)", () => {
         created_at: "2026-08-16T09:00:00+00:00",
         updated_at: "2026-08-16T09:00:00+00:00",
       });
+      // 시계를 먼저 굴려두고 await 한다 — 반대 순서면 polling sleep 이 깨어나지 못해 멈춘다.
+      const advancing = vi.advanceTimersByTimeAsync(POLL_BUDGET_MS);
       await promise.catch(() => undefined);
+      await advancing;
     });
 
     // pending intent가 authoritative run_id로 정확히 1회 협조적 취소를 건다.
@@ -302,7 +350,8 @@ describe("async pre-submit cancellation race (F03)", () => {
     act(() => {
       promise = result.current.start(specOf("pub"));
     });
-    await waitFor(() => expect(result.current.status).toBe("running"));
+    await settle();
+    expect(result.current.status).toBe("running");
 
     act(() => {
       result.current.cancel();
@@ -316,7 +365,10 @@ describe("async pre-submit cancellation race (F03)", () => {
         created_at: "2026-08-16T09:00:00+00:00",
         updated_at: "2026-08-16T09:00:00+00:00",
       });
+      // 시계를 먼저 굴려두고 await 한다 — 반대 순서면 polling sleep 이 깨어나지 못해 멈춘다.
+      const advancing = vi.advanceTimersByTimeAsync(POLL_BUDGET_MS);
       await promise.catch(() => undefined);
+      await advancing;
     });
 
     // handle이 온 뒤 한 번 더 눌러도 여전히 1회.
@@ -333,7 +385,7 @@ describe("Add Data source dispatch: sync /build vs async /builds (#X01, ADR 0014
   it("routes a public_api-only spec to async POST /builds", async () => {
     const submitSpy = vi.spyOn(builderApi, "submitBuild");
     const buildSpy = vi.spyOn(builderApi, "build");
-    await executeBuild(specOf("pub"));
+    await runPolled(() => executeBuild(specOf("pub")));
     expect(submitSpy).toHaveBeenCalledTimes(1);
     expect(buildSpy).not.toHaveBeenCalled();
     submitSpy.mockRestore();
@@ -343,7 +395,7 @@ describe("Add Data source dispatch: sync /build vs async /builds (#X01, ADR 0014
   it("routes a url-only spec to async POST /builds", async () => {
     const submitSpy = vi.spyOn(builderApi, "submitBuild");
     const buildSpy = vi.spyOn(builderApi, "build");
-    await executeBuild(urlSpec("u"));
+    await runPolled(() => executeBuild(urlSpec("u")));
     expect(submitSpy).toHaveBeenCalledTimes(1);
     expect(buildSpy).not.toHaveBeenCalled();
     submitSpy.mockRestore();
