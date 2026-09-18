@@ -12,6 +12,7 @@
 - **SpecDiff 컴포넌트**
 
 ### 변경됨
+- **i18n UI 문자열 전환 마무리 (#350)**: 마지막 사용자 노출 문자열 4건(`publish/api` 게시 오류 2건, `useKubiSession` 초안 저장 실패·action 거부)을 키로 옮겼다. 이제 `src/` 에 남은 한글은 주석·mock/demo 데이터·LLM 프롬프트·예시 파라미터값뿐이며 화면 chrome 은 0건이다
 - **페이지 3종 i18n 전환 (#350)**: `WorkspacePage`·`DatasetDetailPage`·`BuildPublishPage` 의 하드코딩 한글 UI 문자열을 키로 옮겼다(`workspace`/`datasetDetail`/`buildPublish`, ko/en 각 129키 신규 — 총 1590키 대칭). 모듈 상수 라벨 테이블 3건(`VALIDATION_META`·`STAGE_EXPLAINER`·`BUILD_STATUS_LABEL`)도 문자열 대신 **키 표**로 바꿔 렌더 시점에 번역한다 — import 시점에 언어가 굳던 결함이다
 - **App Shell·Report 편집기 i18n 전환 (#350)**: `Layout.tsx`(사이드바/헤더 aria-label·테마·tagline 등)와 `ReportEditorPage.tsx` 의 하드코딩 한글을 키로 옮겼다(`layout`/`reportEditor`, ko/en 각 37키 신규). Shell 은 모든 화면에 걸리는 부분이라 여기 남은 문자열은 어느 화면에서든 언어 전환을 깨뜨렸다
 - **라우트 코드 분할 (#378)**: `router.tsx` 가 페이지 23개를 모두 정적 import 해서 첫 화면 하나를 열 때 Monitoring·Reports·Kubi 까지 전부 내려받았다(단일 청크 1.23 MB / gzip 359 kB). 각 페이지를 `React.lazy` + 동적 import 로 바꾸고 `withFeatureBoundary` 안쪽에 `Suspense` 를 두어 라우트를 청크 경계로 삼는다 — 청크 로드 실패도 해당 feature 폴백으로 잡혀 셸이 빈 화면이 되지 않는다. 결과: 49개 청크, 진입 청크 424 kB / gzip 132 kB (gzip 기준 63% 감소), Vite 의 500 kB 경고 해소
