@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { collectPageErrors, expectNoPageErrors, prepareCleanPage } from "./helpers";
+import { collectPageErrors, expectNoPageErrors, prepareCleanPage, t } from "./helpers";
 
 /**
  * 신규 사용자 Public API happy path (#268 시나리오 1, mock deterministic).
@@ -25,7 +25,7 @@ test("신규 사용자가 Home에서 Discover·Add Data로 이동한다", async 
 
   // Add Data 진입: Source 선택 단계가 렌더링된다.
   await page.goto("/add");
-  await expect(page.getByRole("heading", { name: "Source 선택" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: t("addData.source.title") })).toBeVisible();
 
   await expectNoPageErrors(errors);
 });
