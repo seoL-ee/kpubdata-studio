@@ -8,6 +8,10 @@ import { useUIStore } from "@/shared/hooks/useUIStore";
  * App Shell 재구성(#247) 이후에도 실제 `router.tsx` 설정을 통해 레거시 딥링크와 새 IA 라우트가
  * 모두 정상적으로 화면을 렌더하는지 확인한다. 개별 페이지를 직접 렌더하는 다른 테스트와 달리,
  * 여기서는 브라우저 라우터 전체(basename 포함)를 통해 실제 route 매칭을 검증한다.
+ *
+ * 라우트가 코드 분할되면서(#378) 화면 렌더가 청크 로드 이후로 밀린다 — navigate 직후의
+ * 동기 단언은 더 이상 성립하지 않으므로 `findBy*`로 기다린다. 실제 사용자도 같은 순간
+ * Suspense 폴백을 본다.
  */
 async function navigateTo(path: string) {
   await act(async () => {
@@ -31,13 +35,13 @@ describe("router 딥링크 회귀 (#247)", () => {
     render(<RouterProvider router={router} />);
 
     await navigateTo("/validate");
-    expect(screen.getByRole("heading", { name: "검증 결과" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "검증 결과" })).toBeInTheDocument();
 
     await navigateTo("/preview");
-    expect(screen.getByRole("heading", { name: "데이터 미리보기" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "데이터 미리보기" })).toBeInTheDocument();
 
     await navigateTo("/artifacts");
-    expect(screen.getByRole("heading", { name: "생성된 결과물" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "생성된 결과물" })).toBeInTheDocument();
   });
 
   it("기존 build 단위 딥링크(:buildId/*)는 그대로 유지된다", async () => {
@@ -50,7 +54,7 @@ describe("router 딥링크 회귀 (#247)", () => {
     expect(await screen.findByText("Manifest 요약")).toBeInTheDocument();
 
     await navigateTo("/builds/abc/publish");
-    expect(screen.getByRole("heading", { name: "abc 게시" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "abc 게시" })).toBeInTheDocument();
     expect(screen.getByText("Hugging Face")).toBeInTheDocument();
   });
 
@@ -58,7 +62,7 @@ describe("router 딥링크 회귀 (#247)", () => {
     render(<RouterProvider router={router} />);
 
     await navigateTo("/discover");
-    expect(screen.getByRole("heading", { name: "데이터 탐색" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "데이터 탐색" })).toBeInTheDocument();
 
     await navigateTo("/quality");
     expect(await screen.findByRole("heading", { name: "Quality Center" })).toBeInTheDocument();
@@ -71,6 +75,36 @@ describe("router 딥링크 회귀 (#247)", () => {
     render(<RouterProvider router={router} />);
 
     await navigateTo("/no-such-route-xyz");
-    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+  });
+});
+
+describe("라우트 코드 분할 (#378)", () => {
+  beforeEach(() => {
+    act(() =>
+      useUIStore.setState({
+        theme: "light",
+        isMobileSidebarOpen: false,
+        isKubiDrawerOpen: false,
+      }),
+    );
+  });
+
+  it("청크를 기다리는 동안 App Shell은 유지되고 폴백이 로딩을 알린다", async () => {
+    render(<RouterProvider router={router} />);
+    // 이동을 시작하되 완료를 기다리지 않는다 — 폴백이 떠 있는 순간을 잡는다.
+    const navigating = router.navigate("/monitoring");
+
+    const fallback = screen.queryByRole("status");
+    if (fallback) {
+      // Skeleton은 aria-hidden이라 보조기기에는 이 문구만 남는다.
+      expect(fallback).toHaveAttribute("aria-busy", "true");
+      expect(fallback).toHaveTextContent("화면을 불러오는 중입니다.");
+    }
+
+    await act(async () => {
+      await navigating;
+    });
+    expect(await screen.findByRole("heading", { name: "시스템 모니터링" })).toBeInTheDocument();
   });
 });

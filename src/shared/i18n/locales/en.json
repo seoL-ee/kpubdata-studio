@@ -1664,7 +1664,8 @@
       "reportEditor": "Report editor",
       "settings": "Settings",
       "validate": "Validate"
-    }
+    },
+    "loading": "Loading the page…"
   },
   "onboarding": {
     "skip": "Skip",
