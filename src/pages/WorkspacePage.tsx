@@ -6,6 +6,8 @@
  * 개인/팀 워크스페이스 전환(static `WORKSPACES`) 개념과는 다르다 — 그 데모용 더미 데이터는
  * 이 이슈에서 제거했다(SettingsPage 참고).
  */
+import { i18n } from "@/shared/i18n";
+import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { listDatasets } from "@/features/datasets/api";
@@ -38,17 +40,18 @@ const KIND_LABEL: Record<RecentWorkKind, string> = {
   savedSpec: "Saved BuildSpec",
 };
 
-const VALIDATION_META: Record<SavedSpecValidationStatus, { label: string; className: string }> = {
+/** 라벨은 키만 들고 렌더 시점에 번역한다 — 모듈 상수에 문장을 넣으면 언어가 굳는다(#350). */
+const VALIDATION_META: Record<SavedSpecValidationStatus, { labelKey: string; className: string }> = {
   validated_pass: {
-    label: "검증 통과",
+    labelKey: "workspace.validatedPass",
     className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300",
   },
   validated_fail: {
-    label: "검증 실패",
+    labelKey: "workspace.validatedFail",
     className: "bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300",
   },
   not_validated: {
-    label: "검증 필요",
+    labelKey: "workspace.notValidated",
     className: "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300",
   },
 };
@@ -60,6 +63,7 @@ function formatDateTime(value: string | null): string {
 }
 
 export function WorkspacePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [datasetsState, setDatasetsState] = useState<AsyncState<DatasetSummary[]>>({ status: "loading" });
@@ -83,7 +87,7 @@ export function WorkspacePage() {
         if (controller.signal.aborted) return;
         setDatasetsState({
           status: "error",
-          error: cause instanceof Error ? cause.message : "Dataset 목록을 불러오지 못했습니다.",
+          error: cause instanceof Error ? cause.message : i18n.t("workspace.datasetsError"),
         });
       });
     return () => controller.abort();
@@ -98,7 +102,7 @@ export function WorkspacePage() {
         if (controller.signal.aborted) return;
         setBuildsState({
           status: "error",
-          error: cause instanceof Error ? cause.message : "Build 목록을 불러오지 못했습니다.",
+          error: cause instanceof Error ? cause.message : i18n.t("workspace.buildsError"),
         });
       });
     return () => controller.abort();
@@ -132,7 +136,7 @@ export function WorkspacePage() {
 
   function handleRenameSubmit() {
     if (!renameTarget) return;
-    const result = renameSavedSpec(renameTarget.id, renameTarget.name.trim() || "이름 없음");
+    const result = renameSavedSpec(renameTarget.id, renameTarget.name.trim() || i18n.t("workspace.untitled"));
     if (!result.ok) {
       setActionError(result.reason);
       return;
@@ -152,7 +156,7 @@ export function WorkspacePage() {
   }
 
   function handleDelete(id: string) {
-    if (!window.confirm("이 Saved BuildSpec을 삭제하시겠습니까? 되돌릴 수 없습니다.")) return;
+    if (!window.confirm(i18n.t("workspace.deleteConfirm"))) return;
     deleteSavedSpec(id);
     refreshLocal();
   }
@@ -160,7 +164,7 @@ export function WorkspacePage() {
   function handleClearAllSpecs() {
     if (
       !window.confirm(
-        "현재 로그인 사용자의 Saved BuildSpec을 모두 삭제하시겠습니까? 되돌릴 수 없습니다.",
+        i18n.t("workspace.deleteAllConfirm"),
       )
     )
       return;
@@ -172,28 +176,26 @@ export function WorkspacePage() {
     <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
       <PageHeader
         eyebrow="Workspace"
-        title="작업대"
-        description="최근 작업(Recent Work)과 저장한 BuildSpec을 한 곳에서 관리합니다."
+        title={t("workspace.title")}
+        description={t("workspace.desc")}
       />
 
       <Card variant="dashed">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          이 브라우저에만 저장됩니다
+          {t("workspace.localOnlyBadge")}
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          Saved BuildSpec은 Builder 서버가 아니라 지금 사용 중인 이 브라우저에만 저장됩니다. 다른
-          기기·브라우저에서는 보이지 않고, 브라우저 데이터를 지우면 함께 사라질 수 있습니다. 팀원에게
-          자동으로 공유되거나 서버에 백업되지 않습니다.
+          {t("workspace.localOnlyDesc")}
         </p>
       </Card>
 
       <section className="flex flex-col gap-3">
-        <PageHeader eyebrow="Recent Work" title="최근 작업" className="mb-0" />
+        <PageHeader eyebrow="Recent Work" title={t("workspace.recentTitle")} className="mb-0" />
 
         {datasetsState.status === "error" ? (
           <ErrorState
             className="py-6"
-            title="Dataset 목록을 불러오지 못했습니다"
+            title={t("workspace.datasetsErrorTitle")}
             message={datasetsState.error}
             onRetry={loadDatasets}
           />
@@ -201,7 +203,7 @@ export function WorkspacePage() {
         {buildsState.status === "error" ? (
           <ErrorState
             className="py-6"
-            title="Build 목록을 불러오지 못했습니다"
+            title={t("workspace.buildsErrorTitle")}
             message={buildsState.error}
             onRetry={loadBuilds}
           />
@@ -226,7 +228,7 @@ export function WorkspacePage() {
                       <span className="font-medium text-foreground">{item.title}</span>
                     </span>
                     <span className="flex shrink-0 items-center gap-3 text-xs text-muted-foreground">
-                      <span>{item.source === "builder" ? "Builder" : "이 브라우저"}</span>
+                      <span>{item.source === "builder" ? "Builder" : t("workspace.thisBrowser")}</span>
                       <span>{formatDateTime(item.timestamp)}</span>
                     </span>
                   </button>
@@ -235,13 +237,13 @@ export function WorkspacePage() {
             </ul>
           </Card>
         ) : datasetsState.status === "loading" || buildsState.status === "loading" ? (
-          <Card className="animate-pulse text-sm text-muted-foreground">불러오는 중입니다…</Card>
+          <Card className="animate-pulse text-sm text-muted-foreground">{t("workspace.loading")}</Card>
         ) : isNewUser ? (
           <Card>
             <EmptyState
-              title="아직 작업이 없습니다"
-              description="데이터를 탐색하거나 첫 빌드를 만들어보세요."
-              actionLabel="데이터 탐색하기"
+              title={t("workspace.noWorkTitle")}
+              description={t("workspace.noWorkDesc")}
+              actionLabel={t("workspace.exploreCta")}
               actionHref="/discover"
             />
           </Card>
@@ -251,7 +253,7 @@ export function WorkspacePage() {
       <section className="flex flex-col gap-3">
         <PageHeader
           eyebrow="Saved BuildSpecs"
-          title="저장한 BuildSpec"
+          title={t("workspace.savedSpecs")}
           className="mb-0"
           actions={
             savedSpecSummaries.length > 0 ? (
@@ -261,7 +263,7 @@ export function WorkspacePage() {
                 type="button"
                 onClick={handleClearAllSpecs}
               >
-                전체 삭제
+                {t("workspace.deleteAll")}
               </Button>
             ) : undefined
           }
@@ -273,9 +275,9 @@ export function WorkspacePage() {
           {savedSpecSummaries.length === 0 ? (
             <EmptyState
               className="py-8"
-              title="저장된 BuildSpec이 없습니다"
-              description="새 빌드 만들기에서 스펙을 작성한 뒤 저장하면 여기에 표시됩니다."
-              actionLabel="새 빌드 만들기"
+              title={t("workspace.noSpecs")}
+              description={t("workspace.noSpecsDesc")}
+              actionLabel={t("workspace.newBuild")}
               actionHref="/builds/new"
             />
           ) : (
@@ -297,10 +299,10 @@ export function WorkspacePage() {
                           }}
                         />
                         <Button size="sm" onClick={handleRenameSubmit}>
-                          저장
+                          {t("workspace.save")}
                         </Button>
                         <Button size="sm" variant="secondary" onClick={() => setRenameTarget(null)}>
-                          취소
+                          {t("workspace.cancel")}
                         </Button>
                       </div>
                     ) : (
@@ -313,14 +315,14 @@ export function WorkspacePage() {
                           {summary.name}
                         </button>
                         <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                          <span>{summary.provider || "provider 없음"}</span>
+                          <span>{summary.provider || t("workspace.noProvider")}</span>
                           <span>·</span>
-                          <span className="break-all">{summary.outputPath || "output 없음"}</span>
+                          <span className="break-all">{summary.outputPath || t("workspace.noOutput")}</span>
                           <span>·</span>
                           <span className={`rounded-full px-2 py-0.5 font-medium ${validation.className}`}>
-                            {validation.label}
+                            {t(validation.labelKey)}
                           </span>
-                          <span>· 최근 저장 {formatDateTime(summary.updatedAt)}</span>
+                          <span>{t("workspace.lastSaved", { time: formatDateTime(summary.updatedAt) })}</span>
                         </p>
                       </div>
                     )}
@@ -331,21 +333,21 @@ export function WorkspacePage() {
                           className="text-muted-foreground underline hover:text-foreground"
                           onClick={() => setRenameTarget({ id: summary.id, name: summary.name })}
                         >
-                          이름변경
+                          {t("workspace.rename")}
                         </button>
                         <button
                           type="button"
                           className="text-muted-foreground underline hover:text-foreground"
                           onClick={() => handleDuplicate(summary.id)}
                         >
-                          복제
+                          {t("workspace.duplicate")}
                         </button>
                         <button
                           type="button"
                           className="text-red-700 underline hover:text-red-900 dark:text-red-400"
                           onClick={() => handleDelete(summary.id)}
                         >
-                          삭제
+                          {t("workspace.delete")}
                         </button>
                       </div>
                     ) : null}
