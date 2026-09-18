@@ -549,6 +549,8 @@
       }
     },
     "session": {
+      "actionRejected": "사용자가 이 action을 거부했습니다.",
+      "draftSaveFailed": "초안을 저장하지 못했습니다.",
       "unsafeBaseUrl": "안전하지 않은 base URL입니다.",
       "excludedMalformed": "형식 오류로 제외: {{ref}}",
       "excludedRefs": "제외된 근거: {{refs}}",
@@ -1837,6 +1839,8 @@
   },
   "publish": {
     "errors": {
+      "incomplete": "Builder에서 게시 요청을 완료하지 못했습니다.",
+      "invalidRequest": "게시 요청 형식이 Builder 계약과 일치하지 않습니다.",
       "destinationRequired": "Hugging Face destination을 입력하세요.",
       "destinationFormat": "destination은 owner/dataset 형식이어야 합니다.",
       "readinessNotFound": "요청한 Run의 게시 준비 상태를 찾을 수 없습니다.",

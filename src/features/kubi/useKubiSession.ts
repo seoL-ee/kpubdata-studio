@@ -446,7 +446,7 @@ export function useKubiSession(): UseKubiSessionResult {
         } catch (cause) {
           setActionState(turnId, index, {
             status: "error",
-            message: cause instanceof Error ? cause.message : "초안을 저장하지 못했습니다.",
+            message: cause instanceof Error ? cause.message : msg("draftSaveFailed"),
           });
         }
       }
@@ -456,7 +456,7 @@ export function useKubiSession(): UseKubiSessionResult {
 
   const rejectAction = useCallback(
     (turnId: string, index: number) => {
-      setActionState(turnId, index, { status: "rejected", reason: "사용자가 이 action을 거부했습니다." });
+      setActionState(turnId, index, { status: "rejected", reason: msg("actionRejected") });
     },
     [setActionState],
   );

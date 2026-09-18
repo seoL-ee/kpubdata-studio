@@ -115,8 +115,8 @@ export function describePublishFailure(cause: unknown): PublishFailure {
   if (cause.status === 403) return { kind: "forbidden", message: t("forbidden") };
   if (cause.status === 404) return { kind: "not_found", message: t("notFound") };
   if (cause.status === 0 || cause.status === 408) return { kind: "network", message: t("network") };
-  if (cause.status === 400 || code === "unsupported_target") return { kind: code ?? "invalid_request", message: "게시 요청 형식이 Builder 계약과 일치하지 않습니다." };
-  return { kind: "unknown", message: "Builder에서 게시 요청을 완료하지 못했습니다." };
+  if (cause.status === 400 || code === "unsupported_target") return { kind: code ?? "invalid_request", message: t("invalidRequest") };
+  return { kind: "unknown", message: t("incomplete") };
 }
 
 export function isSafePublishReference(reference: string): boolean {

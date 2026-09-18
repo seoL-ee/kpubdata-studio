@@ -549,6 +549,8 @@
       }
     },
     "session": {
+      "actionRejected": "The user rejected this action.",
+      "draftSaveFailed": "Could not save the draft.",
       "unsafeBaseUrl": "That base URL is not safe.",
       "excludedMalformed": "Excluded as malformed: {{ref}}",
       "excludedRefs": "Excluded evidence: {{refs}}",
@@ -1837,6 +1839,8 @@
   },
   "publish": {
     "errors": {
+      "incomplete": "Builder could not complete the publish request.",
+      "invalidRequest": "The publish request does not match the Builder contract.",
       "destinationRequired": "Enter a Hugging Face destination.",
       "destinationFormat": "The destination must be in owner/dataset form.",
       "readinessNotFound": "The publish readiness for that run could not be found.",
