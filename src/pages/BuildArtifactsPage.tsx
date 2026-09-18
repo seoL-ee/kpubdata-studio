@@ -200,20 +200,20 @@ export function BuildArtifactsPage() {
                 <dt className="text-muted-foreground">{t("artifacts.manifest.formats")}</dt>
                 <dd className="text-foreground">
                   {formats === undefined
-                    ? "미제공"
+                    ? t("buildArtifacts.notProvided")
                     : formats.length > 0
                       ? formats.join(", ")
-                      : "출력 형식 없음"}
+                      : t("buildArtifacts.noExports")}
                 </dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">{t("artifacts.manifest.sources")}</dt>
                 <dd className="text-foreground">
                   {manifest.provenance === undefined
-                    ? "미제공"
+                    ? t("buildArtifacts.notProvided")
                     : manifest.provenance.length > 0
                       ? manifest.provenance.map((p) => `${p.provider}.${p.dataset}`).join(", ")
-                      : "소스 없음"}
+                      : t("buildArtifacts.noSources")}
                 </dd>
               </div>
               <div>
@@ -250,8 +250,7 @@ export function BuildArtifactsPage() {
             </p>
             {!hasMetadata && (
               <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-                이 실행의 manifest에는 일부 메타데이터 필드(레코드 수·스키마·출처 등)가
-                포함되어 있지 않습니다. 파일 목록(outputs)은 그대로 사용할 수 있습니다.
+                {t("buildArtifacts.partialManifest")}
               </p>
             )}
             <pre className="mt-4 overflow-x-auto rounded-xl bg-zinc-950 p-4 text-xs leading-6 text-zinc-100">

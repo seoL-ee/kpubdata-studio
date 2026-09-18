@@ -356,7 +356,7 @@ export function ProviderPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <section className="lg:col-span-1">
-          <PageHeader eyebrow="Providers" title="제공 기관" className="mb-4" />
+          <PageHeader eyebrow="Providers" title={t("provider.page.headerTitle")} className="mb-4" />
           <Card className="p-0">
             {loading ? (
               <div className="p-6 space-y-3">

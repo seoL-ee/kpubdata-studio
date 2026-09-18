@@ -1,3 +1,4 @@
+import { i18n } from "@/shared/i18n";
 import type {
   DatasetSourceRef,
   DatasetSummary,
@@ -42,7 +43,7 @@ export function datasetHasStageStatus(dataset: DatasetSummary, status: StageStat
 export function summarizeDatasetStages(stages: Record<string, SourceStageStatus>): DatasetStageSummary {
   const sources = Object.values(stages);
   if (sources.length === 0) {
-    return { label: "Unavailable", tone: "muted", description: "stage 정보 없음" };
+    return { label: "Unavailable", tone: "muted", description: i18n.t("datasets.stage.noStageInfo") };
   }
 
   const hasFailed = sources.some((source) => DATASET_STAGES.some((stage) => source[stage] === "failed"));
@@ -51,21 +52,21 @@ export function summarizeDatasetStages(stages: Record<string, SourceStageStatus>
     return {
       label: mixed ? "Mixed / Failed" : "Failed",
       tone: "failed",
-      description: mixed ? "source별 진행 상태가 다르며 실패가 포함됨" : "stage 실패",
+      description: mixed ? i18n.t("datasets.stage.mixedWithFailure") : i18n.t("datasets.stage.stageFailed"),
     };
   }
   if (mixed) {
-    return { label: "Mixed / Partial", tone: "warning", description: "source별 진행 상태가 다름" };
+    return { label: "Mixed / Partial", tone: "warning", description: i18n.t("datasets.stage.mixed") };
   }
 
   const common = sources[0];
-  if (common.gold === "completed") return { label: "Gold", tone: "gold", description: "Gold 완료" };
-  if (common.silver === "completed") return { label: "Silver", tone: "silver", description: "Silver 완료" };
-  if (common.bronze === "completed") return { label: "Bronze", tone: "bronze", description: "Bronze 완료" };
+  if (common.gold === "completed") return { label: "Gold", tone: "gold", description: i18n.t("datasets.stage.goldDone") };
+  if (common.silver === "completed") return { label: "Silver", tone: "silver", description: i18n.t("datasets.stage.silverDone") };
+  if (common.bronze === "completed") return { label: "Bronze", tone: "bronze", description: i18n.t("datasets.stage.bronzeDone") };
   if (DATASET_STAGES.some((stage) => common[stage] === "not_run")) {
-    return { label: "Mixed / Partial", tone: "warning", description: "실행되지 않은 stage가 있음" };
+    return { label: "Mixed / Partial", tone: "warning", description: i18n.t("datasets.stage.someNotRun") };
   }
-  return { label: "Unavailable", tone: "muted", description: "사용 가능한 stage 없음" };
+  return { label: "Unavailable", tone: "muted", description: i18n.t("datasets.stage.noStage") };
 }
 
 export function highestCompletedStage(source: RunStageEntry): DatasetStage {

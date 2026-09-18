@@ -10,6 +10,7 @@
  *     {(field) => <TextInput {...register("datasetId")} {...field} />}
  *   </FormField>
  */
+import { useTranslation } from "react-i18next";
 import type { ReactNode } from "react";
 import { cn } from "./cn";
 import { ErrorMessage } from "./ErrorMessage";
@@ -55,6 +56,7 @@ export function FormField({
   children,
   className,
 }: FormFieldProps) {
+  const { t } = useTranslation();
   const helpId = help ? `${id}-help` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [helpId, errorId].filter(Boolean).join(" ") || undefined;
@@ -69,7 +71,7 @@ export function FormField({
             <span aria-hidden="true" className="ml-0.5 text-red-600">
               *
             </span>
-            <span className="sr-only">(필수)</span>
+            <span className="sr-only">{t("formField.required")}</span>
           </>
         ) : null}
       </label>

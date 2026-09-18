@@ -9,6 +9,8 @@
  */
 
 /** BYOK 기본 LLM base URL. `provider.ts`의 DEFAULT_BASE_URL과 반드시 같은 값을 유지한다. */
+import { i18n } from "@/shared/i18n";
+
 export const DEFAULT_LLM_BASE_URL = "https://api.openai.com/v1";
 
 export interface BaseUrlCheck {
@@ -40,7 +42,7 @@ export function checkLlmBaseUrl(rawUrl: string): BaseUrlCheck {
   } catch {
     return {
       safe: false,
-      reason: "올바른 URL 형식이 아닙니다.",
+      reason: i18n.t("assistant.baseUrl.invalid"),
       resolvedUrl: trimmed,
       isDefault: false,
     };
@@ -49,7 +51,7 @@ export function checkLlmBaseUrl(rawUrl: string): BaseUrlCheck {
   if (parsed.protocol !== "https:") {
     return {
       safe: false,
-      reason: "API Key 노출을 막기 위해 HTTPS 주소만 허용됩니다.",
+      reason: i18n.t("assistant.baseUrl.httpsOnly"),
       resolvedUrl: trimmed,
       isDefault: false,
     };

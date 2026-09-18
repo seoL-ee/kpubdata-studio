@@ -1,4 +1,5 @@
 /** 공개 회원가입은 Studio가 아닌 Keycloak hosted UI에서 처리한다. */
+import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
 import { keycloakLogin } from "@/features/auth/keycloak";
 import { getSafeReturnTo } from "@/features/auth/returnTo";
@@ -8,6 +9,7 @@ import { Button, Card } from "@/shared/ui";
 const lightLogoUrl = new URL("../../assets/logo/kpubdata-brand-assets/svg/horizontal_light.svg", import.meta.url).href;
 
 export function SignupPage() {
+  const { t } = useTranslation();
   const location = useLocation();
   const oidc = getOidcConfig();
   const returnTo = getSafeReturnTo(new URLSearchParams(location.search).get("returnTo"));
@@ -17,19 +19,19 @@ export function SignupPage() {
       <div className="w-full max-w-md text-center">
         <img alt="KPubData Studio" className="mx-auto mb-7 h-8 w-auto" src={lightLogoUrl} />
         <Card>
-        <h1 className="text-2xl font-semibold tracking-tight">KPubData 계정 만들기</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("auth.signup.title")}</h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          회원가입, 이메일 인증, 비밀번호 정책은 안전한 Keycloak 화면에서 처리합니다.
+          {t("auth.signup.desc")}
         </p>
         {oidc.status === "ok" ? (
           <Button className="mt-6" onClick={() => void keycloakLogin(returnTo)}>
-            Keycloak에서 회원가입 또는 로그인
+            {t("auth.signup.cta")}
           </Button>
         ) : (
-          <p className="mt-6 text-sm text-muted-foreground">인증 설정이 준비되면 여기서 계정을 만들 수 있습니다.</p>
+          <p className="mt-6 text-sm text-muted-foreground">{t("auth.signup.notReady")}</p>
         )}
         <Link to="/login" className="mt-6 inline-block font-medium text-accent-subtle-foreground underline">
-          로그인으로 돌아가기
+          {t("auth.signup.backToLogin")}
         </Link>
         </Card>
       </div>

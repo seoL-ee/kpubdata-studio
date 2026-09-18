@@ -5,6 +5,7 @@
  * 렌더 금지). 실제 LLM 연동, Evidence/Generated SQL, Suggested Action은 `KubiContent`
  * (`useKubiSession` 공유)가 담당하고, 이 컴포넌트는 drawer 자체의 열림/닫힘·포커스 트랩만 맡는다.
  */
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { useUIStore } from "@/shared/hooks/useUIStore";
 import { KubiContent } from "./KubiContent";
@@ -15,6 +16,7 @@ import { KubiContent } from "./KubiContent";
  * @returns drawer가 닫혀 있으면 `null`, 열려 있으면 현재 화면 context를 반영한 Kubi 대화 패널.
  */
 export function KubiDrawer() {
+  const { t } = useTranslation();
   const isOpen = useUIStore((state) => state.isKubiDrawerOpen);
   const closeKubiDrawer = useUIStore((state) => state.closeKubiDrawer);
   const dialogRef = useRef<HTMLElement>(null);
@@ -88,10 +90,10 @@ export function KubiDrawer() {
             ✨ Kubi AI Assistant
           </p>
           <div className="flex gap-1.5">
-            <button aria-label={expanded ? "Kubi 기본 너비로 보기" : "Kubi 확장하기"} aria-pressed={expanded} className="hidden rounded-lg border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-muted lg:block" onClick={() => setExpanded((value) => !value)} type="button">
-              {expanded ? "기본" : "확장"}
+            <button aria-label={expanded ? t("kubi.drawer.collapseLabel") : t("kubi.drawer.expandLabel")} aria-pressed={expanded} className="hidden rounded-lg border border-border px-2 py-1 text-xs text-muted-foreground hover:bg-muted lg:block" onClick={() => setExpanded((value) => !value)} type="button">
+              {expanded ? t("kubi.drawer.collapse") : t("kubi.drawer.expand")}
             </button>
-            <button ref={closeButtonRef} aria-label="Kubi 닫기" className="rounded-lg border border-border p-1.5 text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={closeKubiDrawer} type="button">✕</button>
+            <button ref={closeButtonRef} aria-label={t("kubi.drawer.close")} className="rounded-lg border border-border p-1.5 text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={closeKubiDrawer} type="button">✕</button>
           </div>
         </div>
 

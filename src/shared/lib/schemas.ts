@@ -3,6 +3,7 @@
  *
  * 폼 입력과 API 페이로드가 공유 타입 규약을 어기지 않도록 런타임 검증 규칙을 제공한다.
  */
+import { i18n } from "@/shared/i18n";
 import { z } from "zod";
 
 /** 지원하는 export 형식 목록을 제한하는 enum 스키마 */
@@ -47,7 +48,7 @@ export const sourceKindSchema = z.enum(["public_api", "file", "url"]);
 export const sourceFormatSchema = z.enum(["csv", "json", "jsonl", "parquet"]);
 
 /** `POST /uploads`가 발급하는 upload_id 형식(Builder #498: `upl_` + hex 32자). */
-export const uploadIdSchema = z.string().regex(/^upl_[a-f0-9]{32}$/, "올바른 upload_id 형식이 아닙니다.");
+export const uploadIdSchema = z.string().regex(/^upl_[a-f0-9]{32}$/, i18n.t("schemas.uploadIdFormat"));
 
 /**
  * 단일 원본 데이터 참조가 가져야 할 필드를 검증하는 스키마 (#250, #498).
@@ -81,19 +82,19 @@ export const sourceRefSchema = z
       }
     } else if (kind === "file") {
       if (!source.uploadId) {
-        ctx.addIssue({ code: "custom", path: ["uploadId"], message: "업로드한 파일이 필요합니다." });
+        ctx.addIssue({ code: "custom", path: ["uploadId"], message: i18n.t("schemas.uploadRequired") });
       }
       if (!source.format) {
-        ctx.addIssue({ code: "custom", path: ["format"], message: "파일 포맷을 선택해주세요." });
+        ctx.addIssue({ code: "custom", path: ["format"], message: i18n.t("schemas.formatRequired") });
       }
     } else if (kind === "url") {
       if (!source.endpoint) {
-        ctx.addIssue({ code: "custom", path: ["endpoint"], message: "Endpoint를 입력해주세요." });
+        ctx.addIssue({ code: "custom", path: ["endpoint"], message: i18n.t("schemas.endpointRequired") });
       } else if (!/^https:\/\//i.test(source.endpoint)) {
-        ctx.addIssue({ code: "custom", path: ["endpoint"], message: "https:// 로 시작하는 URL만 허용됩니다." });
+        ctx.addIssue({ code: "custom", path: ["endpoint"], message: i18n.t("schemas.httpsOnly") });
       }
       if (source.format && !["csv", "json", "jsonl"].includes(source.format)) {
-        ctx.addIssue({ code: "custom", path: ["format"], message: "URL 소스는 csv/json/jsonl 포맷만 지원합니다." });
+        ctx.addIssue({ code: "custom", path: ["format"], message: i18n.t("schemas.urlFormats") });
       }
     }
   });

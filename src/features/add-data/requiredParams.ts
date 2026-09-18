@@ -8,6 +8,7 @@
  *   "미전달"로 처리하고, 실제 E2E에서도 `{}` → NO_MANDATORY_REQUEST_PARAMETERS).
  * - Builder/Core validation을 대체하지 않는다 — 어디까지나 사전 안내다.
  */
+import { i18n } from "@/shared/i18n";
 import type { CatalogRequestParameter } from "@/shared/lib/builderApi";
 
 export interface RequiredParamsCheck {
@@ -43,7 +44,7 @@ export function checkRequiredParams(
     return value === undefined || value === null || (typeof value === "string" && value.trim() === "");
   });
   if (missing.length === 0) return {};
-  return { error: `${missing.join(", ")} 필수 요청 파라미터를 입력해주세요.` };
+  return { error: i18n.t("addData.requiredParams", { params: missing.join(", ") }) };
 }
 
 /**

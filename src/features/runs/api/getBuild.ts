@@ -12,6 +12,7 @@
  *    `status`(ok→succeeded / failed→failed / cancelled→cancelled)를 쓴다. 둘 다
  *    불가하면 succeeded/failed/cancelled를 추측하지 않고 명시적 오류로 처리한다.
  */
+import { i18n } from "@/shared/i18n";
 import { loadBuildSpec, redactSpecForStorage } from "@/features/build-spec/specStore";
 import { fromYamlText } from "@/features/build-spec/yamlText";
 import { ApiError, builderApi, isRealBuilderEnabled } from "@/shared/lib/builderApi";
@@ -49,7 +50,7 @@ async function resolveManifestStatus(runId: string): Promise<BuildRunStatus | nu
  */
 export async function getBuild(buildId: string): Promise<BuildRun> {
   if (!buildId) {
-    throw new Error("빌드 ID가 없습니다.");
+    throw new Error(i18n.t("runs.errors.missingId"));
   }
 
   const storedSpec = loadBuildSpec(buildId);
@@ -63,7 +64,7 @@ export async function getBuild(buildId: string): Promise<BuildRun> {
     if (storedSpec) {
       return { id: buildId, spec: storedSpec, status: "succeeded" as const, startedAt: "" };
     }
-    throw new Error(`빌드를 찾을 수 없습니다: ${buildId}`);
+    throw new Error(i18n.t("runs.errors.notFound", { buildId }));
   }
 
   // --- 실연동 모드 ---
@@ -89,7 +90,7 @@ export async function getBuild(buildId: string): Promise<BuildRun> {
 
   if (!spec) {
     throw new Error(
-      `빌드를 찾을 수 없습니다: ${buildId}. 이 실행의 BuildSpec snapshot이 없고(legacy) 로컬에 보관된 스펙도 없습니다.`,
+      i18n.t("runs.errors.notFoundNoSpec", { buildId }),
     );
   }
 
@@ -112,6 +113,6 @@ export async function getBuild(buildId: string): Promise<BuildRun> {
   }
 
   throw new Error(
-    `빌드 상태를 확인할 수 없습니다: ${buildId}. Builder 이력 목록과 manifest 어디에서도 이 실행의 최종 상태를 찾지 못했습니다.`,
+    i18n.t("runs.errors.statusUnknown", { buildId }),
   );
 }

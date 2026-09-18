@@ -48,7 +48,7 @@ function bootstrapOidc(): void {
 
   if (config.status === "error") {
     // fail-closed: 사용자를 authenticated로 추측하지 않는다. issuer/clientId만 로깅(secret 아님).
-    console.error(`[auth] OIDC 설정 오류: ${config.reason}`);
+    console.error(`[auth] OIDC configuration error: ${config.reason}`);
     store.setOidcStatus("error");
     return;
   }

@@ -4,6 +4,7 @@
  * 페이지와 탭 컴포넌트가 공유하는 상태 어휘와 순수 헬퍼. wire 스키마 타입은
  * `@/shared/lib/builderApi.schema`가 정본이다.
  */
+import { i18n } from "@/shared/i18n";
 import type {
   MonitoringRecentRun,
   MonitoringSummaryResponse,
@@ -26,27 +27,27 @@ export function runStatusLabel(status: string): { label: string; className: stri
     case "ok":
     case "succeeded":
       return {
-        label: "성공",
+        label: i18n.t("monitoring.runStatus.succeeded"),
         className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300",
       };
     case "failed":
       return {
-        label: "실패",
+        label: i18n.t("monitoring.runStatus.failed"),
         className: "bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300",
       };
     case "running":
       return {
-        label: "실행 중",
+        label: i18n.t("monitoring.runStatus.running"),
         className: "bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300",
       };
     case "cancelled":
       return {
-        label: "취소됨",
+        label: i18n.t("monitoring.runStatus.cancelled"),
         className: "bg-muted text-muted-foreground",
       };
     case "queued":
       return {
-        label: "대기 중",
+        label: i18n.t("monitoring.runStatus.queued"),
         className: "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300",
       };
     default:

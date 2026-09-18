@@ -14,6 +14,7 @@
  * (조회 실패 등) 막지 않는다 — Studio가 credential 존재 여부를 추측하지 않는다는
  * 원칙(요구사항 §3)에 따라, "확실히 미설정"으로 확인된 경우에만 진행을 막는다.
  */
+import { i18n } from "@/shared/i18n";
 import type { CatalogDataset } from "@/shared/lib/builderApi";
 
 export interface CredentialPrerequisite {
@@ -32,7 +33,7 @@ export function checkCredentialPrerequisite(
 }
 
 export const CREDENTIAL_PREREQUISITE_MESSAGE = {
-  title: "API 연결이 필요합니다",
-  body: "이 Dataset은 API Key가 필요한 Provider를 사용합니다.\n먼저 Provider / API 연결에서 자격 증명을 등록한 뒤 계속하세요.",
-  cta: "API 연결하기",
+  title: i18n.t("addData.credential.title"),
+  body: i18n.t("addData.credential.body"),
+  cta: i18n.t("addData.credential.cta"),
 } as const;

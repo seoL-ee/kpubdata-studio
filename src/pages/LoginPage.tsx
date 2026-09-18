@@ -12,7 +12,7 @@
  * Google 로그인은 Keycloak identity broker로 위임한다(`keycloakLogin(returnTo, "google")`) —
  * Studio가 Google SDK를 직접 로드하거나 Google 토큰을 Builder에 보내지 않는다.
  */
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { i18n } from "@/shared/i18n";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -185,19 +185,19 @@ export function LoginPage() {
             </div>
           ) : oidc.status === "error" ? (
             <div className="mt-4 rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">OIDC 인증 설정에 문제가 있습니다.</p>
+              <p className="font-medium text-foreground">{t("auth.oidc.errorTitle")}</p>
               <p className="mt-2">
-                이 환경은 실제 Builder에 연결되어 있지만 OIDC 설정(<code>VITE_OIDC_ISSUER</code> /{" "}
-                <code>VITE_OIDC_CLIENT_ID</code>)이 올바르지 않습니다. 관리자에게 문의하세요.
+                <Trans
+                  i18nKey="auth.oidc.errorDesc"
+                  components={{ code: <code /> }}
+                />
               </p>
             </div>
           ) : (
             <div className="mt-4 rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">OIDC 인증이 아직 구성되지 않았습니다.</p>
+              <p className="font-medium text-foreground">{t("auth.oidc.missingTitle")}</p>
               <p className="mt-2">
-                이 환경은 실제 Builder에 연결되어 있지만, 사람 사용자 로그인을 위한 OIDC IdP(Keycloak)
-                연동이 아직 준비되지 않았습니다. 관리자에게 문의하거나 연동이 완료된 이후 다시
-                시도해주세요.
+                {t("auth.oidc.missingDesc")}
               </p>
             </div>
           )}

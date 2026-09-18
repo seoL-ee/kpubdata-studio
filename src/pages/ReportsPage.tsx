@@ -103,7 +103,7 @@ export function ReportsPage() {
       const evidenceRefs = buildEvidenceRefs(evidence);
       const datasetTitle = evidence.dataset.ok ? evidence.dataset.value.title : selectedDatasetId;
       const { report, result } = createReport({
-        title: `${datasetTitle} · ${selectedRunId} 보고서`,
+        title: t("reports.page.createdTitle", { dataset: datasetTitle, run: selectedRunId }),
         datasetId: selectedDatasetId,
         baseRunId: selectedRunId,
         buildSpecDigest: evidence.run.ok ? evidence.run.value.spec_digest : null,
@@ -216,8 +216,7 @@ export function ReportsPage() {
 
       {pendingNoteCount > 0 ? (
         <Card className="border-indigo-200 bg-indigo-50 text-sm dark:border-indigo-900/60 dark:bg-indigo-950/30">
-          Kubi 참고 노트 {pendingNoteCount}건이 대기 중입니다. Report를 열어 "Kubi 참고 노트 대기열"에서 추가하거나
-          무시할 수 있습니다.
+          {t("reports.page.pendingNotes", { count: pendingNoteCount })}
         </Card>
       ) : null}
 
@@ -285,7 +284,7 @@ export function ReportsPage() {
                       className="text-red-700 underline hover:text-red-900 dark:text-red-400"
                       onClick={() => handleDelete(summary.id)}
                     >
-                      삭제
+                      {t("reports.page.delete")}
                     </button>
                   </div>
                 ) : null}

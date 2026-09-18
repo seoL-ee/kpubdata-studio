@@ -1,4 +1,5 @@
 import type { BuildQualityResponse, PreviewSource, QualityCheckResult, SchemaDriftFinding } from "@/shared/lib/builderApi";
+import { i18n } from "@/shared/i18n";
 
 export type ValidationStatus = "PASS" | "WARN" | "FAIL" | "N/A";
 
@@ -52,8 +53,12 @@ export function formatQualityValue(rule: string, value: unknown): string {
     if (PERCENTAGE_QUALITY_RULES.has(rule) && value >= 0 && value <= 1) {
       return `${(value * 100).toFixed(1)}%`;
     }
-    const formatted = value.toLocaleString("ko-KR");
-    return ROW_COUNT_QUALITY_RULES.has(rule) ? `${formatted}행` : formatted;
+    const formatted = value.toLocaleString(
+      i18n.language?.startsWith("en") ? "en-US" : "ko-KR",
+    );
+    return ROW_COUNT_QUALITY_RULES.has(rule)
+      ? i18n.t("quality.model.rows", { count: formatted })
+      : formatted;
   }
   return typeof value === "string" ? value : JSON.stringify(value);
 }
@@ -130,12 +135,12 @@ export function summarizeChecksPassed(results: QualityCheckResult[]): ChecksPass
  */
 export function qualityKubiSeedQuestion(summary: ChecksPassedSummary): string {
   if (summary.evaluated === 0) {
-    return "현재 Run에는 평가된 Quality check가 없습니다. 현재 상태를 설명하고, Quality 규칙을 설정할 때 확인할 사항을 Evidence 기준으로 알려줘.";
+    return i18n.t("quality.model.seed.none");
   }
   if (summary.warn > 0 || summary.fail > 0) {
-    return "현재 Quality WARN/FAIL의 원인과 우선 조치 방법을 Evidence 기준으로 분석해줘.";
+    return i18n.t("quality.model.seed.issues");
   }
-  return "현재 Quality 결과를 Evidence 기준으로 요약하고, 모든 check가 PASS한 근거와 추가로 확인할 사항을 알려줘.";
+  return i18n.t("quality.model.seed.allPass");
 }
 
 export interface CategorySummary extends ChecksPassedSummary {
@@ -235,6 +240,9 @@ export function summarizePreviewSources(previews: readonly PreviewSource[]): Pre
   return { mixed: previews.length > 1 && states.size > 1, perSource };
 }
 
+// NOTE(#350): 이 상수는 PR #360이 수정 중인 화면들이 인덱싱해서 쓰므로 그대로 둔다 —
+// 함수로 바꾸면 그 PR과 충돌한다. 문구 자체는 `quality.model.previewState.*`에 이미
+// 올려 뒀으니, #360 머지 후 사용처와 함께 한 번에 전환하면 된다.
 export const PREVIEW_SOURCE_STATE_LABEL: Record<PreviewSourceState, string> = {
   ok: "정상",
   failed: "조회 실패",

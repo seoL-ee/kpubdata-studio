@@ -8,6 +8,7 @@
  * 최종 SQL 안전성 검사(mutation/filesystem/network 차단, CTE shadowing 등)는 Builder가
  * 담당한다 — Studio는 여기서 SQL 내용을 파싱하거나 재검증하지 않는다.
  */
+import { i18n } from "@/shared/i18n";
 import { ApiError, builderApi, isRealBuilderEnabled } from "@/shared/lib/builderApi";
 import { queryErrorResponseSchema } from "@/shared/lib/builderApi.schema";
 import type { KubiContext, KubiGeneratedSql, KubiQueryState } from "./types";
@@ -21,13 +22,16 @@ import type { KubiContext, KubiGeneratedSql, KubiQueryState } from "./types";
  */
 export function blockedReason(context: KubiContext, sql: KubiGeneratedSql): string | null {
   if (context.stage === "bronze") {
-    return "Bronze 문맥에서는 SQL을 실행할 수 없습니다. Silver 또는 Gold에서만 실행할 수 있습니다.";
+    return i18n.t("kubi.query.bronzeNotAllowed");
   }
   if (context.stage !== sql.stage) {
-    return `현재 화면 stage(${context.stage ?? "없음"})와 Generated SQL의 stage(${sql.stage})가 다릅니다.`;
+    return i18n.t("kubi.query.stageMismatch", {
+      current: context.stage ?? i18n.t("kubi.query.stageNone"),
+      proposed: sql.stage,
+    });
   }
   if (!context.datasetId || !context.runId) {
-    return "실행하려면 dataset와 run이 모두 선택되어 있어야 합니다.";
+    return i18n.t("kubi.query.needsDatasetRun");
   }
   return null;
 }
@@ -42,12 +46,12 @@ function classifyError(cause: unknown): KubiQueryState {
     return { status: "error", code: "unknown", message: cause.message };
   }
   if (cause instanceof DOMException && cause.name === "AbortError") {
-    return { status: "error", code: "unknown", message: "요청이 취소되었습니다." };
+    return { status: "error", code: "unknown", message: i18n.t("kubi.query.cancelled") };
   }
   return {
     status: "error",
     code: "unknown",
-    message: cause instanceof Error ? cause.message : "Query 실행 중 알 수 없는 오류가 발생했습니다.",
+    message: cause instanceof Error ? cause.message : i18n.t("kubi.query.unknownError"),
   };
 }
 
@@ -71,7 +75,7 @@ export async function runKubiQuery(
     return {
       status: "error",
       code: "mock_mode",
-      message: "mock 모드에서는 Query 실행을 지원하지 않습니다. VITE_USE_REAL_BUILDER=true로 실제 Builder에 연결하세요.",
+      message: i18n.t("kubi.query.mockUnsupported"),
     };
   }
 

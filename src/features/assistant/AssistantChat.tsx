@@ -8,6 +8,7 @@ import { useCallback, useRef, useState } from "react";
 import { Button, Card, Textarea } from "@/shared/ui";
 import { useAssistConfig } from "./config";
 import { createProvider, type AssistMessage } from "./provider";
+import { useTranslation } from "react-i18next";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -15,6 +16,7 @@ interface ChatMessage {
 }
 
 export function AssistantChat({ contextSpec }: { contextSpec?: unknown }) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -60,7 +62,7 @@ ${contextSpec ? "현재 스펙은 첨부된 구조화 컨텍스트를 참고하�
       }
     } catch (e) {
       if (e instanceof DOMException && e.name === "AbortError") return;
-      setError(e instanceof Error ? e.message : "LLM 호출에 실패했습니다.");
+      setError(e instanceof Error ? e.message : t("assistantChat.llmFailed"));
     } finally {
       setIsStreaming(false);
       abortRef.current = null;
@@ -81,7 +83,7 @@ ${contextSpec ? "현재 스펙은 첨부된 구조화 컨텍스트를 참고하�
     return (
       <Card variant="dashed">
         <p className="text-sm text-muted-foreground">
-          어시스턴트를 사용하려면 Settings에서 LLM API 키를 입력하세요. (BYOK)
+          {t("assistantChat.needsKey")}
         </p>
       </Card>
     );
@@ -90,17 +92,17 @@ ${contextSpec ? "현재 스펙은 첨부된 구조화 컨텍스트를 참고하�
   return (
     <Card className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">BuildSpec 어시스턴트</h3>
+        <h3 className="text-sm font-semibold">{t("assistantChat.title")}</h3>
         {messages.length > 0 && (
           <Button variant="ghost" size="sm" onClick={handleClear}>
-            대화 초기화
+            {t("assistantChat.reset")}
           </Button>
         )}
       </div>
 
       {messages.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          스펙 오류 설명, 수정 제안, 데이터 소스 추천을 물어보세요.
+          {t("assistantChat.hint")}
         </p>
       ) : (
         <div className="max-h-96 space-y-3 overflow-y-auto">
@@ -125,7 +127,7 @@ ${contextSpec ? "현재 스펙은 첨부된 구조화 컨텍스트를 참고하�
         <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="질문을 입력하세요…"
+          placeholder={t("assistantChat.placeholder")}
           rows={2}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
@@ -136,11 +138,11 @@ ${contextSpec ? "현재 스펙은 첨부된 구조화 컨텍스트를 참고하�
         />
         {isStreaming ? (
           <Button variant="secondary" onClick={handleCancel}>
-            취소
+            {t("assistantChat.cancel")}
           </Button>
         ) : (
           <Button onClick={handleSend} disabled={!input.trim()}>
-            전송
+            {t("assistantChat.send")}
           </Button>
         )}
       </div>

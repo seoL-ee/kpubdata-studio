@@ -10,6 +10,7 @@
  * 저장 실패(quota 초과/storage 사용 불가/직렬화 실패)를 조용히 삼키지 않는다 — 호출부가
  * "저장됨"이라고 잘못 표시하지 않도록 항상 명시적 결과를 반환한다(#258 §11, §12).
  */
+import { i18n } from "@/shared/i18n";
 import { REPORT_VERSION, type ReportDraft, type ReportSummary } from "./types";
 import { ownedStorageKey } from "@/features/auth/storageOwner";
 
@@ -69,13 +70,13 @@ function readEnvelope(): StoreEnvelope {
  */
 function writeEnvelope(envelope: StoreEnvelope): SaveResult {
   if (!isStorageAvailable()) {
-    return { ok: false, reason: "이 브라우저에서 로컬 저장소를 사용할 수 없습니다(프라이빗 모드 등)." };
+    return { ok: false, reason: i18n.t("reports.storage.noStorage") };
   }
   let serialized: string;
   try {
     serialized = JSON.stringify(envelope);
   } catch {
-    return { ok: false, reason: "Report 내용을 저장 형식으로 변환하지 못했습니다." };
+    return { ok: false, reason: i18n.t("reports.storage.serializeFailed") };
   }
   try {
     localStorage.setItem(ownedStorageKey(STORE_KEY), serialized);
@@ -87,8 +88,8 @@ function writeEnvelope(envelope: StoreEnvelope): SaveResult {
     return {
       ok: false,
       reason: isQuota
-        ? "저장 공간이 부족합니다. 오래된 Report를 삭제한 뒤 다시 시도하세요."
-        : "Report를 저장하지 못했습니다.",
+        ? i18n.t("reports.storage.quotaExceeded")
+        : i18n.t("reports.storage.saveFailed"),
     };
   }
 }
@@ -133,7 +134,7 @@ export function saveReport(report: ReportDraft, options: { force?: boolean } = {
     return {
       ok: false,
       conflict: true,
-      reason: "다른 탭 또는 창에서 이 Report를 먼저 저장했습니다. 최신 내용을 다시 불러온 뒤 저장하세요.",
+      reason: i18n.t("reports.storage.staleWrite"),
     };
   }
 
@@ -141,7 +142,7 @@ export function saveReport(report: ReportDraft, options: { force?: boolean } = {
   if (!existing && keys.length >= REPORT_STORE_LIMIT) {
     return {
       ok: false,
-      reason: `저장 가능한 Report 수(${REPORT_STORE_LIMIT}개)를 초과했습니다. 사용하지 않는 Report를 먼저 삭제하세요.`,
+      reason: i18n.t("reports.storage.limitExceeded", { limit: REPORT_STORE_LIMIT }),
     };
   }
 
@@ -180,7 +181,7 @@ export function createReport(
 /** 제목만 바꿔 저장한다. */
 export function renameReport(id: string, title: string): SaveResult {
   const report = getReport(id);
-  if (!report) return { ok: false, reason: "Report를 찾을 수 없습니다." };
+  if (!report) return { ok: false, reason: i18n.t("reports.storage.notFound") };
   return saveReport({ ...report, title }, { force: true });
 }
 
@@ -192,7 +193,7 @@ export function duplicateReport(id: string, titleOverride?: string): { report: R
   const cloned: ReportDraft = {
     ...structuredClone(source),
     id: newId(),
-    title: titleOverride ?? `${source.title} (복제본)`,
+    title: titleOverride ?? i18n.t("reports.storage.copyOf", { name: source.title }),
     createdAt: now,
     updatedAt: now,
     revision: 0,

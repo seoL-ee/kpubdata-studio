@@ -11,6 +11,7 @@
  * 그대로 쓰면 이 dataset/run과 상관없는 파일 목록을 evidence처럼 보여주게 된다(#258 §4 —
  * 없는 정보를 추측해서 만들지 않는다).
  */
+import { i18n } from "@/shared/i18n";
 import {
   getBuildQuality,
   getBuildStageDetail,
@@ -38,7 +39,7 @@ async function settle<T>(promise: Promise<T>): Promise<Settled<T>> {
   try {
     return { ok: true, value: await promise };
   } catch (cause) {
-    return { ok: false, reason: cause instanceof Error ? cause.message : "조회에 실패했습니다." };
+    return { ok: false, reason: cause instanceof Error ? cause.message : i18n.t("reports.evidence.lookupFailed") };
   }
 }
 
@@ -81,8 +82,8 @@ async function fetchSourceSchema(runId: string, sourceKey: string, signal?: Abor
   }
 
   const reason = !silver.ok && !gold.ok
-    ? "silver/gold schema 조회에 모두 실패했습니다."
-    : "이 source는 아직 schema를 만들 수 있는 stage까지 진행되지 않았습니다.";
+    ? i18n.t("reports.evidence.schemaBothFailed")
+    : i18n.t("reports.evidence.schemaNotReached");
   return { sourceKey, origin: "unavailable", columns: [], reason };
 }
 
@@ -108,7 +109,7 @@ export async function fetchReportEvidence(
   const runResult: Settled<DatasetRunSummary> = runsResult.ok
     ? (() => {
         const match = runsResult.value.runs.find((run) => run.run_id === runId);
-        return match ? { ok: true, value: match } : { ok: false, reason: "이 dataset의 run 목록에서 기준 run을 찾을 수 없습니다(삭제되었거나 접근할 수 없음)." };
+        return match ? { ok: true, value: match } : { ok: false, reason: i18n.t("reports.evidence.baseRunMissing") };
       })()
     : { ok: false, reason: runsResult.reason };
 
@@ -125,7 +126,7 @@ export async function fetchReportEvidence(
 
   const output: Settled<ReportOutputEvidence> = isRealBuilderEnabled()
     ? await settle(getBuildManifest(runId, signal).then((manifest) => ({ files: manifest.outputs ?? [] })))
-    : { ok: false, reason: "mock/demo 모드에서는 이 run에 실제로 대응하는 output evidence를 제공하지 않습니다." };
+    : { ok: false, reason: i18n.t("reports.evidence.mockNoOutput") };
 
   return {
     fetchedAt: new Date().toISOString(),

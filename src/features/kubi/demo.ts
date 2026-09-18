@@ -18,13 +18,18 @@ import type { QueryResponse } from "@/shared/lib/builderApi";
 import type { KubiAction } from "./schema";
 import { summarizeKubiQuality } from "./types";
 import type { KubiEvidence, KubiQueryState, KubiStructuredResponse } from "./types";
+import { i18n } from "@/shared/i18n";
+
+/** 이 파일의 문구는 모두 `kubi.demo.*` 아래에 있다(#350). */
+const t = (key: string, params?: Record<string, unknown>): string =>
+  i18n.t(`kubi.demo.${key}`, params ?? {});
 
 /** 데모를 제공할 수 있는지: mock Builder 모드(기본값)에서만 — real mode는 항상 BYOK를 요구한다. */
 export function isKubiDemoAvailable(): boolean {
   return !isRealBuilderEnabled();
 }
 
-const DEMO_DISCLAIMER = "[DEMO] mock 데이터 기반 예시 응답입니다 — 실제 분석 결과가 아닙니다.";
+const demoDisclaimer = (): string => t("disclaimer");
 
 /**
  * 실제로 조회된(mock) evidence만 근거로 결정적 구조화 응답을 만든다. LLM을 호출하지 않으므로
@@ -33,13 +38,17 @@ const DEMO_DISCLAIMER = "[DEMO] mock 데이터 기반 예시 응답입니다 —
  * @param evidence - `loadKubiEvidence`가 반환한 evidence(데모에서도 실제 mock 데이터 경로를 그대로 탄다).
  */
 export function buildKubiDemoResponse(evidence: KubiEvidence): KubiStructuredResponse {
-  const lines: string[] = [DEMO_DISCLAIMER];
+  const lines: string[] = [demoDisclaimer()];
   const evidenceRefs: KubiStructuredResponse["evidenceRefs"] = [];
   const suggestedActions: KubiAction[] = [];
 
   if (evidence.dataset) {
     lines.push(
-      `데이터셋 "${evidence.dataset.title}"(${evidence.dataset.datasetId})의 최신 상태는 "${evidence.dataset.status}"입니다.`,
+      t("datasetStatus", {
+        title: evidence.dataset.title,
+        datasetId: evidence.dataset.datasetId,
+        status: evidence.dataset.status,
+      }),
     );
     evidenceRefs.push({ kind: "dataset", id: evidence.dataset.datasetId, label: evidence.dataset.title });
 
@@ -48,20 +57,20 @@ export function buildKubiDemoResponse(evidence: KubiEvidence): KubiStructuredRes
       type: "OPEN_QUALITY",
       datasetId: evidence.dataset.datasetId,
       runId,
-      reason: "[DEMO] Quality Center에서 이 run의 실제 rule 결과를 확인할 수 있습니다.",
+      reason: t("qualityReason"),
     });
     suggestedActions.push({
       type: "ADD_REPORT_BLOCK",
-      note: `[DEMO] "${evidence.dataset.title}" 데모 분석 — mock 데이터 기반이며 실제 분석이 아닙니다.`,
-      reason: "[DEMO] 이 데모 응답을 참고 노트로 Report에 남길 수 있습니다.",
+      note: t("demoNote", { title: evidence.dataset.title }),
+      reason: t("reportReason"),
     });
   } else {
-    lines.push("현재 선택된 Dataset이 없어 일반 안내만 제공합니다. Dataset을 선택하면 더 구체적인 데모를 볼 수 있습니다.");
+    lines.push(t("noDataset"));
   }
 
   if (evidence.quality) {
     const summary = summarizeKubiQuality(evidence.quality);
-    lines.push(summary === "—" ? "평가된 Quality 결과가 없습니다." : `Quality 결과 요약: ${summary}.`);
+    lines.push(summary === "—" ? t("noQuality") : t("qualitySummary", { summary }));
     const firstResult = evidence.quality.results[0];
     if (firstResult) {
       evidenceRefs.push({ kind: "quality", id: firstResult.id, label: `${firstResult.category}/${firstResult.rule}` });
@@ -82,9 +91,9 @@ export function buildKubiDemoResponse(evidence: KubiEvidence): KubiStructuredRes
       id: evidence.stage.refId,
       label: `${evidence.stage.source} · ${evidence.stage.stage}`,
     });
-    lines.push("Generated SQL은 데모용 미리보기 조회입니다 — 실행하면 mock 결과가 표시됩니다(실제 Builder 호출 없음).");
+    lines.push(t("sqlNote"));
   } else if (evidence.dataset) {
-    lines.push("위 Stage 선택에서 Silver 또는 Gold를 고르면 Generated SQL·Result Preview 데모도 함께 볼 수 있습니다.");
+    lines.push(t("stageHint"));
   }
 
   return { answer: lines.join("\n"), evidenceRefs, generatedSql, suggestedActions };

@@ -12,6 +12,7 @@
  *   (삭제되었거나 접근 권한을 잃음).
  * - UNAVAILABLE: run 목록 자체를 조회하지 못해 위 셋 중 무엇인지 판정할 수 없다.
  */
+import { i18n } from "@/shared/i18n";
 import { getDataset, listDatasetRuns } from "@/features/datasets/api";
 import type { EvidenceRunStatus } from "./types";
 
@@ -28,7 +29,7 @@ async function settle<T>(promise: Promise<T>): Promise<{ ok: true; value: T } | 
   try {
     return { ok: true, value: await promise };
   } catch (cause) {
-    return { ok: false, reason: cause instanceof Error ? cause.message : "조회에 실패했습니다." };
+    return { ok: false, reason: cause instanceof Error ? cause.message : i18n.t("reports.staleness.lookupFailed") };
   }
 }
 
@@ -51,7 +52,7 @@ export async function checkReportEvidenceStatus(
   if (!runsResult.ok) {
     return {
       status: "unavailable",
-      reason: `run 목록을 다시 불러오지 못했습니다: ${runsResult.reason}`,
+      reason: i18n.t("reports.staleness.runsReloadFailed", { reason: runsResult.reason }),
       checkedAt,
     };
   }
@@ -60,7 +61,7 @@ export async function checkReportEvidenceStatus(
   if (!stillExists) {
     return {
       status: "orphan",
-      reason: "기준 run이 더 이상 이 dataset의 run 목록에 없습니다(삭제되었거나 접근할 수 없음).",
+      reason: i18n.t("reports.staleness.runGone"),
       checkedAt,
     };
   }
@@ -69,7 +70,7 @@ export async function checkReportEvidenceStatus(
   const latestRunId = datasetResult.ok ? datasetResult.value.latest_run_id : runsResult.value.runs[0]?.run_id;
 
   if (latestRunId && latestRunId !== baseRunId) {
-    return { status: "stale", latestRunId, reason: `새로운 Run(\`${latestRunId}\`)이 있습니다.`, checkedAt };
+    return { status: "stale", latestRunId, reason: i18n.t("reports.staleness.newerRun", { runId: latestRunId }), checkedAt };
   }
 
   return { status: "current", latestRunId, checkedAt };

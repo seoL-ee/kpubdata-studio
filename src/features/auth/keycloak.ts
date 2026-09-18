@@ -8,6 +8,7 @@
  * OAuth 프로토콜을 직접 재구현하지 않는다. redirect/callback/PKCE/refresh는 모두
  * keycloak-js가 담당하고, 이 모듈은 앱 전역에서 단 하나의 인스턴스만 쓰도록 감싼다.
  */
+import { i18n } from "@/shared/i18n";
 import Keycloak, { type KeycloakInitOptions } from "keycloak-js";
 import { getOidcConfig } from "@/shared/config/env";
 import { getStudioUrl } from "./returnTo";
@@ -29,7 +30,7 @@ export function getKeycloak(): Keycloak {
   const result = getOidcConfig();
   if (result.status !== "ok") {
     throw new Error(
-      result.status === "error" ? result.reason : "OIDC가 활성화되지 않았습니다.",
+      result.status === "error" ? result.reason : i18n.t("auth.oidc.disabled"),
     );
   }
 

@@ -6,6 +6,7 @@
  * /builds/{run_id} 폴링, builder #480/#482)을 사용하고, 폴링 중인 잡의 wire
  * 상태(queued/running/...)를 builderStatus로 노출한다(#245).
  */
+import { i18n } from "@/shared/i18n";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { executeBuild, type BuildExecutionHandle, type BuilderJobStatus } from "@/features/runs/api";
 import { ApiError, builderApi, extractErrorMessage } from "@/shared/lib/builderApi";
@@ -110,7 +111,7 @@ export function useBuildJob(): BuildJob {
       setRun(result);
       // succeeded/failed/cancelled를 그대로 보존한다 — cancelled를 failed로 덮지 않는다(#S04).
       setStatus(toJobStatus(result.status));
-      if (result.status === "failed") setError(result.error ?? "일부 소스 빌드가 실패했습니다.");
+      if (result.status === "failed") setError(result.error ?? i18n.t("runs.build.someSourcesFailed"));
     } catch (cause) {
       if (controller.signal.aborted) {
         // AbortController.abort()는 (a) sync build의 사용자 취소, (b) 언마운트
@@ -127,7 +128,7 @@ export function useBuildJob(): BuildJob {
       const message =
         cause instanceof ApiError
           ? (extractErrorMessage(cause.details) ?? cause.message)
-          : "빌드 실행에 실패했습니다.";
+          : i18n.t("runs.build.runFailed");
       setError(message);
     } finally {
       // 실행이 끝나면(성공/실패/취소) 더 이상 유효하지 않은 컨트롤러 참조를 정리한다.

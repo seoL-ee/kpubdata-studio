@@ -43,7 +43,7 @@ import { EventTimeline } from "@/features/runs/components/EventTimeline";
 import { KubiRunAnalysis } from "@/features/runs/components/KubiRunAnalysis";
 import { useKubiStore } from "@/features/kubi/useKubiSession";
 import { useAssistConfig } from "@/features/assistant/config";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { useUIStore } from "@/shared/hooks/useUIStore";
 import { isRealBuilderEnabled } from "@/shared/lib/builderApi";
 import type {
@@ -307,7 +307,12 @@ export function BuildsPage() {
       <PageHeader
         eyebrow="Builds / Runs"
         title={t("builds.page.title")}
-        description={<span><strong>Build</strong>는 데이터를 수집·처리하는 작업이고 <strong>Run</strong>은 그 Build가 실제로 한 번 실행된 기록입니다. <TermHelp term="build" /> <TermHelp term="run" /></span>}
+        description={
+          <span>
+            <Trans i18nKey="builds.page.desc" components={{ b: <strong /> }} />{" "}
+            <TermHelp term="build" /> <TermHelp term="run" />
+          </span>
+        }
       />
 
       <KpiRow kpi={kpi} />

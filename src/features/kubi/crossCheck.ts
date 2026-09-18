@@ -9,6 +9,11 @@
 import type { KubiEvidence, KubiEvidenceRef, KubiKnownRefs, KubiStructuredResponse } from "./types";
 import { datasetRunMembershipRef } from "./types";
 import type { KubiAction } from "./schema";
+import { i18n } from "@/shared/i18n";
+
+/** 이 파일의 문구는 모두 `kubi.crossCheck.*` 아래에 있다(#350). */
+const t = (key: string, params?: Record<string, unknown>): string =>
+  i18n.t(`kubi.crossCheck.${key}`, params ?? {});
 
 export interface CrossCheckResult {
   response: KubiStructuredResponse;
@@ -48,45 +53,45 @@ function isKnownAction(
     case "OPEN_PROVIDER":
       return known.providers.has(action.provider)
         ? { ok: true }
-        : { ok: false, reason: `OPEN_PROVIDER: catalog에 없는 provider "${action.provider}"` };
+        : { ok: false, reason: t("openProviderUnknown", { provider: action.provider }) };
     case "OPEN_BUILD":
       return known.runIds.has(action.runId)
         ? { ok: true }
-        : { ok: false, reason: `OPEN_BUILD: evidence에 없는 run "${action.runId}"` };
+        : { ok: false, reason: t("openBuildUnknown", { runId: action.runId }) };
     case "OPEN_QUALITY":
       if (!known.datasetIds.has(action.datasetId)) {
-        return { ok: false, reason: `OPEN_QUALITY: evidence에 없는 dataset "${action.datasetId}"` };
+        return { ok: false, reason: t("openQualityUnknownDataset", { datasetId: action.datasetId }) };
       }
       if (action.runId && !known.runIds.has(action.runId)) {
-        return { ok: false, reason: `OPEN_QUALITY: evidence에 없는 run "${action.runId}"` };
+        return { ok: false, reason: t("openQualityUnknownRun", { runId: action.runId }) };
       }
       if (action.runId && !known.datasetRunMemberships.has(datasetRunMembershipRef(action.datasetId, action.runId))) {
         return {
           ok: false,
-          reason: `OPEN_QUALITY: run "${action.runId}"의 dataset "${action.datasetId}" 소속을 Builder evidence에서 확인할 수 없음`,
+          reason: t("openQualityMismatch", { runId: action.runId, datasetId: action.datasetId }),
         };
       }
       return { ok: true };
     case "PATCH_BUILDSPEC":
       if (!known.runIds.has(action.runId)) {
-        return { ok: false, reason: `PATCH_BUILDSPEC: evidence에 없는 run "${action.runId}"` };
+        return { ok: false, reason: t("patchUnknownRun", { runId: action.runId }) };
       }
       if (!evidence.buildSpecSummary) {
         return {
           ok: false,
-          reason: `PATCH_BUILDSPEC: run "${action.runId}"의 원본 BuildSpec을 이 브라우저에서 찾을 수 없어 안전하게 diff를 만들 수 없습니다`,
+          reason: t("patchSpecMissing", { runId: action.runId }),
         };
       }
       return { ok: true };
     case "CREATE_BUILD_DRAFT": {
       if (!known.providers.has(action.values.provider)) {
-        return { ok: false, reason: `CREATE_BUILD_DRAFT: catalog에 없는 provider "${action.values.provider}"` };
+        return { ok: false, reason: t("draftUnknownProvider", { provider: action.values.provider }) };
       }
       const knownDatasets = evidence.catalog?.datasetsByProvider[action.values.provider] ?? [];
       if (!knownDatasets.includes(action.values.sourceDataset)) {
         return {
           ok: false,
-          reason: `CREATE_BUILD_DRAFT: "${action.values.provider}" catalog에 없는 dataset "${action.values.sourceDataset}"`,
+          reason: t("draftUnknownDataset", { provider: action.values.provider, dataset: action.values.sourceDataset }),
         };
       }
       return { ok: true };
@@ -128,7 +133,10 @@ export function crossCheckKubiResponse(
   let rejectedSqlReason: string | undefined;
   if (generatedSql) {
     if (evidence.context.stage !== generatedSql.stage) {
-      rejectedSqlReason = `현재 화면 stage(${evidence.context.stage ?? "없음"})와 제안된 SQL의 stage(${generatedSql.stage})가 일치하지 않아 실행 대상에서 제외했습니다.`;
+      rejectedSqlReason = t("sqlStageMismatch", {
+        current: evidence.context.stage ?? t("stageNone"),
+        proposed: generatedSql.stage,
+      });
       generatedSql = null;
     } else if (generatedSql.source && !knownRefs.sourceKeys.has(generatedSql.source)) {
       // 모델이 만든 source 문자열이 evidence의 canonical source_key와 정확히 일치하지 않는다.
@@ -138,11 +146,11 @@ export function crossCheckKubiResponse(
       if (singleSource) {
         // 단일 소스 run이고 다른 ambiguity가 없으므로, 미검증 source는 버리고 Builder가
         // 유일 source를 자동 선택하게 한다(SQL 본문 자체는 살린다).
-        rejectedSqlReason = `제안된 source "${generatedSql.source}"를 evidence에서 확인할 수 없어 제거했습니다. 단일 소스 run이라 Builder가 자동으로 소스를 선택합니다.`;
+        rejectedSqlReason = t("sqlSourceDropped", { source: generatedSql.source });
         generatedSql = { ...generatedSql, source: undefined };
       } else {
         // multi-source에서 미검증 source는 어떤 소스를 조회할지 결정할 수 없다 — fail-closed.
-        rejectedSqlReason = `evidence에 없는 source "${generatedSql.source}"를 참조해 실행 대상에서 제외했습니다.`;
+        rejectedSqlReason = t("sqlSourceUnknown", { source: generatedSql.source });
         generatedSql = null;
       }
     }

@@ -1,3 +1,4 @@
+import { i18n } from "@/shared/i18n";
 import {
   ApiError,
   builderApi,
@@ -40,7 +41,7 @@ export async function getDataset(datasetId: string, signal?: AbortSignal): Promi
   if (isRealBuilderEnabled()) return builderApi.getDataset(datasetId, signal);
   throwIfAborted(signal);
   const dataset = mockDatasetDetail(datasetId);
-  if (!dataset) throw new ApiError(404, "요청한 데이터셋을 찾을 수 없습니다.");
+  if (!dataset) throw new ApiError(404, i18n.t("datasets.errors.datasetNotFound"));
   return dataset;
 }
 
@@ -48,7 +49,7 @@ export async function listDatasetRuns(datasetId: string, limit = 50, signal?: Ab
   if (isRealBuilderEnabled()) return builderApi.listDatasetRuns(datasetId, limit, signal);
   throwIfAborted(signal);
   const runs = MOCK_RUNS[datasetId];
-  if (!runs) throw new ApiError(404, "요청한 데이터셋의 실행 이력을 찾을 수 없습니다.");
+  if (!runs) throw new ApiError(404, i18n.t("datasets.errors.runsNotFound"));
   return { ...runs, runs: runs.runs.slice(0, limit) };
 }
 
@@ -56,7 +57,7 @@ export async function listBuildStages(runId: string, signal?: AbortSignal): Prom
   if (isRealBuilderEnabled()) return builderApi.listBuildStages(runId, signal);
   throwIfAborted(signal);
   const stages = MOCK_STAGES[runId];
-  if (!stages) throw new ApiError(404, "요청한 실행의 stage 정보를 찾을 수 없습니다.");
+  if (!stages) throw new ApiError(404, i18n.t("datasets.errors.stagesNotFound"));
   return stages;
 }
 
@@ -70,7 +71,7 @@ export async function getBuildStageDetail(
   if (isRealBuilderEnabled()) return builderApi.getBuildStageDetail(runId, stage, source, limit, signal);
   throwIfAborted(signal);
   const detail = mockStageDetail(runId, source, stage);
-  if (!detail) throw new ApiError(404, "요청한 source 또는 stage를 찾을 수 없습니다.");
+  if (!detail) throw new ApiError(404, i18n.t("datasets.errors.sourceStageNotFound"));
   return detail.stage === "silver" ? { ...detail, sample: detail.sample.slice(0, limit) } : detail;
 }
 
@@ -78,7 +79,7 @@ export async function getBuildQuality(runId: string, signal?: AbortSignal): Prom
   if (isRealBuilderEnabled()) return builderApi.getBuildQuality(runId, signal);
   throwIfAborted(signal);
   const quality = MOCK_QUALITY[runId];
-  if (!quality) throw new ApiError(404, "요청한 실행의 quality 결과를 찾을 수 없습니다.");
+  if (!quality) throw new ApiError(404, i18n.t("datasets.errors.qualityNotFound"));
   return quality;
 }
 
@@ -86,7 +87,7 @@ export async function getDatasetQualityHistory(datasetId: string, limit = 30, si
   if (isRealBuilderEnabled()) return builderApi.getDatasetQualityHistory(datasetId, limit, signal);
   throwIfAborted(signal);
   const history = MOCK_QUALITY_HISTORY[datasetId];
-  if (!history) throw new ApiError(404, "요청한 데이터셋의 quality 이력을 찾을 수 없습니다.");
+  if (!history) throw new ApiError(404, i18n.t("datasets.errors.qualityHistoryNotFound"));
   return { ...history, runs: history.runs.slice(0, limit) };
 }
 
@@ -119,7 +120,7 @@ export async function loadDatasetCatalog(signal?: AbortSignal): Promise<CatalogD
       return {
         ...dataset,
         validation: "N/A",
-        qualityError: cause instanceof Error ? cause.message : "Quality 결과를 불러오지 못했습니다.",
+        qualityError: cause instanceof Error ? cause.message : i18n.t("datasets.errors.qualityLoadFailed"),
       };
     }
   });

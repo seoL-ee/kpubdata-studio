@@ -7,6 +7,7 @@
  * 표면에 대응하는 결정적 fixture가 없으므로, 있는 척 지어내는 대신 명시적으로
  * "mock 모드에서는 지원되지 않음"을 던져 실연동 모드로 전환해야 함을 드러낸다.
  */
+import { i18n } from "@/shared/i18n";
 import {
   ApiError,
   builderApi,
@@ -30,7 +31,7 @@ export async function getBuildSpecSnapshot(
 ): Promise<BuildSpecSnapshotResponse> {
   if (!isRealBuilderEnabled()) {
     throw new MockUnsupportedError(
-      "Mock 모드에서는 BuildSpec snapshot을 시뮬레이션하지 않습니다. 실연동 모드에서 확인하세요.",
+      i18n.t("runs.mock.noSpecSnapshot"),
     );
   }
   return builderApi.getBuildSpecSnapshot(runId, signal);
@@ -44,7 +45,7 @@ export async function getBuildEvents(
 ): Promise<BuildEventsResponse> {
   if (!isRealBuilderEnabled()) {
     throw new MockUnsupportedError(
-      "Mock 모드에서는 structured run event를 시뮬레이션하지 않습니다. 실연동 모드에서 확인하세요.",
+      i18n.t("runs.mock.noRunEvents"),
     );
   }
   return builderApi.getBuildEvents(runId, options, signal);

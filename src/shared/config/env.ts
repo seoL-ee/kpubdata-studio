@@ -3,6 +3,8 @@
  *
  * 환경 변수가 있으면 배포 환경 값을 우선 사용하고, 없으면 로컬 개발 기본값으로 폴백한다.
  */
+import { i18n } from "@/shared/i18n";
+
 export const API_BASE =
   import.meta.env.VITE_BUILDER_API_URL ?? "http://localhost:8000";
 
@@ -91,14 +93,14 @@ export function resolveOidcConfig(input: {
 
   const issuer = input.issuer?.trim();
   const clientId = input.clientId?.trim();
-  if (!issuer) return { status: "error", reason: "VITE_OIDC_ISSUER가 설정되지 않았습니다." };
+  if (!issuer) return { status: "error", reason: i18n.t("config.oidc.issuerMissing") };
   if (!clientId) {
-    return { status: "error", reason: "VITE_OIDC_CLIENT_ID가 설정되지 않았습니다." };
+    return { status: "error", reason: i18n.t("config.oidc.clientIdMissing") };
   }
 
   const parsed = parseOidcIssuer(issuer);
   if (!parsed) {
-    return { status: "error", reason: `VITE_OIDC_ISSUER 형식이 올바르지 않습니다: ${issuer}` };
+    return { status: "error", reason: i18n.t("config.oidc.issuerInvalid", { issuer }) };
   }
 
   return {

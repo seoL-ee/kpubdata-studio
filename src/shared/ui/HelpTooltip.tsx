@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "./cn";
@@ -8,7 +9,9 @@ export interface HelpTooltipProps {
   className?: string;
 }
 
-export function HelpTooltip({ content, label = "도움말", className }: HelpTooltipProps) {
+export function HelpTooltip({ content, label, className }: HelpTooltipProps) {
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t("helpTooltip.label");
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
@@ -41,7 +44,7 @@ export function HelpTooltip({ content, label = "도움말", className }: HelpToo
       <button
         ref={triggerRef}
         type="button"
-        aria-label={label}
+        aria-label={resolvedLabel}
         aria-describedby={open ? id : undefined}
         aria-expanded={open}
         className="inline-flex size-5 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

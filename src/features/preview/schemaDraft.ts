@@ -10,6 +10,7 @@
  *   날짜·지역을 조회하면 null이 나올 수 있다. 그래서 초안을 자동 확정하지
  *   말고 사용자 승인을 거쳐야 하며, UI는 warnings로 이 한계를 표시해야 한다.
  */
+import { i18n } from "@/shared/i18n";
 import type { PreviewColumn } from "@/shared/lib/builderApi.schema";
 import type { SchemaContract } from "@/shared/lib/types";
 
@@ -43,8 +44,8 @@ export function draftSchemaContract(
     .map((c) => c.name);
   const warnings: string[] =
     rowCount === 0
-      ? ["행이 0건이라 required/키 후보 판정이 무의미하다"]
-      : ["required/키 후보 판정은 현재 조회 범위 기준이다"];
+      ? [i18n.t("preview.schemaDraft.zeroRows")]
+      : [i18n.t("preview.schemaDraft.scopeNote")];
   return {
     contract: { required, dtypes, casts: {} },
     keyCandidates,

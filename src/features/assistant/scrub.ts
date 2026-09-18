@@ -39,6 +39,8 @@ function escapeRegExp(literal: string): string {
   return literal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+import { i18n } from "@/shared/i18n";
+
 export function isSecretKey(keyName: string): boolean {
   return SECRET_KEY_PATTERNS.some((p) => p.test(keyName));
 }
@@ -217,7 +219,7 @@ export function createSecretScrubber(
   function restore(data: unknown): unknown {
     if (typeof data === "string" && data.startsWith(SCRUBBED_PREFIX)) {
       const value = placeholders.get(data);
-      if (value === undefined) throw new Error("알 수 없는 시크릿 플레이스홀더가 포함되어 있습니다.");
+      if (value === undefined) throw new Error(i18n.t("assistant.scrub.unknownPlaceholder"));
       return value;
     }
     if (Array.isArray(data)) return data.map(restore);
@@ -232,7 +234,7 @@ export function createSecretScrubber(
   function restoreText(text: string): string {
     return text.replace(SCRUBBED_PATTERN, (placeholder) => {
       const value = placeholders.get(placeholder);
-      if (value === undefined) throw new Error("알 수 없는 시크릿 플레이스홀더가 포함되어 있습니다.");
+      if (value === undefined) throw new Error(i18n.t("assistant.scrub.unknownPlaceholder"));
       return value;
     });
   }
@@ -248,7 +250,7 @@ export function scrubSecrets(data: unknown): ScrubResult {
 export function restoreSecrets(data: unknown, placeholders: Map<string, string>): unknown {
   if (typeof data === "string" && data.startsWith(SCRUBBED_PREFIX)) {
     const value = placeholders.get(data);
-    if (value === undefined) throw new Error("알 수 없는 시크릿 플레이스홀더가 포함되어 있습니다.");
+    if (value === undefined) throw new Error(i18n.t("assistant.scrub.unknownPlaceholder"));
     return value;
   }
   // 배열 왕복 복원 (#226 결함 c). scrub 가 배열을 순회하므로 restore 도 같이.

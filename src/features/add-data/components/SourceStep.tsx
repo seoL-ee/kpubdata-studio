@@ -4,19 +4,21 @@
  * Prototype(`kpubdata_ui_prototype_v1.html`의 `addData()`/`source-card`)의 3-카드
  * 레이아웃을 그대로 따른다: Public API / File Upload / URL·REST API.
  */
+import { useTranslation } from "react-i18next";
 import type { SourceKind } from "@/shared/lib/types";
 import { Card } from "@/shared/ui";
 
 interface SourceOption {
   kind: SourceKind;
   title: string;
-  description: string;
+  /** 설명 문구의 i18n 키(`addData.source.kind.*`) — 상수에 문구를 박지 않는다(#350). */
+  descriptionKey: string;
 }
 
 const SOURCE_OPTIONS: SourceOption[] = [
-  { kind: "public_api", title: "Public API", description: "Provider를 선택하고 인증·조회조건을 설정합니다." },
-  { kind: "file", title: "File Upload", description: "CSV/JSON/JSONL/Parquet 파일을 업로드합니다." },
-  { kind: "url", title: "URL / REST API", description: "HTTPS GET endpoint를 직접 입력합니다(P0: Auth 없음)." },
+  { kind: "public_api", title: "Public API", descriptionKey: "publicApi" },
+  { kind: "file", title: "File Upload", descriptionKey: "file" },
+  { kind: "url", title: "URL / REST API", descriptionKey: "url" },
 ];
 
 export interface SourceStepProps {
@@ -25,11 +27,12 @@ export interface SourceStepProps {
 }
 
 export function SourceStep({ selected, onSelect }: SourceStepProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
-      <h3 className="text-xl font-semibold tracking-tight">데이터 선택</h3>
+      <h3 className="text-xl font-semibold tracking-tight">{t("addData.source.title")}</h3>
       <p className="text-sm text-muted-foreground">
-        데이터를 어디서 가져올지 선택하세요. 이후 단계는 선택한 source에 맞는 입력만 보여줍니다.
+        {t("addData.source.desc")}
       </p>
       <div className="grid gap-3 sm:grid-cols-3">
         {SOURCE_OPTIONS.map((option) => (
@@ -45,7 +48,7 @@ export function SourceStep({ selected, onSelect }: SourceStepProps) {
               className="h-full transition hover:border-accent/50 hover:shadow-md"
             >
               <p className="text-base font-semibold tracking-tight">{option.title}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{option.description}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t(`addData.source.kind.${option.descriptionKey}`)}</p>
             </Card>
           </button>
         ))}
