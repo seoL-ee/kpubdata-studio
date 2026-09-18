@@ -1,8 +1,10 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import * as datasetsApi from "@/features/datasets/api";
 import { buildEvidenceRefs, fetchReportEvidence } from "./evidence";
 
 afterEach(() => {
   localStorage.clear();
+  vi.restoreAllMocks();
 });
 
 describe("fetchReportEvidence (#258)", () => {
@@ -25,6 +27,52 @@ describe("fetchReportEvidence (#258)", () => {
     // kma__weather는 mock에서 silver failed, gold not_run이라 schema를 얻을 수 없다.
     expect(evidence.schemas["kma__weather"]?.origin).toBe("unavailable");
     expect(evidence.schemas["kma__weather"]?.reason).toBeTruthy();
+  });
+
+  it("Silver schema를 사용하고 Silver stage detail을 limit=1로 조회한다", async () => {
+    const spy = vi.spyOn(datasetsApi, "getBuildStageDetail");
+
+    const evidence = await fetchReportEvidence("air-quality", "air-2026-08-14");
+
+    expect(evidence.schemas["datago__air"]?.origin).toBe("silver");
+    expect(spy).toHaveBeenCalledWith("air-2026-08-14", "silver", "datago__air", 1, undefined);
+  });
+
+  it("Silver 실패 시 Gold column names로 fallback하고 Gold stage detail을 limit=1로 조회한다", async () => {
+    const spy = vi.spyOn(datasetsApi, "getBuildStageDetail").mockImplementation(async (runId, stage, sourceKey) => {
+      if (stage === "silver") throw new Error("silver unavailable");
+      return {
+        run_id: runId,
+        stage: "gold",
+        source_key: sourceKey,
+        status: "completed",
+        available: true,
+        row_count: 1,
+        columns: ["fallback_column"],
+        splits: null,
+        exports: [],
+        sample: null,
+        sample_available: false,
+      };
+    });
+
+    const evidence = await fetchReportEvidence("air-quality", "air-2026-08-14");
+
+    expect(evidence.schemas["datago__air"]).toMatchObject({
+      origin: "gold_names_only",
+      columns: [],
+      columnNamesOnly: ["fallback_column"],
+    });
+    expect(spy).toHaveBeenCalledWith("air-2026-08-14", "gold", "datago__air", 1, undefined);
+  });
+
+  it("Silver와 Gold 모두 실패하면 기존 unavailable semantics를 유지한다", async () => {
+    vi.spyOn(datasetsApi, "getBuildStageDetail").mockRejectedValue(new Error("stage unavailable"));
+
+    const evidence = await fetchReportEvidence("air-quality", "air-2026-08-14");
+
+    expect(evidence.schemas["datago__air"]?.origin).toBe("unavailable");
+    expect(evidence.schemas["datago__air"]?.reason).toBeTruthy();
   });
 
   it("run이 dataset의 run 목록에 없으면 run을 실패로 표시하되 dataset/stages/quality는 그대로 시도한다(부분 실패 허용)", async () => {

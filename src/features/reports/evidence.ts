@@ -70,12 +70,12 @@ export interface ReportEvidenceBundle {
 }
 
 async function fetchSourceSchema(runId: string, sourceKey: string, signal?: AbortSignal): Promise<ReportSourceSchema> {
-  const silver = await settle(getBuildStageDetail(runId, "silver", sourceKey, 0, signal));
+  const silver = await settle(getBuildStageDetail(runId, "silver", sourceKey, 1, signal));
   if (silver.ok && silver.value.stage === "silver" && silver.value.available && silver.value.schema.length > 0) {
     return { sourceKey, origin: "silver", columns: silver.value.schema };
   }
 
-  const gold = await settle(getBuildStageDetail(runId, "gold", sourceKey, 0, signal));
+  const gold = await settle(getBuildStageDetail(runId, "gold", sourceKey, 1, signal));
   if (gold.ok && gold.value.stage === "gold" && gold.value.available && gold.value.columns.length > 0) {
     return { sourceKey, origin: "gold_names_only", columns: [], columnNamesOnly: gold.value.columns };
   }
