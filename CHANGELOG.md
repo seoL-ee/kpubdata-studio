@@ -13,6 +13,7 @@
 
 ### 변경됨
 - **BuildsPage 분할 (#379)**: 1,188줄 한 파일이 목록·필터·상세·품질·파이프라인을 모두 들고 있었다. `features/add-data` 구조를 그대로 따라 `features/runs/` 아래로 옮긴다 — 패널은 `components/`(KpiRow·RunListPanel·RunDetailPanel·SourcePipeline), 로직은 `buildContext.ts`(URL 문맥 정규화)·`stageDetails.ts`(stage detail 조회)·`asyncState.ts`(표면별 비동기 상태). 페이지는 **251줄 화면 조립만** 남는다. 동작 변경 없음 — 청크 크기(30.56 kB)와 테스트 1341건이 그대로다
+- **NewBuildPage 스펙 조립 로직 분리 (#379)**: 폼 ↔ BuildSpec 변환·단계 필드 구성·catalog 조회 헬퍼를 `features/build-spec/newBuildModel.ts` 로, 시작 템플릿을 `templates.ts` + `components/TemplateButton.tsx` 로 옮겼다. 페이지는 1,032줄 → 786줄. "무엇이 스펙이 되는가"를 JSX 를 읽지 않고 확인할 수 있다. 단계별 컴포넌트 분리는 후속
 - **i18n UI 문자열 전환 마무리 (#350)**: 마지막 사용자 노출 문자열 4건(`publish/api` 게시 오류 2건, `useKubiSession` 초안 저장 실패·action 거부)을 키로 옮겼다. 이제 `src/` 에 남은 한글은 주석·mock/demo 데이터·LLM 프롬프트·예시 파라미터값뿐이며 화면 chrome 은 0건이다
 - **페이지 3종 i18n 전환 (#350)**: `WorkspacePage`·`DatasetDetailPage`·`BuildPublishPage` 의 하드코딩 한글 UI 문자열을 키로 옮겼다(`workspace`/`datasetDetail`/`buildPublish`, ko/en 각 129키 신규 — 총 1590키 대칭). 모듈 상수 라벨 테이블 3건(`VALIDATION_META`·`STAGE_EXPLAINER`·`BUILD_STATUS_LABEL`)도 문자열 대신 **키 표**로 바꿔 렌더 시점에 번역한다 — import 시점에 언어가 굳던 결함이다
 - **App Shell·Report 편집기 i18n 전환 (#350)**: `Layout.tsx`(사이드바/헤더 aria-label·테마·tagline 등)와 `ReportEditorPage.tsx` 의 하드코딩 한글을 키로 옮겼다(`layout`/`reportEditor`, ko/en 각 37키 신규). Shell 은 모든 화면에 걸리는 부분이라 여기 남은 문자열은 어느 화면에서든 언어 전환을 깨뜨렸다
