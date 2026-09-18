@@ -53,3 +53,29 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  coverage:
+    # 커버리지 게이트 (#380). 지금 도달한 수준이 조용히 내려가지 않게 잠근다.
+    # 하한은 vitest.config.ts 의 coverage.thresholds 한 곳에서만 관리한다.
+    # quality 잡은 Node 20/22 두 번 도는데, 계측을 거기 얹으면 같은 정보를 두 배
+    # 비용으로 사게 된다 — 이 잡 하나만 계측한다.
+    name: Coverage gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          npm_config_cache: ${{ runner.temp }}/.npm-cache
+          npm_config_tmp: ${{ runner.temp }}/.npm-tmp
+
+      - name: Test with coverage
+        run: npm run test:coverage
