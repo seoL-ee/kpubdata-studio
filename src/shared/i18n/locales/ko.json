@@ -766,7 +766,7 @@
       "logout": "로그아웃",
       "notLoggedIn": "로그인되지 않았습니다. 실연동 모드에서는 Builder 호출을 위해 로그인이 필요합니다.",
       "login": "로그인",
-      "mockNote": "mock 모드에서는 로그인 상태가 UI 시연용으로만 동작합니다. 계정/권한 백엔드는 실연동과 함께 연동됩니다."
+      "mockNote": "mock 모드에서는 로그인 상태가 UI 시연용으로만 동작합니다. 계정/권한 백엔드는"
     },
     "providers": {
       "title": "데이터 Provider 자격 증명",
@@ -916,6 +916,83 @@
         "none": "이 run에 대해 보고된 output 파일이 없습니다.",
         "list": "이 run에는 총 {{count}}개의 output 파일이 있습니다: {{files}}."
       }
+    },
+    "sections": {
+      "unavailable": "확인할 수 없음",
+      "overview": {
+        "loadFailed": "Dataset 정보를 불러오지 못했습니다: {{reason}}",
+        "colItem": "항목",
+        "colValue": "값",
+        "rowDataset": "Dataset",
+        "rowProviders": "Provider(s)",
+        "rowSources": "Sources",
+        "rowRun": "기준 Run",
+        "rowRunStatus": "Run 상태",
+        "rowRunTimes": "Run 시작 / 종료",
+        "rowSpecDigest": "BuildSpec digest",
+        "rowUpdatedAt": "Dataset 최종 갱신"
+      },
+      "pipeline": {
+        "noSources": "이 run에 대한 source가 없습니다.",
+        "fallbackNote": "run 단위 stage 상세 조회에 실패해 dataset 요약 기준으로 표시합니다({{reason}}).",
+        "loadFailed": "Pipeline 상태를 불러오지 못했습니다: {{reason}}"
+      },
+      "quality": {
+        "loadFailed": "Quality 결과를 불러오지 못했습니다: {{reason}}",
+        "notProvided": "이 run은 Quality 평가가 제공되지 않습니다(availability=unavailable). PASS로 간주하지 않습니다.",
+        "colResult": "결과",
+        "colActual": "실제값",
+        "colThreshold": "기준값",
+        "noneEvaluated": "평가된 규칙이 없습니다(evaluated_checks=0).",
+        "noDrift": "schema drift가 관찰되지 않았습니다.",
+        "driftTitle": "Schema drift"
+      },
+      "schema": {
+        "noSources": "Schema 정보를 불러올 source가 없습니다.",
+        "colColumn": "Column",
+        "colType": "Type",
+        "colNullable": "Nullable",
+        "colUnique": "Unique",
+        "goldNamesOnly": "(gold — column 이름만 제공, dtype 없음)"
+      },
+      "dataSummary": {
+        "loadFailed": "Row count 정보를 불러오지 못했습니다: {{reason}}",
+        "totalLabel": "Total row count",
+        "colRowCount": "Row count",
+        "noBreakdown": "source별 row count 정보가 없습니다."
+      },
+      "output": {
+        "loadFailed": "Output/Artifact 정보를 확인할 수 없습니다: {{reason}}",
+        "none": "이 run에 대해 보고된 output 파일이 없습니다."
+      }
+    },
+    "export": {
+      "status": {
+        "current": "CURRENT: 기준 run 확인됨, 최신",
+        "stale": "STALE: 기준 run은 유효하지만 더 새 run이 있습니다",
+        "orphan": "ORPHAN: 기준 run을 더 이상 찾을 수 없습니다",
+        "unavailable": "UNAVAILABLE: evidence를 다시 확인하지 못했습니다"
+      },
+      "meta": {
+        "createdAt": "생성 시각",
+        "evidenceFetchedAt": "Evidence 조회 시각",
+        "exportedAt": "내보내기 시각",
+        "evidenceStatus": "Evidence 상태",
+        "evidenceStatusShort": "evidence 상태"
+      },
+      "provenance": {
+        "kubi": "[AI 작성 - Kubi]",
+        "user": "[사용자 작성]"
+      },
+      "tag": {
+        "ai": "AI 작성",
+        "user": "사용자 작성"
+      },
+      "detailHeading": "상세 근거",
+      "kubiHeading": "Kubi 참고 분석",
+      "kubiOtherRun": "참고 분석 - 현재 Report와 다른 Run 기준 (dataset: {{dataset}}, run: {{run}})",
+      "kubiOtherRunHtml": "참고 분석 - 다른 Run 기준 (dataset: {{dataset}}, run: {{run}})",
+      "reasonLabel": "판단 근거"
     }
   },
   "artifacts": {

@@ -766,7 +766,7 @@
       "logout": "Sign out",
       "notLoggedIn": "Not signed in. Real integration mode requires sign-in for Builder calls.",
       "login": "Sign in",
-      "mockNote": "In mock mode, login state is for UI demonstration only. The account and permission backend arrives with the real integration."
+      "mockNote": "In mock mode, login state is for UI demonstration only. Account/permission backend is"
     },
     "providers": {
       "title": "Data provider credentials",
@@ -916,6 +916,83 @@
         "none": "No output files were reported for this run.",
         "list": "This run produced {{count}} output file(s): {{files}}."
       }
+    },
+    "sections": {
+      "unavailable": "unavailable",
+      "overview": {
+        "loadFailed": "Could not load dataset information: {{reason}}",
+        "colItem": "Item",
+        "colValue": "Value",
+        "rowDataset": "Dataset",
+        "rowProviders": "Provider(s)",
+        "rowSources": "Sources",
+        "rowRun": "Run",
+        "rowRunStatus": "Run status",
+        "rowRunTimes": "Run started / finished",
+        "rowSpecDigest": "BuildSpec digest",
+        "rowUpdatedAt": "Dataset last updated"
+      },
+      "pipeline": {
+        "noSources": "This run has no sources.",
+        "fallbackNote": "Per-run stage details could not be loaded, so this falls back to the dataset summary ({{reason}}).",
+        "loadFailed": "Could not load pipeline status: {{reason}}"
+      },
+      "quality": {
+        "loadFailed": "Could not load quality results: {{reason}}",
+        "notProvided": "This run provides no quality evaluation (availability=unavailable). It is not treated as PASS.",
+        "colResult": "Result",
+        "colActual": "Actual",
+        "colThreshold": "Threshold",
+        "noneEvaluated": "No rules were evaluated (evaluated_checks=0).",
+        "noDrift": "No schema drift was observed.",
+        "driftTitle": "Schema drift"
+      },
+      "schema": {
+        "noSources": "There is no source to read schema information from.",
+        "colColumn": "Column",
+        "colType": "Type",
+        "colNullable": "Nullable",
+        "colUnique": "Unique",
+        "goldNamesOnly": "(gold — column names only, no dtype)"
+      },
+      "dataSummary": {
+        "loadFailed": "Could not load row counts: {{reason}}",
+        "totalLabel": "Total row count",
+        "colRowCount": "Row count",
+        "noBreakdown": "No per-source row counts are available."
+      },
+      "output": {
+        "loadFailed": "Output/artifact information is unavailable: {{reason}}",
+        "none": "No output files were reported for this run."
+      }
+    },
+    "export": {
+      "status": {
+        "current": "CURRENT: base run confirmed, up to date",
+        "stale": "STALE: the base run is still valid but a newer run exists",
+        "orphan": "ORPHAN: the base run can no longer be found",
+        "unavailable": "UNAVAILABLE: evidence could not be re-checked"
+      },
+      "meta": {
+        "createdAt": "Created at",
+        "evidenceFetchedAt": "Evidence fetched at",
+        "exportedAt": "Exported at",
+        "evidenceStatus": "Evidence status",
+        "evidenceStatusShort": "evidence status"
+      },
+      "provenance": {
+        "kubi": "[AI-written - Kubi]",
+        "user": "[User-written]"
+      },
+      "tag": {
+        "ai": "AI-written",
+        "user": "User-written"
+      },
+      "detailHeading": "Supporting detail",
+      "kubiHeading": "Kubi reference analysis",
+      "kubiOtherRun": "Reference analysis - based on a run other than this report's (dataset: {{dataset}}, run: {{run}})",
+      "kubiOtherRunHtml": "Reference analysis - based on another run (dataset: {{dataset}}, run: {{run}})",
+      "reasonLabel": "Rationale"
     }
   },
   "artifacts": {

@@ -9,16 +9,19 @@
  * 구분/stale-orphan 경고를 포함한다. Kubi/사용자 콘텐츠는 `markdown.ts`의 안전 렌더러만
  * 거쳐 HTML로 들어간다 — 원문을 그대로 삽입하지 않는다.
  */
+import { i18n } from "@/shared/i18n";
 import { escapeHtml, renderMarkdownToHtml } from "./markdown";
 import type { EvidenceRunStatus } from "./types";
 import type { ReportDraft } from "./types";
 
-const STATUS_LABEL: Record<EvidenceRunStatus, string> = {
-  current: "CURRENT: 기준 run 확인됨, 최신",
-  stale: "STALE: 기준 run은 유효하지만 더 새 run이 있습니다",
-  orphan: "ORPHAN: 기준 run을 더 이상 찾을 수 없습니다",
-  unavailable: "UNAVAILABLE: evidence를 다시 확인하지 못했습니다",
-};
+/** 이 파일의 문장 키는 모두 이 네임스페이스 아래에 있다(#350). */
+const t = (key: string, params?: Record<string, unknown>): string =>
+  i18n.t(`reports.export.${key}`, params ?? {});
+
+/** 상태 라벨은 모듈 상수가 아니라 호출 시점에 만든다 — 상수로 두면 언어 전환이 반영되지 않는다. */
+function statusLabel(status: EvidenceRunStatus): string {
+  return t(`status.${status}`);
+}
 
 const FILENAME_INVALID_CHARS = /["*/:<>?\\|]/g;
 
@@ -39,19 +42,18 @@ function metadataLines(report: ReportDraft, staleness: EvidenceRunStatus | null)
     `Dataset: ${report.datasetId}`,
     `Base Run: ${report.baseRunId}`,
     `BuildSpec digest: ${report.buildSpecDigest ?? "N/A"}`,
-    `생성 시각: ${report.createdAt}`,
-    `Evidence 조회 시각: ${report.evidenceFetchedAt}`,
-    `내보내기 시각: ${new Date().toISOString()}`,
+    `${t("meta.createdAt")}: ${report.createdAt}`,
+    `${t("meta.evidenceFetchedAt")}: ${report.evidenceFetchedAt}`,
+    `${t("meta.exportedAt")}: ${new Date().toISOString()}`,
   ];
-  if (staleness) lines.push(`Evidence 상태: ${STATUS_LABEL[staleness]}`);
+  if (staleness) lines.push(`${t("meta.evidenceStatus")}: ${statusLabel(staleness)}`);
   return lines;
 }
 
-const PROVENANCE_LABEL = {
-  BUILDER_EVIDENCE: "[Builder Evidence]",
-  KUBI_INTERPRETATION: "[AI 작성 - Kubi]",
-  USER_CONTENT: "[사용자 작성]",
-} as const;
+function provenanceLabel(kind: "BUILDER_EVIDENCE" | "KUBI_INTERPRETATION" | "USER_CONTENT"): string {
+  if (kind === "BUILDER_EVIDENCE") return "[Builder Evidence]";
+  return kind === "KUBI_INTERPRETATION" ? t("provenance.kubi") : t("provenance.user");
+}
 
 /** Markdown 파일 내용을 만든다. */
 export function generateMarkdownExport(report: ReportDraft, staleness: EvidenceRunStatus | null): string {
@@ -59,25 +61,31 @@ export function generateMarkdownExport(report: ReportDraft, staleness: EvidenceR
 
   for (const block of report.blocks) {
     if (block.provenance === "BUILDER_EVIDENCE") {
-      parts.push(`## ${block.title} ${PROVENANCE_LABEL.BUILDER_EVIDENCE}`);
+      parts.push(`## ${block.title} ${provenanceLabel("BUILDER_EVIDENCE")}`);
       if (block.evidenceStatus !== "ok") {
-        parts.push(`> evidence 상태: ${block.evidenceStatus}${block.unavailableReason ? ` (${block.unavailableReason})` : ""}`);
+        parts.push(
+          `> ${t("meta.evidenceStatusShort")}: ${block.evidenceStatus}${block.unavailableReason ? ` (${block.unavailableReason})` : ""}`,
+        );
       }
       if (block.summary) {
         parts.push(block.summary);
-        parts.push("### 상세 근거");
+        parts.push(`### ${t("detailHeading")}`);
       }
       parts.push(block.markdown);
     } else if (block.provenance === "KUBI_INTERPRETATION") {
-      parts.push(`## Kubi 참고 분석 ${PROVENANCE_LABEL.KUBI_INTERPRETATION}`);
+      parts.push(`## ${t("kubiHeading")} ${provenanceLabel("KUBI_INTERPRETATION")}`);
       if (!block.isSameContext) {
-        parts.push(`> 참고 분석 - 현재 Report와 다른 Run 기준 (dataset: ${block.sourceContext.datasetId ?? "N/A"}, run: ${block.sourceContext.runId ?? "N/A"})`);
+        parts.push(
+          `> ${t("kubiOtherRun", { dataset: block.sourceContext.datasetId ?? "N/A", run: block.sourceContext.runId ?? "N/A" })}`,
+        );
       }
-      parts.push(`생성 시각: ${block.generatedAt}${block.provider ? ` / provider: ${block.provider}` : ""}${block.model ? ` / model: ${block.model}` : ""}`);
+      parts.push(
+        `${t("meta.createdAt")}: ${block.generatedAt}${block.provider ? ` / provider: ${block.provider}` : ""}${block.model ? ` / model: ${block.model}` : ""}`,
+      );
       parts.push(block.note);
-      parts.push(`_판단 근거: ${block.reason}_`);
+      parts.push(`_${t("reasonLabel")}: ${block.reason}_`);
     } else {
-      parts.push(`## ${block.heading} ${PROVENANCE_LABEL.USER_CONTENT}`);
+      parts.push(`## ${block.heading} ${provenanceLabel("USER_CONTENT")}`);
       parts.push(block.markdown);
     }
     parts.push("");
@@ -103,27 +111,27 @@ const HTML_DOC_STYLE = `
 export function generateHtmlExport(report: ReportDraft, staleness: EvidenceRunStatus | null): string {
   const meta = metadataLines(report, staleness).map((line) => `<li>${escapeHtml(line)}</li>`).join("");
   const staleWarning =
-    staleness && staleness !== "current" ? `<p class="warn">${escapeHtml(STATUS_LABEL[staleness])}</p>` : "";
+    staleness && staleness !== "current" ? `<p class="warn">${escapeHtml(statusLabel(staleness))}</p>` : "";
 
   const blocksHtml = report.blocks
     .map((block) => {
       if (block.provenance === "BUILDER_EVIDENCE") {
         const statusNote =
           block.evidenceStatus !== "ok"
-            ? `<p class="warn">evidence 상태: ${escapeHtml(block.evidenceStatus)}${block.unavailableReason ? ` (${escapeHtml(block.unavailableReason)})` : ""}</p>`
+            ? `<p class="warn">${escapeHtml(t("meta.evidenceStatusShort"))}: ${escapeHtml(block.evidenceStatus)}${block.unavailableReason ? ` (${escapeHtml(block.unavailableReason)})` : ""}</p>`
             : "";
         const summaryHtml = block.summary
-          ? `${renderMarkdownToHtml(block.summary)}<h3>상세 근거</h3>`
+          ? `${renderMarkdownToHtml(block.summary)}<h3>${escapeHtml(t("detailHeading"))}</h3>`
           : "";
         return `<h2>${escapeHtml(block.title)}<span class="tag tag-evidence">Builder Evidence</span></h2>${statusNote}${summaryHtml}${renderMarkdownToHtml(block.markdown)}`;
       }
       if (block.provenance === "KUBI_INTERPRETATION") {
         const contextNote = !block.isSameContext
-          ? `<p class="warn">참고 분석 - 다른 Run 기준 (dataset: ${escapeHtml(block.sourceContext.datasetId ?? "N/A")}, run: ${escapeHtml(block.sourceContext.runId ?? "N/A")})</p>`
+          ? `<p class="warn">${escapeHtml(t("kubiOtherRunHtml", { dataset: block.sourceContext.datasetId ?? "N/A", run: block.sourceContext.runId ?? "N/A" }))}</p>`
           : "";
-        return `<h2>Kubi 참고 분석<span class="tag tag-kubi">AI 작성</span></h2>${contextNote}<p><small>생성 시각: ${escapeHtml(block.generatedAt)}${block.provider ? ` / provider: ${escapeHtml(block.provider)}` : ""}${block.model ? ` / model: ${escapeHtml(block.model)}` : ""}</small></p>${renderMarkdownToHtml(block.note)}<p><em>판단 근거: ${escapeHtml(block.reason)}</em></p>`;
+        return `<h2>${escapeHtml(t("kubiHeading"))}<span class="tag tag-kubi">${escapeHtml(t("tag.ai"))}</span></h2>${contextNote}<p><small>${escapeHtml(t("meta.createdAt"))}: ${escapeHtml(block.generatedAt)}${block.provider ? ` / provider: ${escapeHtml(block.provider)}` : ""}${block.model ? ` / model: ${escapeHtml(block.model)}` : ""}</small></p>${renderMarkdownToHtml(block.note)}<p><em>${escapeHtml(t("reasonLabel"))}: ${escapeHtml(block.reason)}</em></p>`;
       }
-      return `<h2>${escapeHtml(block.heading)}<span class="tag tag-user">사용자 작성</span></h2>${renderMarkdownToHtml(block.markdown)}`;
+      return `<h2>${escapeHtml(block.heading)}<span class="tag tag-user">${escapeHtml(t("tag.user"))}</span></h2>${renderMarkdownToHtml(block.markdown)}`;
     })
     .join("\n");
 
