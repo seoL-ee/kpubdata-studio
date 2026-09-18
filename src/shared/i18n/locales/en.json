@@ -758,6 +758,68 @@
       "rename": "Rename",
       "duplicate": "Duplicate",
       "delete": "Delete"
+    },
+    "narrative": {
+      "unavailable": "could not be determined.",
+      "stage": {
+        "notRun": "not run",
+        "unavailable": "unknown"
+      },
+      "overview": {
+        "loadFailed": "Could not load `{{datasetId}}`, so this overview cannot be summarized ({{reason}}).",
+        "basis": "This report is based on build `{{runId}}` of `{{title}}`.",
+        "providers": "The data comes from sources on the {{providers}} provider(s).",
+        "runStatus": "That run finished with status {{status}}.",
+        "runStatusUnknown": "The final status of that run could not be determined."
+      },
+      "pipeline": {
+        "flow": "**{{sourceKey}}**\n\nSource → Bronze {{bronze}} → Silver {{silver}} → Gold {{gold}}",
+        "allCompleted": "`{{sourceKey}}` completed Bronze → Silver → Gold successfully.",
+        "failedAndSkipped": "`{{sourceKey}}` failed at the {{failedStage}} stage, so the {{skippedStage}} stage never ran.",
+        "failed": "`{{sourceKey}}` failed at the {{stage}} stage.",
+        "notRun": "`{{sourceKey}}` has not run the {{stage}} stage yet.",
+        "stageUnknown": "The {{stage}} stage status for `{{sourceKey}}` could not be determined.",
+        "unknown": "The processing status of `{{sourceKey}}` could not be determined.",
+        "noSources": "Pipeline information could not be determined."
+      },
+      "quality": {
+        "loadFailed": "Could not load quality results, so they cannot be summarized ({{reason}}).",
+        "notProvided": "This run provides no quality evaluation (availability=unavailable). It is not treated as PASS.",
+        "noneEvaluated": "No quality rules were evaluated for this run (evaluated_checks=0).",
+        "header": "{{total}} quality checks were evaluated for this run: {{breakdown}}.",
+        "countPass": "{{count}} PASS",
+        "countWarn": "{{count}} WARN",
+        "countFail": "{{count}} FAIL",
+        "targetColumn": "the target column",
+        "missingRatioPass": "The null ratio of {{column}} in {{source}} was {{actual}}, within the {{threshold}} threshold, so it was {{verb}}.",
+        "missingRatioFail": "The null ratio of {{column}} in {{source}} was {{actual}}, over the {{threshold}} threshold, so it was {{verb}}.",
+        "requiredColumnPass": "Required column {{column}} was present in {{source}}, so it was {{verb}}.",
+        "requiredColumnFail": "Required column {{column}} was missing from {{source}}, so it was {{verb}}.{{detail}}",
+        "minRowsPass": "{{source}} had {{actual}} rows, at or above the {{threshold}} threshold, so it was {{verb}}.",
+        "minRowsFail": "{{source}} had {{actual}} rows, below the {{threshold}} threshold, so it was {{verb}}.",
+        "duplicatePass": "The duplicate ratio of {{source}} was {{actual}}, within the {{threshold}} threshold, so it was {{verb}}.",
+        "duplicateFail": "The duplicate ratio of {{source}} was {{actual}}, over the {{threshold}} threshold, so it was {{verb}}.",
+        "unknownRule": "`{{rule}}`{{column}} on {{source}} was {{verb}} (actual {{actual}}, threshold {{threshold}}).{{detail}}",
+        "drift": "Schema drift: {{findings}}"
+      },
+      "schema": {
+        "silver": "The Silver result for {{source}} contains the columns {{columns}}.",
+        "goldNamesOnly": "The Silver schema for {{source}} is unavailable, so only the Gold column names are known: {{columns}}.",
+        "unknown": "The schema for {{source}} at that stage could not be determined.{{reason}}",
+        "noSources": "There is no source to read schema information from, so it could not be determined."
+      },
+      "dataSummary": {
+        "unavailable": "Row counts could not be determined. ({{reason}})",
+        "total": "The known sources hold {{total}} rows in total.",
+        "noBreakdown": "The per-source breakdown could not be determined.",
+        "sourceRows": "`{{key}}` {{count}}",
+        "composedOf": "They break down as {{bySource}}."
+      },
+      "output": {
+        "unavailableTitle": "Output unavailable",
+        "none": "No output files were reported for this run.",
+        "list": "This run produced {{count}} output file(s): {{files}}."
+      }
     }
   },
   "artifacts": {
