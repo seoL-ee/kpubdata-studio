@@ -153,7 +153,6 @@ function loadRealKpis(
  * 신규로 추측하지 않고 기존 대시보드를 보여준다(DATASETS만 "확인 불가").
  */
 export function HomePage() {
-  const { t } = useTranslation();
   const realBuilder = isRealBuilderEnabled();
   const userId = useAuthStore((state) => state.userId);
   const [builds, setBuilds] = useState<BuildListItem[]>([]);
@@ -379,12 +378,8 @@ function qualityAlertsForRun(
     }));
 }
 
-const WORKFLOW_STEPS = [
-  ["1", i18n.t("home.steps.1"), i18n.t("home.steps.1d")],
-  ["2", i18n.t("home.steps.2"), i18n.t("home.steps.2d")],
-  ["3", i18n.t("home.steps.3"), i18n.t("home.steps.3d")],
-  ["4", i18n.t("home.steps.4"), i18n.t("home.steps.4d")],
-] as const;
+/** STEP 번호만 상수다 — 라벨은 언어 전환에 따라와야 하므로 렌더 시점에 해석한다. */
+const WORKFLOW_STEP_NUMBERS = ["1", "2", "3", "4"] as const;
 
 /**
  * Home의 전체 작업 흐름 설명. 클릭 가능한 액션 카드가 아니라 workflow 개요이므로
@@ -401,14 +396,14 @@ function WorkflowStrip() {
         <p className="text-xs text-muted-foreground">{t("home.steps.note")}</p>
       </div>
       <ol className="grid items-stretch gap-2 sm:grid-cols-2 xl:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr]">
-        {WORKFLOW_STEPS.map(([number, title, copy], index) => (
+        {WORKFLOW_STEP_NUMBERS.map((number, index) => (
           <li key={number} className="contents">
             <div className="rounded-xl border border-border bg-card p-4">
               <span className="text-xs font-semibold text-accent-subtle-foreground">STEP {number}</span>
-              <h3 className="mt-2 text-sm font-semibold">{title}</h3>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">{copy}</p>
+              <h3 className="mt-2 text-sm font-semibold">{t(`home.steps.${number}`)}</h3>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">{t(`home.steps.${number}d`)}</p>
             </div>
-            {index < WORKFLOW_STEPS.length - 1 ? (
+            {index < WORKFLOW_STEP_NUMBERS.length - 1 ? (
               <span aria-hidden="true" className="hidden items-center justify-center text-muted-foreground xl:flex">→</span>
             ) : null}
           </li>
