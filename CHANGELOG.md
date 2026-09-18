@@ -12,6 +12,8 @@
 - **SpecDiff 컴포넌트**
 
 ### 변경됨
+- **패키지 메타데이터/툴체인 경고 정리 (#375)**: `package.json` 의 `version` 을 `0.1.0` → `0.4.0` 으로 올려 이 문서의 v0.4 절과 맞추고, `"type": "module"` 을 추가해 Vite 의 `configLoader: 'native'` 경고를 없앤다. `vite.config.ts`/`vitest.config.ts` 의 `path.resolve(__dirname, …)`(CJS 전역)은 `fileURLToPath(new URL("./src", import.meta.url))` 로 바꿔 ESM 그대로 동작하게 했다. 상시로 떠 있던 eslint 경고 2건(`e2e/helpers.ts` 미사용 `test` import, `HomePage.tsx` 미사용 `t`)도 제거 — 경고가 0이어야 새 경고가 묻히지 않는다
+- **Home 워크플로 STEP 라벨이 언어 전환을 따라감 (#375)**: `WORKFLOW_STEPS` 가 모듈 최상위에서 `i18n.t()` 로 평가돼 import 시점 언어에 고정돼 있었다. 번호만 상수로 남기고 라벨은 렌더 시점에 해석한다
 - API_CONTRACT.md drift 표 갱신 — 모든 오퍼레이션 정합 (#219)
 - WORK_PLAN.md를 .github/로 이동 (#222)
 
