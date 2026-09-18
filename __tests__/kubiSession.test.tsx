@@ -305,6 +305,11 @@ describe("useKubiSession — Generated SQL execution via Builder /query (#256, b
 
   async function askForSilverSql() {
     configureKey();
+    // ask()는 real 모드에서 evidence 조회로 Builder를 부른다. 스텁을 나중에 깔면 그
+    // 호출들이 진짜 fetch로 나가 실패하고, builderApi의 지수 백오프(500ms+1000ms)를
+    // 요청마다 통째로 기다린다 — 이 파일이 느렸던 이유다(#376). 먼저 깔아 결과를
+    // 결정적으로 만든다. 여전히 실패 응답이므로 grounding 결과는 달라지지 않는다.
+    fetchStub(() => mockResponse(404, { error: "not mocked in this test" }));
     mockStream(() =>
       jsonText({
         answer: "Silver 데이터를 조회하는 쿼리입니다.",
