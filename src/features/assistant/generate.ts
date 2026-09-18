@@ -11,6 +11,14 @@ import { isRealBuilderEnabled } from "@/shared/lib/builderApi";
 import type { CatalogResponse, ValidateResponse } from "@/shared/lib/builderApi";
 import { parse } from "yaml";
 import { z } from "zod";
+import { i18n } from "@/shared/i18n";
+
+/**
+ * 사용자에게 보이는 문제 메시지만 옮긴다(#350). LLM에 보내는 시스템 프롬프트와
+ * 재시도 지시문은 번역하지 않는다 — 어시스턴트의 출력 언어·품질을 바꾸는 별개 결정이다.
+ */
+const t = (key: string, params?: Record<string, unknown>): string =>
+  i18n.t(`assistant.generate.${key}`, params ?? {});
 
 export interface GenerationResult {
   spec: string | null;
@@ -53,10 +61,10 @@ function catalogProblems(
   spec.sources.forEach((source, index) => {
     const datasets = providers.get(source.provider);
     if (!datasets) {
-      problems.push(`sources[${index}].provider: 카탈로그에 없는 provider '${source.provider}'입니다.`);
+      problems.push(t("unknownProvider", { index, provider: source.provider }));
     } else if (!datasets.has(source.dataset)) {
       problems.push(
-        `sources[${index}].dataset: provider '${source.provider}'에 없는 dataset '${source.dataset}'입니다.`,
+        t("unknownDataset", { index, provider: source.provider, dataset: source.dataset }),
       );
     }
   });
@@ -73,7 +81,7 @@ function parseGeneratedSpec(spec: string) {
         {
           code: "custom",
           path: [],
-          message: error instanceof Error ? error.message : "YAML을 파싱하지 못했습니다.",
+          message: error instanceof Error ? error.message : t("yamlParse"),
         },
       ]),
     };
@@ -95,7 +103,7 @@ export async function generateBuildSpec(
       spec: null,
       status: "error",
       attempts: 0,
-      remaining_problems: ["mock 모드에서는 생성 기능이 비활성화됩니다 (ST-A8, #211)"],
+      remaining_problems: [t("mockDisabled")],
     };
   }
 
@@ -104,7 +112,7 @@ export async function generateBuildSpec(
       spec: null,
       status: "error",
       attempts: 0,
-      remaining_problems: ["Builder /validate 연결이 없어 BuildSpec 생성을 중단했습니다."],
+      remaining_problems: [t("noValidate")],
     };
   }
 
@@ -115,7 +123,7 @@ export async function generateBuildSpec(
       spec: null,
       status: "error",
       attempts: 0,
-      remaining_problems: ["카탈로그를 조회할 수 없어 BuildSpec 생성을 중단했습니다."],
+      remaining_problems: [t("noCatalog")],
     };
   }
 
@@ -158,7 +166,7 @@ YAML만 출력하세요. 설명은 출력하지 마세요.`;
     const spec = extractYaml(rawOutput);
 
     if (!spec) {
-      lastProblems = ["빈 출력이 반환되었습니다."];
+      lastProblems = [t("emptyOutput")];
       continue;
     }
 
