@@ -9,9 +9,10 @@
  * metadata" collapsible을 연다. Output은 기존처럼 kind와 무관하게 항상 함께 보여준다.
  */
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { exportFormatSchema } from "@/shared/lib/schemas";
 import { exampleParamsText, hasExampleParams, mergeExampleParams } from "@/features/add-data/requiredParams";
-import { CREDENTIAL_PREREQUISITE_MESSAGE, checkCredentialPrerequisite } from "@/features/add-data/credentialPrerequisite";
+import { checkCredentialPrerequisite, credentialPrerequisiteMessage } from "@/features/add-data/credentialPrerequisite";
 import { findDataset, findProvider } from "@/features/add-data/identity";
 import type { AddDataDraft } from "@/features/add-data/model";
 import type { SourceFormat } from "@/shared/lib/types";
@@ -61,6 +62,7 @@ export function ConfigureStep({
   yamlEditError,
   onApplyYaml,
 }: ConfigureStepProps) {
+  const { t } = useTranslation();
   const [editorMode, setEditorMode] = useState<"form" | "yaml">("form");
   const [yamlDraft, setYamlDraft] = useState(yamlText);
 
@@ -72,6 +74,7 @@ export function ConfigureStep({
     draft.publicApi.provider,
   );
   const application = selectedDataset?.application ?? null;
+  const prerequisiteMessage = credentialPrerequisiteMessage();
   // generic Provider probe는 임의의 첫 Dataset을 필수 파라미터 없이 호출하므로
   // "연결 성공 여부"로 쓰지 않는다(#S-provider-probe). authoritative prerequisite
   // (requires credential AND configured === false)만 사용하고, 실제 사용 가능
@@ -82,22 +85,22 @@ export function ConfigureStep({
 
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-semibold tracking-tight">가져오기 설정</h3>
+      <h3 className="text-xl font-semibold tracking-tight">{t("addData.configure.title")}</h3>
 
       {draft.sourceKind === "public_api" ? (
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-4">
-            <div className="section-title text-sm font-semibold text-muted-foreground">API 사용 준비</div>
+            <div className="section-title text-sm font-semibold text-muted-foreground">{t("addData.configure.apiPrepTitle")}</div>
             {catalog.status === "loading" ? (
-              <p className="text-sm text-muted-foreground">Builder catalog를 불러오는 중입니다...</p>
+              <p className="text-sm text-muted-foreground">{t("addData.configure.catalogLoading")}</p>
             ) : null}
             {catalog.status === "error" ? (
               <p role="alert" className="text-sm text-red-700 dark:text-red-300">{catalog.error}</p>
             ) : null}
             {catalog.status === "loaded" && catalog.providers.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Builder catalog에 등록된 provider가 없습니다.</p>
+              <p className="text-sm text-muted-foreground">{t("addData.configure.noProviders")}</p>
             ) : null}
-            <FormField id="add-data-provider" label="제공자 (Provider)">
+            <FormField id="add-data-provider" label={t("addData.configure.providerLabel")}>
               {(field) => (
                 <Select
                   {...field}
@@ -119,14 +122,14 @@ export function ConfigureStep({
                     });
                   }}
                 >
-                  <option value="">제공자 선택…</option>
+                  <option value="">{t("addData.configure.providerSelect")}</option>
                   {catalog.providers.map((p) => (
                     <option key={p.name} value={p.name}>{p.name}</option>
                   ))}
                 </Select>
               )}
             </FormField>
-            <FormField id="add-data-dataset" label="데이터셋 (Dataset)">
+            <FormField id="add-data-dataset" label={t("addData.configure.datasetLabel")}>
               {(field) => (
                 <Select
                   {...field}
@@ -147,7 +150,7 @@ export function ConfigureStep({
                     });
                   }}
                 >
-                  <option value="">Dataset 선택…</option>
+                  <option value="">{t("addData.configure.datasetSelect")}</option>
                   {findProvider(catalog.providers, draft.publicApi.provider)?.datasets.map((d) => (
                     <option key={d.name} value={d.name}>{d.title} ({d.name})</option>
                   ))}
@@ -156,28 +159,25 @@ export function ConfigureStep({
             </FormField>
             {credentialPrerequisite.blocked ? (
               <Card variant="error" className="space-y-3">
-                <p className="font-semibold">{CREDENTIAL_PREREQUISITE_MESSAGE.title}</p>
-                <p className="whitespace-pre-line text-sm">{CREDENTIAL_PREREQUISITE_MESSAGE.body}</p>
+                <p className="font-semibold">{prerequisiteMessage.title}</p>
+                <p className="whitespace-pre-line text-sm">{prerequisiteMessage.body}</p>
                 <Button size="sm" onClick={() => onConnectProvider(draft.publicApi.provider)}>
-                  {CREDENTIAL_PREREQUISITE_MESSAGE.cta}
+                  {prerequisiteMessage.cta}
                 </Button>
               </Card>
             ) : providerReady ? (
               <Card variant="dashed" className="space-y-1 p-3 text-sm">
-                <p className="font-semibold text-foreground">인증 정보 준비됨</p>
-                <p className="text-muted-foreground">
-                  이 Provider를 사용하는 인증 정보가 설정되어 있습니다. 실제 데이터 인출 가능 여부는
-                  다음 단계 Preview에서 확인합니다.
-                </p>
+                <p className="font-semibold text-foreground">{t("addData.configure.authReady")}</p>
+                <p className="text-muted-foreground">{t("addData.configure.authReadyDesc")}</p>
               </Card>
             ) : null}
           </div>
 
           <div className="space-y-4">
-            <div className="section-title text-sm font-semibold text-muted-foreground">쿼리 · BuildSpec</div>
+            <div className="section-title text-sm font-semibold text-muted-foreground">{t("addData.configure.queryTitle")}</div>
             {selectedDataset ? (
               <Card variant="dashed" className="p-3 text-sm text-muted-foreground">
-                {selectedDataset.description ?? "설명 없음"}
+                {selectedDataset.description ?? t("addData.configure.noDesc")}
                 {selectedDataset.tags.length > 0 ? (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {selectedDataset.tags.map((tag) => (
@@ -189,18 +189,18 @@ export function ConfigureStep({
             ) : null}
             {requestParameters.length > 0 ? (
               <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs">
-                <p className="font-semibold text-foreground">이 Dataset의 요청 파라미터</p>
+                <p className="font-semibold text-foreground">{t("addData.configure.paramsTitle")}</p>
                 <ul className="mt-1.5 space-y-1">
                   {requestParameters.map((p) => (
                     <li key={p.name} className="text-muted-foreground">
                       <span className="font-medium text-foreground">{p.name}</span>
                       {p.required ? (
-                        <span className="ml-1 font-medium text-red-600 dark:text-red-400">필수</span>
+                        <span className="ml-1 font-medium text-red-600 dark:text-red-400">{t("addData.configure.required")}</span>
                       ) : (
-                        <span className="ml-1">선택</span>
+                        <span className="ml-1">{t("addData.configure.optional")}</span>
                       )}
                       {p.description ? <span> — {p.description}</span> : null}
-                      {p.example ? <span className="ml-1 text-muted-foreground">예: {p.example}</span> : null}
+                      {p.example ? <span className="ml-1 text-muted-foreground">{t("addData.configure.example", { value: p.example })}</span> : null}
                     </li>
                   ))}
                 </ul>
@@ -208,25 +208,22 @@ export function ConfigureStep({
             ) : null}
             {application?.required ? (
               <Card variant="dashed" className="space-y-2 p-3 text-xs">
-                <p className="font-semibold text-foreground">데이터 활용신청을 확인해주세요</p>
-                <p className="text-muted-foreground">
-                  API Key 등록과 별도로 이 Dataset은 제공기관에서 활용신청 또는 승인이 필요할 수
-                  있습니다. 신청 상태는 KPubData가 자동으로 확인하지 않습니다.
-                </p>
+                <p className="font-semibold text-foreground">{t("addData.configure.approvalTitle")}</p>
+                <p className="text-muted-foreground">{t("addData.configure.approvalDesc")}</p>
                 <a
                   href={application.url}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex text-sm font-medium text-accent-subtle-foreground underline underline-offset-2"
                 >
-                  공식 페이지에서 확인 · 신청 ↗
+                  {t("addData.configure.officialPage")}
                 </a>
               </Card>
             ) : null}
             <FormField
               id="add-data-params"
-              label="요청 파라미터 (JSON)"
-              help={`예: ${exampleParamsText(requestParameters)}`}
+              label={t("addData.configure.requestParamsLabel")}
+              help={t("addData.configure.example", { value: exampleParamsText(requestParameters) })}
             >
               {(field) => (
                 <div className="space-y-2">
@@ -244,7 +241,7 @@ export function ConfigureStep({
                         })
                       }
                     >
-                      예시값 적용
+                      {t("addData.configure.applyExample")}
                     </Button>
                   ) : null}
                   <Textarea
@@ -263,22 +260,22 @@ export function ConfigureStep({
 
       {draft.sourceKind === "file" ? (
         <div className="space-y-4">
-          <div className="section-title text-sm font-semibold text-muted-foreground">파일 업로드</div>
-          <FormField id="add-data-format" label="포맷 (Format)" required>
+          <div className="section-title text-sm font-semibold text-muted-foreground">{t("addData.configure.fileUploadTitle")}</div>
+          <FormField id="add-data-format" label={t("addData.configure.formatLabel")} required>
             {(field) => (
               <Select
                 {...field}
                 value={draft.file.format ?? ""}
                 onChange={(e) => updateDraft({ file: { ...draft.file, format: (e.target.value || null) as SourceFormat | null } })}
               >
-                <option value="">포맷 선택…</option>
+                <option value="">{t("addData.configure.formatSelect")}</option>
                 {FILE_FORMATS.map((f) => (
                   <option key={f} value={f}>{f.toUpperCase()}</option>
                 ))}
               </Select>
             )}
           </FormField>
-          <FormField id="add-data-encoding" label="인코딩 (Encoding)">
+          <FormField id="add-data-encoding" label={t("addData.configure.encodingLabel")}>
             {(field) => (
               <TextInput
                 {...field}
@@ -287,7 +284,7 @@ export function ConfigureStep({
               />
             )}
           </FormField>
-          <FormField id="add-data-file" label="파일" required>
+          <FormField id="add-data-file" label={t("addData.configure.fileLabel")} required>
             {(field) => (
               <input
                 id={field.id}
@@ -303,13 +300,16 @@ export function ConfigureStep({
             )}
           </FormField>
           {!draft.file.format ? (
-            <p className="text-xs text-muted-foreground">먼저 포맷을 선택해주세요.</p>
+            <p className="text-xs text-muted-foreground">{t("addData.configure.formatFirst")}</p>
           ) : null}
-          {upload.status === "uploading" ? <p className="text-sm text-muted-foreground">업로드 중입니다...</p> : null}
+          {upload.status === "uploading" ? <p className="text-sm text-muted-foreground">{t("addData.configure.uploading")}</p> : null}
           {upload.status === "error" ? <p role="alert" className="text-sm text-red-700 dark:text-red-300">{upload.error}</p> : null}
           {upload.status === "done" && draft.file.uploadId ? (
             <p className="text-sm text-accent-subtle-foreground">
-              업로드 완료: {draft.file.filename ?? draft.file.uploadId} ({draft.file.sizeBytes ?? 0} bytes)
+              {t("addData.configure.uploadDone", {
+                name: draft.file.filename ?? draft.file.uploadId,
+                bytes: draft.file.sizeBytes ?? 0,
+              })}
             </p>
           ) : null}
         </div>
@@ -317,8 +317,8 @@ export function ConfigureStep({
 
       {draft.sourceKind === "url" ? (
         <div className="space-y-4">
-          <div className="section-title text-sm font-semibold text-muted-foreground">URL / REST API</div>
-          <FormField id="add-data-endpoint" label="Endpoint" required help="https:// GET만 지원합니다(P0).">
+          <div className="section-title text-sm font-semibold text-muted-foreground">{t("addData.configure.urlTitle")}</div>
+          <FormField id="add-data-endpoint" label="Endpoint" required help={t("addData.configure.endpointHelp")}>
             {(field) => (
               <TextInput
                 {...field}
@@ -329,14 +329,14 @@ export function ConfigureStep({
             )}
           </FormField>
           <div className="grid gap-3 sm:grid-cols-2">
-            <FormField id="add-data-method" label="메서드 (Method)">
+            <FormField id="add-data-method" label={t("addData.configure.methodLabel")}>
               {(field) => <TextInput {...field} value="GET" readOnly disabled />}
             </FormField>
-            <FormField id="add-data-auth" label="인증 (Auth)">
-              {(field) => <TextInput {...field} value="없음 (Auth=None)" readOnly disabled />}
+            <FormField id="add-data-auth" label={t("addData.configure.authLabel")}>
+              {(field) => <TextInput {...field} value={t("addData.configure.authNone")} readOnly disabled />}
             </FormField>
           </div>
-          <FormField id="add-data-url-format" label="포맷 (Format, 선택)" help="생략하면 응답 Content-Type로 추론합니다.">
+          <FormField id="add-data-url-format" label={t("addData.configure.urlFormatLabel")} help={t("addData.configure.urlFormatHelp")}>
             {(field) => (
               <Select
                 {...field}
@@ -345,7 +345,7 @@ export function ConfigureStep({
                   updateDraft({ url: { ...draft.url, format: (e.target.value || null) as typeof draft.url.format } })
                 }
               >
-                <option value="">추론(생략)</option>
+                <option value="">{t("addData.configure.urlFormatInfer")}</option>
                 {URL_FORMATS.map((f) => (
                   <option key={f} value={f}>{f.toUpperCase()}</option>
                 ))}
@@ -356,31 +356,31 @@ export function ConfigureStep({
       ) : null}
 
       <div className="space-y-3 border-t border-border pt-4">
-        <div className="section-title text-sm font-semibold text-muted-foreground">선택한 Dataset 요약</div>
+        <div className="section-title text-sm font-semibold text-muted-foreground">{t("addData.configure.summaryTitle")}</div>
         {draft.datasetId || draft.title ? (
           <Card variant="dashed" className="space-y-1 p-3">
-            <p className="text-sm font-semibold">{draft.title || "(제목 없음)"}</p>
+            <p className="text-sm font-semibold">{draft.title || t("addData.configure.noTitle")}</p>
             <p className="text-xs text-muted-foreground">ID: {draft.datasetId || "—"}</p>
             {draft.description ? <p className="text-xs text-muted-foreground">{draft.description}</p> : null}
           </Card>
         ) : (
           <p className="text-sm text-muted-foreground">
             {draft.sourceKind === "public_api"
-              ? "Provider와 Dataset을 선택하면 Dataset ID/제목/설명이 자동으로 채워집니다."
+              ? t("addData.configure.autoFillPublicApi")
               : draft.sourceKind === "file"
-                ? "파일을 업로드하면 파일명에서 Dataset ID/제목이 자동으로 채워집니다."
-                : "Endpoint를 입력하면 Dataset ID/제목이 자동으로 채워집니다."}
+                ? t("addData.configure.autoFillFile")
+                : t("addData.configure.autoFillUrl")}
           </p>
         )}
 
         <details className="group">
           <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            고급 설정 · Dataset metadata (자동 생성값 수정)
+            {t("addData.configure.advancedTitle")}
             <span className="text-base transition group-open:rotate-180" aria-hidden="true">⌄</span>
           </summary>
           <div className="mt-3 space-y-3">
             <div className="grid gap-3 sm:grid-cols-2">
-              <FormField id="add-data-dataset-id" label="데이터셋 ID">
+              <FormField id="add-data-dataset-id" label={t("addData.configure.datasetIdLabel")}>
                 {(field) => (
                   <TextInput
                     {...field}
@@ -389,7 +389,7 @@ export function ConfigureStep({
                   />
                 )}
               </FormField>
-              <FormField id="add-data-title" label="제목">
+              <FormField id="add-data-title" label={t("addData.configure.titleLabel")}>
                 {(field) => (
                   <TextInput
                     {...field}
@@ -399,7 +399,7 @@ export function ConfigureStep({
                 )}
               </FormField>
             </div>
-            <FormField id="add-data-description" label="설명">
+            <FormField id="add-data-description" label={t("addData.configure.descriptionLabel")}>
               {(field) => (
                 <Textarea
                   {...field}
@@ -413,9 +413,9 @@ export function ConfigureStep({
       </div>
 
       <div className="space-y-4 border-t border-border pt-4">
-        <div className="section-title text-sm font-semibold text-muted-foreground">Output</div>
+        <div className="section-title text-sm font-semibold text-muted-foreground">{t("addData.configure.outputTitle")}</div>
         <fieldset>
-          <legend className="text-sm font-medium text-foreground">결과물 형식 (최소 1개)</legend>
+          <legend className="text-sm font-medium text-foreground">{t("addData.configure.exportLegend")}</legend>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
             {EXPORT_FORMATS.map((format) => (
               <label key={format} className="flex items-center gap-3 rounded-xl border border-border bg-muted px-4 py-3">
@@ -435,7 +435,7 @@ export function ConfigureStep({
             ))}
           </div>
         </fieldset>
-        <FormField id="add-data-output-path" label="출력 경로 (선택)">
+        <FormField id="add-data-output-path" label={t("addData.configure.outputPathLabel")}>
           {(field) => (
             <TextInput {...field} value={draft.outputPath} onChange={(e) => updateDraft({ outputPath: e.target.value })} />
           )}
@@ -448,7 +448,7 @@ export function ConfigureStep({
 
       <details className="group border-t border-border pt-4">
         <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Canonical BuildSpec (GUI ↔ YAML)
+          {t("addData.configure.canonicalTitle")}
           <span className="text-base transition group-open:rotate-180" aria-hidden="true">⌄</span>
         </summary>
         <div className="mt-4 space-y-3">
@@ -481,7 +481,7 @@ export function ConfigureStep({
               {yamlEditError ? (
                 <p role="alert" className="text-sm text-red-700 dark:text-red-300">{yamlEditError}</p>
               ) : null}
-              <Button size="sm" onClick={() => onApplyYaml(yamlDraft)}>YAML 적용</Button>
+              <Button size="sm" onClick={() => onApplyYaml(yamlDraft)}>{t("addData.configure.applyYaml")}</Button>
             </div>
           )}
         </div>

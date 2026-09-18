@@ -8,6 +8,7 @@
  * 탭으로 전부 보여주고, 상태가 서로 다르면(mixed) 그 사실을 명시한다.
  */
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import {
   formatQualityValue,
@@ -16,7 +17,7 @@ import {
   isRangeCategory,
   isSchemaCategory,
   isTypeRule,
-  PREVIEW_SOURCE_STATE_LABEL,
+  previewSourceStateLabel,
   summarizeChecksPassed,
   summarizePreviewSources,
   warnOrFailResults,
@@ -74,6 +75,7 @@ export function PreviewValidationStep({
   view,
   onChangeView,
 }: PreviewValidationStepProps) {
+  const { t } = useTranslation();
   const previews = preview.status === "loaded" ? preview.response.previews : [];
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -90,21 +92,19 @@ export function PreviewValidationStep({
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h3 className="text-xl font-semibold tracking-tight">Preview · 검증</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            현재 인증 정보와 요청 파라미터로 Dataset API를 호출해 실제 데이터를 확인합니다.
-          </p>
+          <h3 className="text-xl font-semibold tracking-tight">{t("addData.preview.title")}</h3>
+          <p className="mt-1 text-sm text-muted-foreground">{t("addData.preview.desc")}</p>
         </div>
         <Button variant="secondary" size="sm" loading={preview.status === "loading"} onClick={onRefresh}>
-          Preview 새로고침
+          {t("addData.preview.refresh")}
         </Button>
       </div>
 
       {preview.status === "idle" ? (
-        <EmptyState title="실제 데이터 미리보기" description="'Preview 새로고침'을 누르면 현재 설정으로 Dataset API를 호출하고, 샘플 행과 검증 결과를 표시합니다." />
+        <EmptyState title={t("addData.preview.idleTitle")} description={t("addData.preview.idleDesc")} />
       ) : null}
       {preview.status === "error" ? (
-        <EmptyState title="Preview 요청에 실패했습니다" description={preview.error} />
+        <EmptyState title={t("addData.preview.errorTitle")} description={preview.error} />
       ) : null}
 
       {isStale && preview.status === "loaded" ? (
@@ -112,7 +112,7 @@ export function PreviewValidationStep({
           role="status"
           className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200"
         >
-          설정이 변경되었습니다. 아래 결과는 이전 설정 기준이며, 현재 설정으로 Preview를 다시 실행해주세요.
+          {t("addData.preview.stale")}
         </p>
       ) : null}
 
@@ -132,13 +132,13 @@ export function PreviewValidationStep({
                     : "border-border bg-muted text-muted-foreground"
                 }`}
               >
-                {s.source_key} · {PREVIEW_SOURCE_STATE_LABEL[state]}
+                {s.source_key} · {previewSourceStateLabel(state)}
               </button>
             ))}
           </div>
           {mixed ? (
             <p role="status" className="text-xs text-amber-700 dark:text-amber-300">
-              Mixed 결과 — source별 상태가 다릅니다. 각 탭을 눌러 개별 소스를 확인하세요.
+              {t("addData.preview.mixed")}
             </p>
           ) : null}
         </div>
@@ -149,12 +149,12 @@ export function PreviewValidationStep({
           <Card className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm font-semibold">샘플 데이터</p>
-                <p className="text-xs text-muted-foreground">전체 데이터 중 일부만 빠르게 확인합니다.</p>
+                <p className="text-sm font-semibold">{t("addData.preview.sampleTitle")}</p>
+                <p className="text-xs text-muted-foreground">{t("addData.preview.sampleDesc")}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Select
-                  aria-label="표시 행 수"
+                  aria-label={t("addData.preview.rowCountLabel")}
                   className="w-auto"
                   value={String(limit)}
                   onChange={(e) => onChangeLimit(Number(e.target.value) as PreviewLimit)}
@@ -164,7 +164,7 @@ export function PreviewValidationStep({
                   <option value="20">20 rows</option>
                 </Select>
                 <Select
-                  aria-label="샘플링 방식"
+                  aria-label={t("addData.preview.sampleModeLabel")}
                   className="w-auto"
                   value={sampleMode}
                   onChange={(e) => onChangeSampleMode(e.target.value as PreviewSampleMode)}
@@ -173,13 +173,13 @@ export function PreviewValidationStep({
                   <option value="random">random</option>
                 </Select>
                 <Select
-                  aria-label="컬럼 범위"
+                  aria-label={t("addData.preview.columnScopeLabel")}
                   className="w-auto"
                   value={columns}
                   onChange={(e) => onChangeColumns(e.target.value as PreviewColumnView)}
                 >
-                  <option value="key">주요 columns</option>
-                  <option value="all">전체 columns</option>
+                  <option value="key">{t("addData.preview.keyColumns")}</option>
+                  <option value="all">{t("addData.preview.allColumns")}</option>
                 </Select>
                 <Button
                   variant="secondary"
@@ -187,29 +187,31 @@ export function PreviewValidationStep({
                   disabled={!source.diff_available}
                   onClick={() => onChangeView(view === "diff" ? "sample" : "diff")}
                 >
-                  {view === "diff" ? "Preview로 돌아가기" : "원본 대비 변경"}
+                  {view === "diff" ? t("addData.preview.backToPreview") : t("addData.preview.showDiff")}
                 </Button>
               </div>
             </div>
 
             {source.status === "failed" ? (
-              <EmptyState title="소스 조회에 실패했습니다" description={source.error ?? "원인을 알 수 없는 오류입니다."} />
+              <EmptyState title={t("addData.preview.sourceFailedTitle")} description={source.error ?? t("addData.preview.unknownError")} />
             ) : source.total_rows === 0 ? (
-              <EmptyState title="조건에 맞는 데이터가 없습니다" description="0건 정상 응답입니다 — source 조회 실패와는 다릅니다." />
+              <EmptyState title={t("addData.preview.zeroRowsTitle")} description={t("addData.preview.zeroRowsDesc")} />
             ) : view === "diff" ? (
               source.diff_available ? (
                 <div className="space-y-2">
                   {source.diff_truncated ? (
                     <p role="alert" className="text-xs text-amber-700 dark:text-amber-300">
-                      표시된 항목은 최대 1000개로 잘렸습니다. 전체 변경은
-                      {" "}
-                      {source.transform_summary?.changed_cells ?? 0}개 셀 ·
-                      {" "}
-                      {source.transform_summary?.changed_rows ?? 0}개 행입니다.
+                      {t("addData.preview.diffTruncated", {
+                        cells: source.transform_summary?.changed_cells ?? 0,
+                        rows: source.transform_summary?.changed_rows ?? 0,
+                      })}
                     </p>
                   ) : (
                     <p className="text-xs text-muted-foreground">
-                      변경 {source.transform_summary?.changed_cells ?? 0}개 셀 · {source.transform_summary?.changed_rows ?? 0}개 행
+                      {t("addData.preview.diffSummary", {
+                        cells: source.transform_summary?.changed_cells ?? 0,
+                        rows: source.transform_summary?.changed_rows ?? 0,
+                      })}
                     </p>
                   )}
                   <div className="overflow-x-auto">
@@ -218,9 +220,9 @@ export function PreviewValidationStep({
                         <tr className="text-xs uppercase text-muted-foreground">
                           <th className="py-1 pr-3">Row</th>
                           <th className="py-1 pr-3">Column</th>
-                          <th className="py-1 pr-3">원본</th>
-                          <th className="py-1 pr-3">현재 값</th>
-                          <th className="py-1 pr-3">변환</th>
+                          <th className="py-1 pr-3">{t("addData.preview.diffBefore")}</th>
+                          <th className="py-1 pr-3">{t("addData.preview.diffAfter")}</th>
+                          <th className="py-1 pr-3">{t("addData.preview.diffTransform")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -239,8 +241,8 @@ export function PreviewValidationStep({
                 </div>
               ) : (
                 <EmptyState
-                  title="Diff를 사용할 수 없습니다"
-                  description="source_sample과 변환 결과의 행이 일치한다고 보장할 수 없어 diff를 계산하지 않았습니다(diff_available=false)."
+                  title={t("addData.preview.diffUnavailable")}
+                  description={t("addData.preview.diffUnavailableDesc")}
                 />
               )
             ) : (
@@ -256,6 +258,7 @@ export function PreviewValidationStep({
 }
 
 function SampleTable({ source, columnView }: { source: PreviewSource; columnView: PreviewColumnView }) {
+  const { t } = useTranslation();
   const allColumns = source.schema.map((c) => c.name);
   const cols = columnView === "all" ? allColumns : allColumns.slice(0, KEY_COLUMN_COUNT);
   return (
@@ -280,12 +283,19 @@ function SampleTable({ source, columnView }: { source: PreviewSource; columnView
           ))}
         </tbody>
       </table>
-      <p className="mt-2 text-xs text-muted-foreground">{source.total_rows}건 중 {source.sample.length}건 표시 · {allColumns.length}개 컬럼</p>
+      <p className="mt-2 text-xs text-muted-foreground">
+        {t("addData.preview.sampleFooter", {
+          total: source.total_rows,
+          shown: source.sample.length,
+          columns: allColumns.length,
+        })}
+      </p>
     </div>
   );
 }
 
 function ValidationPanel({ source }: { source: PreviewSource }) {
+  const { t } = useTranslation();
   const overall = summarizeChecksPassed(source.quality_results);
   const buckets: Array<{ label: string; summary: ReturnType<typeof summarizeChecksPassed> }> = [
     { label: "Schema", summary: qualityBucket(source, isSchemaCategory) },
@@ -298,9 +308,9 @@ function ValidationPanel({ source }: { source: PreviewSource }) {
 
   return (
     <Card className="space-y-3">
-      <p className="text-sm font-semibold">검증 결과 (Validation)</p>
+      <p className="text-sm font-semibold">{t("addData.preview.validationTitle")}</p>
       {source.quality_results.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Not evaluated / N/A — 이 preview에서 평가된 quality check가 없습니다.</p>
+        <p className="text-sm text-muted-foreground">{t("addData.preview.notEvaluated")}</p>
       ) : (
         <div className="flex items-center gap-2">
           <span className="text-2xl font-semibold">{overall.pass} / {overall.evaluated}</span>
@@ -325,7 +335,7 @@ function ValidationPanel({ source }: { source: PreviewSource }) {
         </div>
       ) : null}
       <Link to="/quality" className="block w-full">
-        <Button variant="secondary" size="sm" className="w-full">상세 Quality 보기</Button>
+        <Button variant="secondary" size="sm" className="w-full">{t("addData.preview.qualityLink")}</Button>
       </Link>
     </Card>
   );
