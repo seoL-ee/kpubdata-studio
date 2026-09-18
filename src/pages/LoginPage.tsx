@@ -9,7 +9,8 @@
  *   비밀번호 재설정, 이메일 인증은 모두 Keycloak 책임이므로 Studio는 입력 폼을 두지 않는다.
  * - 실연동 + OIDC 미구성/오류: 안내만 보여준다 — 가짜 redirect/token flow를 만들지 않는다.
  *
- * 기존 Google 로그인 플로우(#187, GoogleLoginButton/gis.ts)는 건드리지 않는다.
+ * Google 로그인은 Keycloak identity broker로 위임한다(`keycloakLogin(returnTo, "google")`) —
+ * Studio가 Google SDK를 직접 로드하거나 Google 토큰을 Builder에 보내지 않는다.
  */
 import { useTranslation } from "react-i18next";
 import { i18n } from "@/shared/i18n";

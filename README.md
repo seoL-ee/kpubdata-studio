@@ -398,19 +398,23 @@ manually and check every item.
 
 ---
 
-## 오리진 정합 — Google Console ↔ Builder CORS (#194, S9)
+## 오리진 정합 — Keycloak client ↔ Builder CORS (#194, S9)
 
 실연동 모드에서 Studio가 Builder를 호출하려면 **같은 오리진 목록**을 양쪽에 등록해야 한다:
 
-1. **Google Cloud Console** → APIs & Services → Credentials → OAuth client ID → **Authorized JavaScript origins**
+1. **Keycloak** → realm → Clients → `kpubdata-studio` → **Web Origins**(+ Valid Redirect URIs)
 2. **Builder** → `KPUBDATA_BUILDER_ALLOWED_ORIGINS` 환경변수 (CORS default-deny)
 
 두 값이 어긋나면 증상이 **CORS 오류**로 나타나 원인 추적이 어렵다. 로컬과 실배포 오리진을 모두 양쪽에 등록할 것.
 
-| 환경 | Studio 오리진 | Google Console | Builder CORS env |
+| 환경 | Studio 오리진 | Keycloak Web Origins | Builder CORS env |
 | :--- | :--- | :--- | :--- |
 | 로컬 개발 | `http://localhost:5173` | ✅ 등록 | ✅ 등록 |
 | 실배포 | `https://<studio-host>` | ✅ 등록 | ✅ 등록 |
 | Pages 데모 | `https://yeongseon.github.io` | ❌ (mock 모드, Builder 호출 안 함) | ❌ |
+
+> Google 로그인은 Keycloak identity broker가 처리하므로, Google Cloud Console에 등록하는
+> redirect URI는 Studio 오리진이 아니라 **Keycloak의 broker endpoint**다
+> (`https://<keycloak-host>/realms/<realm>/broker/google/endpoint`).
 
 > Pages 데모는 mock 모드(`VITE_USE_REAL_BUILDER` 미설정)라 Builder를 호출하지 않으므로 등록 대상이 아니다.

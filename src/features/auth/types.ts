@@ -1,14 +1,13 @@
 /**
  * Generic 인증 계약 (#263).
  *
- * Google GIS(#187)든, Builder #515에서 결정될 email/password OIDC든 이 계약 뒤에서
- * 갈아끼울 수 있게 만든 provider-agnostic 타입이다. 실제 IdP 연결(JWKS/refresh/Builder
- * bearer 토큰 정책)은 #515 결정 이후로 미루고, 지금은 mock/demo provider로만 이 계약을
- * 구현한다.
+ * provider를 갈아끼울 수 있게 만든 provider-agnostic 타입이다. 실연동 인증은 ADR 0015
+ * (Keycloak, Authorization Code + PKCE)가 담당하고 — 그 경로는 `keycloak.ts`가 직접
+ * 처리하므로 이 계약을 구현하지 않는다 — 이 계약은 mock/demo provider가 쓴다.
  */
 
 /** 어떤 provider가 이 세션을 만들었는지 표시하는 태그. */
-export type AuthProviderId = "google" | "mock" | "keycloak";
+export type AuthProviderId = "mock" | "keycloak";
 
 /**
  * 로그인 성공 후 Studio가 들고 있는 세션 정보.
@@ -21,7 +20,7 @@ export interface AuthSession {
   /** Builder 호출용 Bearer 토큰(또는 mock 모드에서는 그 자리를 채우는 mock 토큰). */
   token: string;
   email: string;
-  /** 표시용 이름. Google 로그인은 이름을 제공하지 않으므로 null(#191 topbar avatar와 호환). */
+  /** 표시용 이름. provider가 이름을 주지 않으면 null(#191 topbar avatar와 호환). */
   name: string | null;
   provider: AuthProviderId;
 }
@@ -51,17 +50,12 @@ export class AuthError extends Error {
 }
 
 /**
- * email/password(또는 향후 다른 OIDC) 인증을 수행하는 provider의 generic 계약.
+ * email/password 인증을 수행하는 provider의 generic 계약.
  *
- * Google GIS는 이 인터페이스를 구현하지 않는다 — GIS SDK는 위젯을 렌더링하고 콜백으로
- * credential을 돌려주는 방식이라(`gis.ts`/`GoogleLoginButton.tsx` 참고)
- * `signIn(email, password)` 같은 직접 호출 형태와 맞지 않는다. 대신 Google도 결과적으로
- * 같은 {@link AuthSession} shape을 세션 store(`useAuthStore`)에 넣으므로, 두 로그인
- * 방식은 세션 모델 층에서 하나로 합쳐진다 — topbar avatar/Settings/LoginGate는 어느
+ * 실연동 Keycloak은 이 인터페이스를 구현하지 않는다 — hosted login 페이지로 리다이렉트하는
+ * 방식이라 `signIn(email, password)` 같은 직접 호출 형태와 맞지 않는다(`keycloak.ts` 참고).
+ * 두 경로는 세션 모델 층에서 하나로 합쳐진다 — topbar avatar/Settings/LoginGate는 어느
  * provider로 로그인했는지 신경 쓰지 않는다.
- *
- * Builder #515에서 실제 IdP가 결정되면, 이 인터페이스를 구현하는 real provider가
- * mock provider 자리를 그대로 대체한다.
  */
 export interface AuthProvider {
   readonly id: AuthProviderId;

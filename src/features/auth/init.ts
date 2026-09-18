@@ -10,7 +10,7 @@ import { useAuthStore } from "./store";
 export function initAuth(): void {
   // Builder 공통 request boundary가 쓸 Bearer 토큰 provider (요청마다 호출됨).
   // - OIDC 활성: keycloak 메모리 세션에서 (만료 임박 시 refresh 후) 최신 access token.
-  // - 그 외(mock/데모/Google): 기존 메모리 store 토큰. mock 모드에서는 null → 무인증 요청.
+  // - 그 외(mock/데모): 기존 메모리 store 토큰. mock 모드에서는 null → 무인증 요청.
   setAuthTokenProvider(() =>
     isOidcEnabled() ? getFreshToken() : useAuthStore.getState().token,
   );
