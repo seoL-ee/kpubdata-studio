@@ -1082,7 +1082,8 @@
       "urlUserInfo": "The URL must not contain user info (for example user:pass@host). Do not put credentials in the endpoint.",
       "specBuildFailed": "The build spec could not be generated.",
       "unresolvedPlaceholder": "The saved draft has a secret placeholder that cannot be restored. Enter the original credential again.",
-      "specInvalid": "The build spec is not valid."
+      "specInvalid": "The build spec is not valid.",
+      "httpsOnly": "Only URLs starting with https:// are supported."
     },
     "identity": {
       "fromCatalog": "Dataset {{provider}}/{{name}}.",
@@ -1866,7 +1867,10 @@
       "mockDisabled": "Generation is disabled in mock mode (ST-A8, #211)",
       "noValidate": "BuildSpec generation stopped: no connection to Builder /validate.",
       "noCatalog": "BuildSpec generation stopped: the catalog could not be read.",
-      "emptyOutput": "The output was empty."
+      "emptyOutput": "The output was empty.",
+      "restoreFailed": "The secret could not be restored.",
+      "validateRequestFailed": "The Builder validation request failed.",
+      "validationFailed": "Validation failed"
     },
     "provider": {
       "auth": "LLM API authentication failed. Check the API key.",

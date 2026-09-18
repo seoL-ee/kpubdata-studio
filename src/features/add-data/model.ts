@@ -176,7 +176,7 @@ function buildCandidateFromDraft(draft: AddDataDraft): CandidateResult {
       };
     }
     if (!/^https:\/\//i.test(draft.url.endpoint)) {
-      return { error: "https:// 로 시작하는 URL만 지원합니다." };
+      return { error: t("httpsOnly") };
     }
     source = {
       kind: "url" as const,
