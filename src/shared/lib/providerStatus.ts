@@ -10,7 +10,15 @@
  *   여부"로 신뢰할 수 없어 user flow에서는 제거됐다(#S-provider-probe). Builder
  *   API contract는 유지되므로 매핑/테스트는 남겨 둔다(직접 진단용).
  * - 어느 경우든 선택한 Dataset의 실제 사용 가능 여부는 Preview가 SSOT다.
+ *
+ * 문구는 모두 `provider.status.*` 키로 옮겼다(#350). 상수로 고정하면 모듈 로드 시점에
+ * 언어가 박혀 전환이 반영되지 않으므로, 호출 시점에 해석한다.
  */
+import { i18n } from "@/shared/i18n";
+
+const t = (key: string, params?: Record<string, unknown>): string =>
+  i18n.t(`provider.status.${key}`, params ?? {});
+
 
 export type ProviderProbeStatus = "connected" | "failed" | "not_configured" | "unknown";
 export type ProviderProbeTone = "success" | "warning" | "error" | "neutral";
@@ -40,23 +48,24 @@ export interface ProviderProbePresentation {
   detail: string | null;
 }
 
-const PERMISSION_CHECK = {
-  title: "인증 또는 API 활용신청 확인 필요",
-  detail:
-    "저장된 자격 증명으로 실제 API를 확인했지만 접근이 거부되었습니다. Provider는 Dataset/API별 사용 권한이 다를 수 있으므로 선택한 Dataset의 Preview에서 실제 사용 가능 여부를 확인하세요.",
-} as const;
+function permissionCheck(): { title: string; detail: string } {
+  return { title: t("permission.title"), detail: t("permission.detail") };
+}
 
-const FAILURES: Record<string, { title: string; detail: string }> = {
-  auth: { title: "인증 정보 확인 필요", detail: "저장된 자격 증명이 유효한지 확인한 뒤 다시 테스트하세요." },
-  network: { title: "네트워크 연결 오류", detail: "Builder가 Provider에 연결하지 못했습니다. 네트워크 상태를 확인하세요." },
-  timeout: { title: "연결 시간 초과", detail: "Provider 응답이 제한 시간 안에 도착하지 않았습니다. 잠시 후 다시 시도하세요." },
-  provider: { title: "Provider 응답 오류", detail: "Provider가 실제 API 확인 요청을 처리하지 못했습니다." },
-  unknown: { title: "연결 상태를 확인할 수 없습니다", detail: "Builder가 실제 API 확인 중 분류되지 않은 오류를 받았습니다." },
-};
+/** Builder `error_category` → 문구. 알 수 없는 값은 unknown으로 떨어진다. */
+const FAILURE_CATEGORIES = ["auth", "network", "timeout", "provider", "unknown"] as const;
+
+function failure(category: string | undefined): { title: string; detail: string } {
+  const key = (FAILURE_CATEGORIES as readonly string[]).includes(category ?? "")
+    ? (category as string)
+    : "unknown";
+  return { title: t(`failure.${key}.title`), detail: t(`failure.${key}.detail`) };
+}
 
 /** Provider 수준 검사 결과임을 항상 함께 안내한다(Dataset 사용 가능 여부와 구분). */
-export const PROVIDER_PROBE_SCOPE_NOTE =
-  "이 검사는 Provider 수준의 기본 연결 확인입니다. 선택한 Dataset의 실제 사용 가능 여부는 다음 단계 Preview에서 확인합니다.";
+export function providerProbeScopeNote(): string {
+  return t("scopeNote");
+}
 
 /**
  * Provider 상태를 **credential readiness** 로 표현한다(#S-provider-probe). Provider
@@ -92,8 +101,9 @@ export interface CredentialReadinessPresentation {
 }
 
 /** Preview가 실제 사용 가능 여부의 최종 확인임을 항상 함께 안내한다. */
-const READINESS_PREVIEW_NOTE =
-  "실제 Dataset API 사용 가능 여부는 Add Data의 Preview에서 확인합니다.";
+function readinessPreviewNote(): string {
+  return t("readiness.previewNote");
+}
 
 export function describeCredentialReadiness(
   input: CredentialReadinessInput,
@@ -101,52 +111,51 @@ export function describeCredentialReadiness(
   if (!input.requiresCredential) {
     return {
       tone: "neutral",
-      label: "인증 불필요",
-      detail: "이 제공 기관은 자격 증명 없이 사용할 수 있습니다.",
+      label: t("readiness.noAuthLabel"),
+      detail: t("readiness.noAuthDetail"),
     };
   }
   if (input.userCredentialConfigured) {
     return {
       tone: "success",
-      label: "API Key 등록됨",
-      detail: `이 Provider의 인증 정보가 준비되어 있습니다. ${READINESS_PREVIEW_NOTE}`,
+      label: t("readiness.userKeyLabel"),
+      detail: `${t("readiness.userKeyDetail")} ${readinessPreviewNote()}`,
     };
   }
   if (input.summaryConfigured) {
     // server default 로 사용 중 — 사용자 등록 API Key와 동일하게 표현하지 않는다.
     return {
       tone: "success",
-      label: "연결 준비됨",
-      detail: `이 제공 기관은 현재 Builder 기본 자격 증명으로 사용 중입니다. ${READINESS_PREVIEW_NOTE}`,
+      label: t("readiness.serverDefaultLabel"),
+      detail: `${t("readiness.serverDefaultDetail")} ${readinessPreviewNote()}`,
     };
   }
   return {
     tone: "warning",
-    label: "API Key 미설정",
-    detail: "이 Provider를 사용하는 Dataset은 API Key가 필요할 수 있습니다.",
+    label: t("readiness.missingKeyLabel"),
+    detail: t("readiness.missingKeyDetail"),
   };
 }
 
 export function describeProviderProbe(input: ProviderProbeInput): ProviderProbePresentation {
   if (input.status === "connected") {
-    return { tone: "success", label: "연결됨", title: null, detail: null };
+    return { tone: "success", label: t("probe.connected"), title: null, detail: null };
   }
   if (input.status === "not_configured") {
     return {
       tone: "neutral",
-      label: "미설정",
-      title: "자격 증명 필요",
-      detail: "이 Provider는 자격 증명이 필요합니다. Provider 설정에서 연결하세요.",
+      label: t("probe.notConfigured"),
+      title: t("probe.notConfiguredTitle"),
+      detail: t("probe.notConfiguredDetail"),
     };
   }
   if (input.status === "unknown") {
-    return { tone: "neutral", label: "연결 확인 필요", title: null, detail: null };
+    return { tone: "neutral", label: t("probe.unknown"), title: null, detail: null };
   }
   // status === "failed"
   const needsPermissionCheck = Boolean(input.credentialConfigured) && input.responseCode === 403;
   if (needsPermissionCheck) {
-    return { tone: "warning", label: "확인 필요", ...PERMISSION_CHECK };
+    return { tone: "warning", label: t("probe.needsCheck"), ...permissionCheck() };
   }
-  const failure = FAILURES[input.errorCategory ?? "unknown"] ?? FAILURES.unknown;
-  return { tone: "error", label: "연결 오류", ...failure };
+  return { tone: "error", label: t("probe.failed"), ...failure(input.errorCategory) };
 }

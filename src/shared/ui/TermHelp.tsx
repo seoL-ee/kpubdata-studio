@@ -1,6 +1,10 @@
-import { glossary, type GlossaryKey } from "@/shared/content/glossary";
+import { useTranslation } from "react-i18next";
+import { glossaryDescription, type GlossaryKey } from "@/shared/content/glossary";
 import { HelpTooltip } from "./HelpTooltip";
 
 export function TermHelp({ term }: { term: GlossaryKey }) {
-  return <HelpTooltip label={`${term} 용어 도움말`} content={glossary[term]} />;
+  const { t } = useTranslation();
+  return (
+    <HelpTooltip label={t("glossary.helpLabel", { term })} content={glossaryDescription(term)} />
+  );
 }
