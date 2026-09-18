@@ -1,6 +1,7 @@
-import { expect, type Page } from "@playwright/test";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
-import ko from "../src/shared/i18n/locales/ko.json";
+import { expect, type Page } from "@playwright/test";
 
 /**
  * 공용 헬퍼 (#268).
@@ -13,12 +14,16 @@ import ko from "../src/shared/i18n/locales/ko.json";
  */
 
 /**
- * ko 로케일에서 문구를 읽는다 — 스펙이 UI 문구 변경을 자동으로 따라가게 한다.
+ * ko 로케일 사전.
  *
- * i18n 전환(#338) 때 "Source 선택"이 "데이터 선택"으로 바뀌었는데, e2e 가 CI 에서
- * 돌지 않아(#377) 문구를 하드코딩한 스펙이 몇 달간 조용히 깨져 있었다. 키가 없으면
- * 조용히 통과하는 대신 여기서 바로 실패시킨다.
+ * `import ko from "....json"` 은 Playwright 의 ESM 로더에서 Node 가 import
+ * attribute(`with { type: "json" }`)를 요구해 **스펙 수집 자체가 실패한다**.
+ * 런타임에 읽으면 로더 문법 차이를 타지 않는다.
  */
+const ko = JSON.parse(
+  readFileSync(fileURLToPath(new URL("../src/shared/i18n/locales/ko.json", import.meta.url)), "utf8"),
+) as Record<string, unknown>;
+
 export function t(path: string): string {
   const value = path
     .split(".")
