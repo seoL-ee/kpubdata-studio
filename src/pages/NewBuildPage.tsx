@@ -12,7 +12,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useParams, useSearchParams } from "react-router-dom";
 import { clearDraft, hasDraft, loadDraft, saveDraft } from "@/features/build-spec/draftStorage";
-import { parseSourceParams } from "@/features/build-spec/paramsInput";
 import { previewBuild } from "@/features/preview/api";
 import { useBuild } from "@/features/runs/useBuild";
 import { useBuildJob } from "@/features/runs/useBuildJob";
@@ -21,22 +20,9 @@ import { createSavedSpec, getSavedSpec } from "@/features/workspace/savedSpecs";
 import type { SavedSpecValidation } from "@/features/workspace/types";
 import { builderApi } from "@/shared/lib/builderApi";
 import { providerLabel } from "@/shared/lib/providerLabels";
-import { buildFormValuesSchema, exportFormatSchema } from "@/shared/lib/schemas";
+import { buildFormValuesSchema } from "@/shared/lib/schemas";
 import type { BuildSpec } from "@/shared/lib/types";
-import {
-  Button,
-  Card,
-  EmptyState,
-  FormField,
-  PageHeader,
-  Select,
-  StatusBadge,
-  Stepper,
-  TextInput,
-  Textarea,
-} from "@/shared/ui";
-
-const exportFormats = exportFormatSchema.options;
+import { Button, Card, PageHeader, StatusBadge, Stepper } from "@/shared/ui";
 
 import {
   buildSteps,
@@ -51,8 +37,14 @@ import {
   type PreviewState,
   type ValidationState,
 } from "@/features/build-spec/newBuildModel";
-import { isTemplateAvailable, TEMPLATES, type BuildTemplate } from "@/features/build-spec/templates";
-import { TemplateButton } from "@/features/build-spec/components/TemplateButton";
+import type { BuildTemplate } from "@/features/build-spec/templates";
+import { IdentityStep } from "@/features/build-spec/components/steps/IdentityStep";
+import { OutputStep } from "@/features/build-spec/components/steps/OutputStep";
+import { ParamsStep } from "@/features/build-spec/components/steps/ParamsStep";
+import { PreviewStep } from "@/features/build-spec/components/steps/PreviewStep";
+import { ReviewStep } from "@/features/build-spec/components/steps/ReviewStep";
+import { SourceStep } from "@/features/build-spec/components/steps/SourceStep";
+import { TemplateStep } from "@/features/build-spec/components/steps/TemplateStep";
 
 
 /**
@@ -381,367 +373,40 @@ export function NewBuildPage() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(20rem,0.8fr)]">
         <Card>
-          {step === 0 ? (
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold tracking-tight">{t("newBuild.template.selectTitle")}</h3>
-              <p className="text-sm text-muted-foreground">
-                {t("newBuild.template.selectDesc")}
-              </p>
-              {catalog.status === "loading" ? (
-                <p className="text-sm text-muted-foreground">{t("newBuild.template.catalogLoading")}</p>
-              ) : null}
-              {catalog.status === "error" ? (
-                <p role="alert" className="text-sm text-red-700 dark:text-red-300">
-                  {t("newBuild.template.catalogError", { error: catalog.error })}
-                </p>
-              ) : null}
-              {catalog.status === "loaded" ? (
-                (() => {
-                  const available = TEMPLATES.filter((template) => isTemplateAvailable(template, catalog));
-                  const unavailable = TEMPLATES.filter((template) => !isTemplateAvailable(template, catalog));
-                  return (
-                    <>
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        {available.map((template) => (
-                          <TemplateButton key={template.id} template={template} catalog={catalog} onSelect={selectTemplate} />
-                        ))}
-                      </div>
-                      {unavailable.length > 0 ? (
-                        <div className="rounded-2xl border border-dashed border-border p-4">
-                          <p className="text-sm font-medium text-muted-foreground">
-                            {t("newBuild.templates.unavailableCount", { count: unavailable.length })}
-                          </p>
-                          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                            {unavailable.map((template) => (
-                              <TemplateButton key={template.id} template={template} catalog={catalog} onSelect={selectTemplate} />
-                            ))}
-                          </div>
-                        </div>
-                      ) : null}
-                    </>
-                  );
-                })()
-              ) : (
-                // catalog가 아직 loading/error인 동안은 가용성을 판정할 수 없으므로(isTemplateAvailable도
-                // 이 경우 항상 true를 반환) 원본 grid를 그대로 보여준다 — "대부분 disabled"처럼
-                // 보이는 깜빡임을 만들지 않는다.
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {TEMPLATES.map((template) => (
-                    <TemplateButton key={template.id} template={template} catalog={catalog} onSelect={selectTemplate} />
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : null}
+          {step === 0 ? <TemplateStep catalog={catalog} onSelect={selectTemplate} /> : null}
 
-          {step === 1 ? (
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold tracking-tight">{t("newBuild.identity.title")}</h3>
-              <FormField
-                id="datasetId"
-                label={t("newBuild.identity.datasetIdLabel")}
-                required
-                help={t("newBuild.identity.datasetIdHelp")}
-                error={errors.datasetId?.message}
-              >
-                {(field) => (
-                  <TextInput
-                    placeholder="kma-daily-observations"
-                    {...field}
-                    {...register("datasetId", { required: i18n.t("newBuild.errors.datasetIdRequired") })}
-                  />
-                )}
-              </FormField>
-              <FormField id="title" label={t("newBuild.identity.titleLabel")} required error={errors.title?.message}>
-                {(field) => (
-                  <TextInput
-                    placeholder={t("newBuild.identity.titlePlaceholder")}
-                    {...field}
-                    {...register("title", { required: i18n.t("newBuild.errors.titleRequired") })}
-                  />
-                )}
-              </FormField>
-              <FormField
-                id="description"
-                label={t("newBuild.identity.descLabel")}
-                required
-                help={t("newBuild.identity.descHelp")}
-                error={errors.description?.message}
-              >
-                {(field) => (
-                  <Textarea
-                    {...field}
-                    {...register("description", { required: i18n.t("newBuild.errors.descriptionRequired") })}
-                  />
-                )}
-              </FormField>
-            </div>
-          ) : null}
+          {step === 1 ? <IdentityStep register={register} errors={errors} /> : null}
 
           {step === 2 ? (
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold tracking-tight">{t("newBuild.source.title")}</h3>
-              <FormField id="provider" label={t("newBuild.source.providerLabel")} required error={errors.provider?.message}>
-                {(field) => (
-                  <Select {...field} {...register("provider", { required: i18n.t("newBuild.errors.providerRequired") })}>
-                    <option value="">{t("newBuild.source.providerSelect")}</option>
-                    {providerOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </Select>
-                )}
-              </FormField>
-              <FormField
-                id="sourceDataset"
-                label={t("newBuild.source.datasetLabel")}
-                required
-                help={t("newBuild.source.datasetHelp")}
-                error={errors.sourceDataset?.message}
-              >
-                {(field) => (
-                  <Select
-                    {...field}
-                    disabled={!selectedProvider || datasetOptions.length === 0}
-                    {...register("sourceDataset", { required: i18n.t("newBuild.errors.datasetRequired") })}
-                  >
-                    <option value="">{t("newBuild.source.datasetSelect")}</option>
-                    {datasetOptions.map((dataset) => (
-                      <option key={dataset.name} value={dataset.name}>
-                        {dataset.title} ({dataset.name})
-                      </option>
-                    ))}
-                  </Select>
-                )}
-              </FormField>
-              {catalog.status === "loading" ? (
-                <p className="text-sm text-muted-foreground">{t("newBuild.template.catalogLoading")}</p>
-              ) : null}
-              {catalog.status === "error" ? (
-                <p role="alert" className="text-sm text-red-700 dark:text-red-300">
-                  {catalog.error}
-                </p>
-              ) : null}
-            </div>
+            <SourceStep
+              register={register}
+              errors={errors}
+              catalog={catalog}
+              providerOptions={providerOptions}
+              datasetOptions={datasetOptions}
+              selectedProvider={selectedProvider}
+            />
           ) : null}
 
-          {step === 3 ? (
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold tracking-tight">{t("newBuild.params.title")}</h3>
-              <FormField
-                id="sourceParams"
-                label={t("newBuild.params.label")}
-                help={t("newBuild.params.help")}
-                error={errors.sourceParams?.message}
-              >
-                {(field) => (
-                  <Textarea
-                    mono
-                    rows={8}
-                    {...field}
-                    {...register("sourceParams", {
-                      required: i18n.t("newBuild.errors.paramsRequired"),
-                      // JSON 문법/객체 여부를 단계 이동(trigger) 시점에 바로 막고 필드에 표시한다.
-                      validate: (value) => parseSourceParams(value).error ?? true,
-                    })}
-                  />
-                )}
-              </FormField>
-            </div>
-          ) : null}
+          {step === 3 ? <ParamsStep register={register} errors={errors} /> : null}
 
-          {step === 4 ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold tracking-tight">{t("newBuild.preview.title")}</h3>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  loading={preview.status === "loading"}
-                  onClick={() => void runPreview()}
-                >
-                  {t("newBuild.preview.refresh")}
-                </Button>
-              </div>
-              {preview.status === "idle" ? (
-                <EmptyState
-                  title={t("newBuild.preview.guideTitle")}
-                  description={t("newBuild.preview.guideDesc")}
-                />
-              ) : null}
-              {preview.status === "error" ? (
-                <EmptyState
-                  title={t("newBuild.preview.failTitle")}
-                  description={preview.error ?? t("newBuild.preview.failDesc")}
-                />
-              ) : null}
-              {preview.status === "loaded" && preview.rows.length === 0 ? (
-                <EmptyState
-                  title={t("newBuild.preview.emptyTitle")}
-                  description={t("newBuild.preview.emptyDesc")}
-                />
-              ) : null}
-              {preview.status === "loaded" && preview.warnings.length > 0 ? (
-                <ul className="space-y-2">
-                  {preview.warnings.map((warning) => (
-                    <li
-                      key={warning}
-                      role="alert"
-                      className="rounded-2xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
-                    >
-                      {warning}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-              {preview.status === "loaded" && preview.rows.length > 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  {t("newBuild.preview.rowsCols", { rows: preview.rows.length, cols: Object.keys(preview.schema).length })}
-                </p>
-              ) : null}
-            </div>
-          ) : null}
+          {step === 4 ? <PreviewStep preview={preview} onRefresh={() => void runPreview()} /> : null}
 
-          {step === 5 ? (
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold tracking-tight">{t("newBuild.output.title")}</h3>
-              <fieldset>
-                <legend className="text-sm font-medium text-foreground">
-                  {t("newBuild.output.formatsLabel")}
-                </legend>
-                <div className="mt-3 grid gap-3 md:grid-cols-2">
-                  {exportFormats.map((format) => (
-                    <label
-                      key={format}
-                      className="flex items-center gap-3 rounded-xl border border-border bg-muted px-4 py-3"
-                    >
-                      <input
-                        type="checkbox"
-                        value={format}
-                        className="h-4 w-4 accent-emerald-600"
-                        {...register("exportFormats", {
-                          validate: (selected) =>
-                            (selected?.length ?? 0) > 0 || i18n.t("newBuild.errors.outputRequired"),
-                        })}
-                      />
-                      <span className="text-sm font-medium capitalize">{format}</span>
-                    </label>
-                  ))}
-                </div>
-                {errors.exportFormats ? (
-                  <p role="alert" className="mt-2 text-sm text-red-600 dark:text-red-400">
-                    {errors.exportFormats.message}
-                  </p>
-                ) : null}
-              </fieldset>
-              <FormField
-                id="outputPath"
-                label={t("newBuild.output.pathLabel")}
-                required
-                error={errors.outputPath?.message}
-              >
-                {(field) => (
-                  <TextInput
-                    placeholder="artifacts/builds/air-quality"
-                    {...field}
-                    {...register("outputPath", { required: i18n.t("newBuild.errors.outputPathRequired") })}
-                  />
-                )}
-              </FormField>
-            </div>
-          ) : null}
+          {step === 5 ? <OutputStep register={register} errors={errors} /> : null}
 
           {step === 6 ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold tracking-tight">{t("newBuild.review.title")}</h3>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  loading={validation.status === "validating"}
-                  onClick={() => void runValidate()}
-                >
-                  {t("newBuild.review.revalidate")}
-                </Button>
-              </div>
-              {validation.status === "idle" ? (
-                <p className="text-sm text-muted-foreground">
-                  {t("newBuild.review.guide")}
-                </p>
-              ) : null}
-              {validation.status === "validated" && validation.isValid ? (
-                <Card variant="success" className="p-4">
-                  <p className="text-sm font-medium text-accent-subtle-foreground">
-                    {t("newBuild.review.passed")}
-                  </p>
-                </Card>
-              ) : null}
-              {validation.errors.length > 0 ? (
-                <ul className="space-y-2">
-                  {validation.errors.map((error) => (
-                    <li
-                      key={error}
-                      role="alert"
-                      className="rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-200"
-                    >
-                      {error}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-              <div className="flex flex-wrap items-center gap-3">
-                <Button
-                  disabled={!validation.isValid || job.status === "running" || !specPreview.spec}
-                  loading={job.status === "running"}
-                  onClick={() => {
-                    if (specPreview.spec) void job.start(specPreview.spec);
-                  }}
-                >
-                  {t("newBuild.review.run")}
-                </Button>
-                {job.status === "running" ? (
-                  <Button variant="secondary" onClick={job.cancel}>
-                    {t("newBuild.review.cancel")}
-                  </Button>
-                ) : null}
-                {job.status === "succeeded" ? (
-                  <span className="text-sm text-accent-subtle-foreground">
-                    {t("newBuild.review.success", { id: job.run?.id })}
-                  </span>
-                ) : null}
-                {job.status === "failed" ? (
-                  <span role="alert" className="text-sm text-red-700 dark:text-red-300">
-                    {job.error}
-                  </span>
-                ) : null}
-                {job.status === "cancelled" ? (
-                  <span className="text-sm text-muted-foreground">{t("newBuild.review.cancelled")}</span>
-                ) : null}
-                {job.interrupted && job.status !== "cancelled" ? (
-                  <span className="text-sm text-muted-foreground">
-                    {t("newBuild.review.aborted")}
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 border-t border-border pt-4">
-                <Button variant="secondary" disabled={!specPreview.spec} onClick={saveAsSavedSpec}>
-                  {t("newBuild.review.saveSpec")}
-                </Button>
-                <span className="text-xs text-muted-foreground">
-                  {t("newBuild.review.saveSpecDesc")}
-                </span>
-              </div>
-              {saveSpecMessage ? (
-                <p
-                  role={saveSpecMessage.type === "error" ? "alert" : undefined}
-                  className={`text-sm ${saveSpecMessage.type === "error" ? "text-red-700 dark:text-red-300" : "text-accent-subtle-foreground"}`}
-                >
-                  {saveSpecMessage.text}
-                </p>
-              ) : null}
-            </div>
+            <ReviewStep
+              validation={validation}
+              job={job}
+              canRun={validation.isValid && job.status !== "running" && !!specPreview.spec}
+              canSave={!!specPreview.spec}
+              saveSpecMessage={saveSpecMessage}
+              onRevalidate={() => void runValidate()}
+              onRun={() => {
+                if (specPreview.spec) void job.start(specPreview.spec);
+              }}
+              onSaveSpec={saveAsSavedSpec}
+            />
           ) : null}
 
           {/* 모바일에서는 하단 sticky action bar로 고정해 긴 폼에서도 이전/다음이 항상 보이게 한다(§13). */}
