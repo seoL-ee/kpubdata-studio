@@ -32,8 +32,23 @@ export function checkCredentialPrerequisite(
   return { blocked: providerConfigured[provider] === false };
 }
 
-export const CREDENTIAL_PREREQUISITE_MESSAGE = {
-  title: i18n.t("addData.credential.title"),
-  body: i18n.t("addData.credential.body"),
-  cta: i18n.t("addData.credential.cta"),
-} as const;
+export interface CredentialPrerequisiteMessage {
+  title: string;
+  body: string;
+  cta: string;
+}
+
+/**
+ * credential 미설정 안내 문구를 **호출 시점에** 해석한다.
+ *
+ * 예전에는 모듈 최상위 상수였는데, 그러면 import 시점 언어에 문구가 굳어
+ * 언어를 바꿔도 이 카드만 이전 언어로 남는다(#350). 함수로 두면 렌더마다
+ * 현재 언어가 반영된다.
+ */
+export function credentialPrerequisiteMessage(): CredentialPrerequisiteMessage {
+  return {
+    title: i18n.t("addData.credential.title"),
+    body: i18n.t("addData.credential.body"),
+    cta: i18n.t("addData.credential.cta"),
+  };
+}

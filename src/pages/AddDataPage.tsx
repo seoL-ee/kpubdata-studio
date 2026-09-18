@@ -19,7 +19,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { fetchCatalog, fetchProviderConfigured, uploadSourceFile } from "@/features/add-data/api";
-import { CREDENTIAL_PREREQUISITE_MESSAGE, checkCredentialPrerequisite } from "@/features/add-data/credentialPrerequisite";
+import { checkCredentialPrerequisite, credentialPrerequisiteMessage } from "@/features/add-data/credentialPrerequisite";
 import { ConfigureStep, type CatalogState, type UploadState } from "@/features/add-data/components/ConfigureStep";
 import { PreviewValidationStep, type PreviewState } from "@/features/add-data/components/PreviewValidationStep";
 import { ReviewBuildStep } from "@/features/add-data/components/ReviewBuildStep";
@@ -347,7 +347,8 @@ export function AddDataPage() {
       // 않는다(§3). Configure 단계 배너와 같은 판정을 재사용한다.
       const prerequisite = checkCredentialPrerequisite(selected, providerConfigured, draft.publicApi.provider);
       if (prerequisite.blocked) {
-        const message = `${CREDENTIAL_PREREQUISITE_MESSAGE.title} — ${CREDENTIAL_PREREQUISITE_MESSAGE.body.replace("\n", " ")}`;
+        const prerequisite = credentialPrerequisiteMessage();
+        const message = `${prerequisite.title} — ${prerequisite.body.replace("\n", " ")}`;
         setPreview({ status: "error", error: message });
         setValidation({ status: "validated", valid: false, errors: [message] });
         return;

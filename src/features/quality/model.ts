@@ -243,9 +243,19 @@ export function summarizePreviewSources(previews: readonly PreviewSource[]): Pre
 // NOTE(#350): 이 상수는 PR #360이 수정 중인 화면들이 인덱싱해서 쓰므로 그대로 둔다 —
 // 함수로 바꾸면 그 PR과 충돌한다. 문구 자체는 `quality.model.previewState.*`에 이미
 // 올려 뒀으니, #360 머지 후 사용처와 함께 한 번에 전환하면 된다.
-export const PREVIEW_SOURCE_STATE_LABEL: Record<PreviewSourceState, string> = {
-  ok: "정상",
-  failed: "조회 실패",
-  zero_rows: "0건",
-  not_evaluated: "미평가",
+/**
+ * preview source 상태 라벨을 **호출 시점에** 해석한다.
+ *
+ * 모듈 최상위 상수로 두면 import 시점 언어에 라벨이 굳어, 언어를 바꿔도 이 탭만
+ * 이전 언어로 남는다(#350). 표를 키로만 들고 렌더마다 번역한다.
+ */
+const _PREVIEW_SOURCE_STATE_KEY: Record<PreviewSourceState, string> = {
+  ok: "quality.previewSourceState.ok",
+  failed: "quality.previewSourceState.failed",
+  zero_rows: "quality.previewSourceState.zeroRows",
+  not_evaluated: "quality.previewSourceState.notEvaluated",
 };
+
+export function previewSourceStateLabel(state: PreviewSourceState): string {
+  return i18n.t(_PREVIEW_SOURCE_STATE_KEY[state]);
+}
