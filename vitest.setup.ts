@@ -1,5 +1,20 @@
 import "@testing-library/jest-dom/vitest";
+import { configure } from "@testing-library/react";
 import { afterEach, afterAll } from "vitest";
+
+/**
+ * RTL 비동기 대기 한도 (#377 후속).
+ *
+ * 기본값 1초는 이 앱의 단계 전환(카탈로그 조회 → 폼 렌더)에 부족해서, 여러 테스트가
+ * 각자 `{ timeout: 4000 }` 을 손으로 붙여 쓰고 있었다. 그런데 4초도 부족한 순간이
+ * 있다 — 커버리지 계측이 켜진 CI 러너에서 newBuildDraft 의 단계 전환이 4.2초가 걸려
+ * main 이 빨갛게 됐다.
+ *
+ * 한도를 한 곳에서 넉넉하게 잡는다. 진짜로 깨진 테스트는 여전히 실패하고, 보고가
+ * 조금 늦어질 뿐이다 — 반대로 한도를 러너 속도에 맞춰 조여두면 느린 날마다 거짓
+ * 실패가 난다.
+ */
+configure({ asyncUtilTimeout: 10_000 });
 
 /**
  * MSW (Mock Service Worker) 설정 (#104)
