@@ -3,34 +3,120 @@
  *
  * 공통 `Layout` 아래에 홈, 빌드 초안, 검증, 미리보기, 설정 같은 작업실 화면을 배치한다.
  */
-import type { ReactElement } from "react";
+import { lazy, Suspense, type ReactElement } from "react";
+import { useTranslation } from "react-i18next";
 import { createBrowserRouter } from "react-router-dom";
 import { FeatureErrorBoundary, RouteErrorBoundary } from "@/app/ErrorBoundary";
 import { Layout } from "@/app/Layout";
 import { LoginGate } from "@/features/auth/LoginGate";
-import { AddDataPage } from "@/pages/AddDataPage";
-import { ArtifactsPage } from "@/pages/ArtifactsPage";
-import { BuildArtifactsPage } from "@/pages/BuildArtifactsPage";
-import { BuildPublishPage } from "@/pages/BuildPublishPage";
-import { BuildRunPage } from "@/pages/BuildRunPage";
-import { BuildsPage } from "@/pages/BuildsPage";
-import { DatasetCatalogPage } from "@/pages/DatasetCatalogPage";
-import { DatasetDetailPage } from "@/pages/DatasetDetailPage";
-import { DiscoverPage } from "@/pages/DiscoverPage";
-import { HomePage } from "@/pages/HomePage";
-import { KubiPage } from "@/pages/KubiPage";
-import { LoginPage } from "@/pages/LoginPage";
-import { MonitoringPage } from "@/pages/MonitoringPage";
-import { NewBuildPage } from "@/pages/NewBuildPage";
-import { PreviewPage } from "@/pages/PreviewPage";
-import { ProviderPage } from "@/pages/ProviderPage";
-import { QualityPage } from "@/pages/QualityPage";
-import { ReportEditorPage } from "@/pages/ReportEditorPage";
-import { ReportsPage } from "@/pages/ReportsPage";
-import { SettingsPage } from "@/pages/SettingsPage";
-import { SignupPage } from "@/pages/SignupPage";
-import { ValidatePage } from "@/pages/ValidatePage";
-import { WorkspacePage } from "@/pages/WorkspacePage";
+import { Skeleton } from "@/shared/ui";
+
+/**
+ * 라우트 단위 코드 분할 (#378).
+ *
+ * 모든 페이지를 정적으로 import 하면 첫 화면 하나를 열려고 Monitoring·Reports·Kubi까지
+ * 전부 내려받게 된다(단일 청크 1.14 MB). 각 페이지를 동적 import로 바꿔 라우트를 청크
+ * 경계로 삼는다.
+ *
+ * 페이지는 named export라 `lazy`가 요구하는 default 형태로 감싼다.
+ */
+const AddDataPage = lazy(() =>
+  import("@/pages/AddDataPage").then((m) => ({ default: m.AddDataPage })),
+);
+const ArtifactsPage = lazy(() =>
+  import("@/pages/ArtifactsPage").then((m) => ({ default: m.ArtifactsPage })),
+);
+const BuildArtifactsPage = lazy(() =>
+  import("@/pages/BuildArtifactsPage").then((m) => ({ default: m.BuildArtifactsPage })),
+);
+const BuildPublishPage = lazy(() =>
+  import("@/pages/BuildPublishPage").then((m) => ({ default: m.BuildPublishPage })),
+);
+const BuildRunPage = lazy(() =>
+  import("@/pages/BuildRunPage").then((m) => ({ default: m.BuildRunPage })),
+);
+const BuildsPage = lazy(() =>
+  import("@/pages/BuildsPage").then((m) => ({ default: m.BuildsPage })),
+);
+const DatasetCatalogPage = lazy(() =>
+  import("@/pages/DatasetCatalogPage").then((m) => ({ default: m.DatasetCatalogPage })),
+);
+const DatasetDetailPage = lazy(() =>
+  import("@/pages/DatasetDetailPage").then((m) => ({ default: m.DatasetDetailPage })),
+);
+const DiscoverPage = lazy(() =>
+  import("@/pages/DiscoverPage").then((m) => ({ default: m.DiscoverPage })),
+);
+const HomePage = lazy(() =>
+  import("@/pages/HomePage").then((m) => ({ default: m.HomePage })),
+);
+const KubiPage = lazy(() =>
+  import("@/pages/KubiPage").then((m) => ({ default: m.KubiPage })),
+);
+const LoginPage = lazy(() =>
+  import("@/pages/LoginPage").then((m) => ({ default: m.LoginPage })),
+);
+const MonitoringPage = lazy(() =>
+  import("@/pages/MonitoringPage").then((m) => ({ default: m.MonitoringPage })),
+);
+const NewBuildPage = lazy(() =>
+  import("@/pages/NewBuildPage").then((m) => ({ default: m.NewBuildPage })),
+);
+const PreviewPage = lazy(() =>
+  import("@/pages/PreviewPage").then((m) => ({ default: m.PreviewPage })),
+);
+const ProviderPage = lazy(() =>
+  import("@/pages/ProviderPage").then((m) => ({ default: m.ProviderPage })),
+);
+const QualityPage = lazy(() =>
+  import("@/pages/QualityPage").then((m) => ({ default: m.QualityPage })),
+);
+const ReportEditorPage = lazy(() =>
+  import("@/pages/ReportEditorPage").then((m) => ({ default: m.ReportEditorPage })),
+);
+const ReportsPage = lazy(() =>
+  import("@/pages/ReportsPage").then((m) => ({ default: m.ReportsPage })),
+);
+const SettingsPage = lazy(() =>
+  import("@/pages/SettingsPage").then((m) => ({ default: m.SettingsPage })),
+);
+const SignupPage = lazy(() =>
+  import("@/pages/SignupPage").then((m) => ({ default: m.SignupPage })),
+);
+const ValidatePage = lazy(() =>
+  import("@/pages/ValidatePage").then((m) => ({ default: m.ValidatePage })),
+);
+const WorkspacePage = lazy(() =>
+  import("@/pages/WorkspacePage").then((m) => ({ default: m.WorkspacePage })),
+);
+
+/**
+ * 페이지 청크를 받아오는 동안 보여줄 자리표시자.
+ *
+ * Skeleton 자체는 aria-hidden이므로, 보조기기에는 `role="status"`의 안내 문구로
+ * "로딩 중"을 알린다 — 화면에는 빈 영역만 보이고 스크린리더에는 아무 말도 없는 상태를
+ * 만들지 않기 위해서다.
+ */
+function PageFallback() {
+  const { t } = useTranslation();
+  return (
+    <main
+      role="status"
+      aria-busy="true"
+      className="flex flex-1 flex-col gap-4 px-5 py-8 sm:px-8 lg:px-10 lg:py-10"
+    >
+      <span className="sr-only">{t("router.loading")}</span>
+      <Skeleton className="h-8 w-64" />
+      <Skeleton className="h-4 w-96" />
+      <Skeleton className="h-64 w-full" />
+    </main>
+  );
+}
+
+/** 페이지 요소를 Suspense 경계로 감싼다 — 청크가 도착할 때까지 폴백을 보여준다. */
+function withSuspense(element: ReactElement): ReactElement {
+  return <Suspense fallback={<PageFallback />}>{element}</Suspense>;
+}
 
 /**
  * 페이지 요소를 feature 단위 ErrorBoundary로 감싼다 (#97).
@@ -45,7 +131,9 @@ import { WorkspacePage } from "@/pages/WorkspacePage";
  */
 /** `feature`는 화면 이름이 아니라 i18n 키다(#350) — 폴백에서 현재 언어로 해석한다. */
 function withFeatureBoundary(feature: string, element: ReactElement): ReactElement {
-  return <FeatureErrorBoundary feature={feature}>{element}</FeatureErrorBoundary>;
+  // Suspense를 경계 *안쪽*에 둔다 — 청크 로드 실패(네트워크 끊김 등)도 해당 feature의
+  // 폴백으로 잡히고, 셸 전체가 빈 화면이 되지 않는다.
+  return <FeatureErrorBoundary feature={feature}>{withSuspense(element)}</FeatureErrorBoundary>;
 }
 
 /**
@@ -58,11 +146,11 @@ export const router = createBrowserRouter([
     // 아니라 최상위 형제 라우트로 둔다 — 로그인 전 상태에는 아직 보여줄 워크스페이스 셸이 없다.
     {
       path: "/login",
-      element: <LoginPage />,
+      element: withSuspense(<LoginPage />),
     },
     {
       path: "/signup",
-      element: <SignupPage />,
+      element: withSuspense(<SignupPage />),
     },
     {
       path: "/",

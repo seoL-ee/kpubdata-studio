@@ -1664,7 +1664,8 @@
       "reportEditor": "Report 편집",
       "settings": "설정",
       "validate": "검증"
-    }
+    },
+    "loading": "화면을 불러오는 중입니다."
   },
   "onboarding": {
     "skip": "건너뛰기",
