@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { normalizeBuildContextSearch, type AsyncState } from "./BuildsPage";
+import { normalizeBuildContextSearch } from "./buildContext";
+import type { AsyncState } from "./asyncState";
 import type { BuildSpecSnapshotResponse, RunStagesResponse } from "@/shared/lib/builderApi";
 
 const loadingSpec: AsyncState<BuildSpecSnapshotResponse> = { status: "loading" };
