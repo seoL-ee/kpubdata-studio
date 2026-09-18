@@ -14,6 +14,7 @@
  * 저장되지 않은 사용자 편집을 잃어버릴 걱정 없이 deterministic 블록만 안전하게 교체할 수
  * 있다(#258 §9의 최소 안전 모델).
  */
+import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { buildDeterministicSections } from "@/features/reports/deterministicSections";
@@ -43,6 +44,7 @@ function newBlockId(): string {
 }
 
 export function ReportEditorPage() {
+  const { t } = useTranslation();
   const { reportId } = useParams<{ reportId: string }>();
   const navigate = useNavigate();
 
@@ -148,7 +150,7 @@ export function ReportEditorPage() {
 
   function handleTitleBlur() {
     if (!report) return;
-    const trimmed = titleDraft.trim() || "제목 없음";
+    const trimmed = titleDraft.trim() || t("reportEditor.untitled");
     if (trimmed === report.title) return;
     persist({ ...report, title: trimmed });
   }
@@ -182,7 +184,7 @@ export function ReportEditorPage() {
 
   function handleDeleteUserBlock(id: string) {
     if (!report) return;
-    if (!window.confirm("이 블록을 삭제하시겠습니까?")) return;
+    if (!window.confirm(t("reportEditor.deleteBlockConfirm"))) return;
     persist({ ...report, blocks: report.blocks.filter((block) => block.id !== id) });
   }
 
@@ -217,7 +219,7 @@ export function ReportEditorPage() {
       persist(nextReport);
       runStalenessCheck(nextReport);
     } catch (cause) {
-      setRefreshError(cause instanceof Error ? cause.message : "Evidence를 새로고침하지 못했습니다.");
+      setRefreshError(cause instanceof Error ? cause.message : t("reportEditor.refreshError"));
     } finally {
       setRefreshing(false);
     }
@@ -231,7 +233,7 @@ export function ReportEditorPage() {
       const evidenceRefs = buildEvidenceRefs(evidence);
       const datasetTitle = evidence.dataset.ok ? evidence.dataset.value.title : report.datasetId;
       const { report: created, result } = createReport({
-        title: `${datasetTitle} · ${staleness.latestRunId} 보고서`,
+        title: t("reportEditor.newReportTitle", { dataset: datasetTitle, run: staleness.latestRunId }),
         datasetId: report.datasetId,
         baseRunId: staleness.latestRunId,
         buildSpecDigest: evidence.run.ok ? evidence.run.value.spec_digest : null,
@@ -245,14 +247,14 @@ export function ReportEditorPage() {
       }
       navigate(`/reports/${encodeURIComponent(created.id)}`);
     } catch (cause) {
-      setRefreshError(cause instanceof Error ? cause.message : "새 Report를 만들지 못했습니다.");
+      setRefreshError(cause instanceof Error ? cause.message : t("reportEditor.createError"));
     }
   }
 
   if (report === undefined) {
     return (
       <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-        <p className="text-sm text-muted-foreground">불러오는 중…</p>
+        <p className="text-sm text-muted-foreground">{t("reportEditor.loading")}</p>
       </main>
     );
   }
@@ -260,11 +262,11 @@ export function ReportEditorPage() {
   if (report === null) {
     return (
       <main className="flex flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-        <PageHeader eyebrow="Reports" title="Report를 찾을 수 없습니다" description="" />
+        <PageHeader eyebrow="Reports" title={t("reportEditor.notFoundTitle")} description="" />
         <EmptyState
-          title="이 Report는 이 브라우저에 없습니다"
-          description="삭제되었거나 다른 브라우저/기기에서 만들어졌을 수 있습니다(로컬 저장소이므로 기기 간 동기화되지 않습니다)."
-          actionLabel="Report 목록으로"
+          title={t("reportEditor.notFoundHeading")}
+          description={t("reportEditor.notFoundDesc")}
+          actionLabel={t("reportEditor.backToList")}
           actionHref="/reports"
         />
       </main>
@@ -301,7 +303,7 @@ export function ReportEditorPage() {
       `}</style>
 
       <div className="print:hidden">
-        <PageHeader eyebrow="Reports" title="Report 편집" description={`${report.datasetId} · ${report.baseRunId}`} />
+        <PageHeader eyebrow="Reports" title={t("reportEditor.editTitle")} description={`${report.datasetId} · ${report.baseRunId}`} />
       </div>
 
       {/* Prototype SSOT(`docs/prototype/kpubdata_ui_prototype_v1.html`)의 `.report-layout`과
@@ -314,7 +316,7 @@ export function ReportEditorPage() {
         <div className="flex min-w-0 flex-col gap-4">
           <Card className="print:hidden">
             <label className="text-xs font-medium text-muted-foreground" htmlFor="report-title">
-              제목
+              {t("reportEditor.titleLabel")}
             </label>
             <TextInput
               id="report-title"
@@ -325,21 +327,23 @@ export function ReportEditorPage() {
             />
             <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
               <span>
-                저장됨 · revision {report.revision}
-                {lastSavedAt ? ` · 마지막 저장 ${new Date(lastSavedAt).toLocaleTimeString("ko-KR")}` : ""}
+                {t("reportEditor.savedRevision", { revision: report.revision })}
+                {lastSavedAt
+                  ? t("reportEditor.lastSaved", { time: new Date(lastSavedAt).toLocaleTimeString("ko-KR") })
+                  : ""}
               </span>
               <div className="flex flex-wrap gap-2">
                 <Button size="sm" variant="secondary" onClick={handleRefreshEvidence} loading={refreshing}>
-                  Evidence 새로고침
+                  {t("reportEditor.refreshEvidence")}
                 </Button>
                 <Button size="sm" variant="secondary" onClick={() => downloadMarkdown(report, staleStatus)}>
-                  Markdown 다운로드
+                  {t("reportEditor.downloadMarkdown")}
                 </Button>
                 <Button size="sm" variant="secondary" onClick={() => downloadHtml(report, staleStatus)}>
-                  HTML 다운로드
+                  {t("reportEditor.downloadHtml")}
                 </Button>
                 <Button size="sm" variant="secondary" onClick={() => window.print()}>
-                  인쇄(Browser Print)
+                  {t("reportEditor.print")}
                 </Button>
               </div>
             </div>
@@ -354,12 +358,12 @@ export function ReportEditorPage() {
 
           {/* 7. Kubi 분석 */}
           <div className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold text-foreground">7. Kubi 분석</h2>
+            <h2 className="text-sm font-semibold text-foreground">{t("reportEditor.kubiSection")}</h2>
             {kubiBlocks.length === 0 ? (
               <EmptyState
                 className="py-8"
-                title="아직 추가된 AI 분석이 없습니다"
-                description="Kubi에서 현재 Dataset/Run을 분석한 뒤 검토하여 보고서에 추가할 수 있습니다."
+                title={t("reportEditor.noKubiTitle")}
+                description={t("reportEditor.noKubiDesc")}
               />
             ) : (
               kubiBlocks.map((block) => (
@@ -385,7 +389,7 @@ export function ReportEditorPage() {
 
           {/* 8. 사용자 메모 */}
           <div className="flex flex-col gap-3">
-            <h2 className="text-sm font-semibold text-foreground">8. 사용자 메모</h2>
+            <h2 className="text-sm font-semibold text-foreground">{t("reportEditor.notesSection")}</h2>
             {userBlocks.map((block) =>
               editingUserBlockId === block.id ? (
                 <UserContentEditor
@@ -409,7 +413,7 @@ export function ReportEditorPage() {
                 <UserContentEditor onSave={handleAddUserBlock} onCancel={() => setAddingUserBlock(false)} />
               ) : (
                 <Button variant="secondary" onClick={() => setAddingUserBlock(true)}>
-                  + 사용자 작성 블록 추가
+                  {t("reportEditor.addBlock")}
                 </Button>
               )}
             </div>
