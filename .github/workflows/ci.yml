@@ -54,6 +54,50 @@ jobs:
       - name: Build
         run: npm run build
 
+  e2e:
+    # Playwright 스펙을 CI 에 편입한다 (#377). 지금까지는 `npm run test:e2e` 를 사람이
+    # 손으로 돌릴 때만 실행돼, 회귀를 잡아줄 수 있는 스펙이 사실상 놀고 있었다.
+    #
+    # 실 Builder 기동이 필요한 @real-builder 스펙은 playwright.config.ts 의 grep 이
+    # 이미 걷어낸다 — 이 잡은 mock 모드 vite dev 서버만 띄운다(webServer 설정).
+    # 브라우저는 chromium 하나만 받는다: 두 project(desktop/mobile) 모두 chromium 이라
+    # 나머지를 받아봐야 설치 시간만 늘어난다.
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          npm_config_cache: ${{ runner.temp }}/.npm-cache
+          npm_config_tmp: ${{ runner.temp }}/.npm-tmp
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E
+        run: npm run test:e2e
+
+      # 실패 시 trace(playwright.config.ts 의 retain-on-failure)를 남겨야 CI 로그만
+      # 보고 원인을 추측하지 않아도 된다.
+      - name: Upload traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
   coverage:
     # 커버리지 게이트 (#380). 지금 도달한 수준이 조용히 내려가지 않게 잠근다.
     # 하한은 vitest.config.ts 의 coverage.thresholds 한 곳에서만 관리한다.

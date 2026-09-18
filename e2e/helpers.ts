@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
 import { expect, type Page } from "@playwright/test";
 
 /**
@@ -7,7 +10,29 @@ import { expect, type Page } from "@playwright/test";
  *   단정할 수 있게 한다(이슈 체크리스트).
  * - localStorage 정리: 사용자 상태(Workspace #293 소유자 버킷 포함)가 스펙 간
  *   새지 않도록 컨텍스트 시작 시 초기화한다.
+ * - t(): 화면 문구를 스펙에 하드코딩하지 않고 로케일 파일에서 가져온다.
  */
+
+/**
+ * ko 로케일 사전.
+ *
+ * `import ko from "....json"` 은 Playwright 의 ESM 로더에서 Node 가 import
+ * attribute(`with { type: "json" }`)를 요구해 **스펙 수집 자체가 실패한다**.
+ * 런타임에 읽으면 로더 문법 차이를 타지 않는다.
+ */
+const ko = JSON.parse(
+  readFileSync(fileURLToPath(new URL("../src/shared/i18n/locales/ko.json", import.meta.url)), "utf8"),
+) as Record<string, unknown>;
+
+export function t(path: string): string {
+  const value = path
+    .split(".")
+    .reduce<unknown>((node, key) => (node as Record<string, unknown> | undefined)?.[key], ko);
+  if (typeof value !== "string") {
+    throw new Error(`ko 로케일에 문자열 키가 없다: ${path}`);
+  }
+  return value;
+}
 
 export async function prepareCleanPage(page: Page): Promise<void> {
   await page.addInitScript(() => {
