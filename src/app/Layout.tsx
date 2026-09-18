@@ -328,7 +328,7 @@ export function Layout() {
       <div className="flex min-h-screen">
         {isMobileSidebarOpen ? (
           <button
-            aria-label="내비게이션 닫기"
+            aria-label={t("layout.closeNav")}
             className="fixed inset-0 z-30 bg-zinc-950/45 lg:hidden"
             onClick={closeMobileSidebar}
             type="button"
@@ -346,7 +346,7 @@ export function Layout() {
           <div className="flex items-start justify-between gap-3 pb-5">
             <div>
               <div className="flex items-center gap-2">
-                <Link aria-label="KPubData Studio 홈" className="flex min-w-0 items-center" to="/">
+                <Link aria-label={t("layout.homeLink")} className="flex min-w-0 items-center" to="/">
                   <img
                     alt="KPubData Studio"
                     className={["w-[156px] max-w-full", isDesktopSidebarCollapsed ? "lg:hidden" : ""].join(" ")}
@@ -363,7 +363,7 @@ export function Layout() {
                   제품명/로고만 유지한다(중복 제거). */}
             </div>
             <button
-              aria-label="사이드바 닫기"
+              aria-label={t("layout.closeSidebar")}
               className="rounded-lg border border-sidebar-border p-1.5 text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-active-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar lg:hidden"
               onClick={closeMobileSidebar}
               type="button"
@@ -373,7 +373,7 @@ export function Layout() {
             {/* 데스크톱 전용 접기/펼치기 토글 — 모바일 닫기 버튼과 반대로 lg 이상에서만 노출되어
                 항상 접근 가능하다(#247). collapsed 상태에서도 이 버튼 자체는 숨지 않는다. */}
             <button
-              aria-label={isDesktopSidebarCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
+              aria-label={isDesktopSidebarCollapsed ? t("layout.expandSidebar") : t("layout.collapseSidebar")}
               className="hidden shrink-0 rounded-lg border border-sidebar-border p-1.5 text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-active-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar lg:inline-flex"
               onClick={toggleDesktopSidebarCollapsed}
               type="button"
@@ -438,9 +438,9 @@ export function Layout() {
             ].join(" ")}
           >
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-medium">테마</p>
+              <p className="text-sm font-medium">{t("layout.theme")}</p>
               <select
-                aria-label="테마 선택"
+                aria-label={t("layout.themeSelect")}
                 className="rounded-lg border border-sidebar-border bg-sidebar px-2.5 py-1.5 text-sm text-sidebar-foreground"
                 onChange={(event) => setTheme(event.target.value as "system" | "light" | "dark")}
                 value={theme}
@@ -458,7 +458,7 @@ export function Layout() {
             <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 sm:px-8">
               <div className="flex min-w-0 items-center gap-3">
                 <button
-                  aria-label="사이드바 열기/닫기"
+                  aria-label={t("layout.toggleSidebar")}
                   className="inline-flex rounded-lg border border-border bg-card p-2 text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:hidden"
                   onClick={toggleMobileSidebar}
                   type="button"
@@ -470,7 +470,7 @@ export function Layout() {
                     KPubData Studio
                   </p>
                   <h1 className="truncate text-base font-semibold tracking-tight">
-                    공공데이터를 데이터셋으로 만드는 워크스페이스
+                    {t("layout.tagline")}
                   </h1>
                 </div>
               </div>
@@ -486,7 +486,7 @@ export function Layout() {
 
                 <button
                   aria-haspopup="dialog"
-                  aria-label="Kubi 열기"
+                  aria-label={t("layout.openKubi")}
                   className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   onClick={openKubiDrawer}
                   type="button"
@@ -506,9 +506,9 @@ export function Layout() {
 
                 {/* avatar 진입점 — #263에서 실제 프로필/로그아웃 메뉴로 확장될 구조(#247). */}
                 <Link
-                  aria-label={email ? `${email} 설정으로 이동` : "로그인이 필요합니다 — 설정으로 이동"}
+                  aria-label={email ? t("layout.accountSettings", { email }) : t("layout.signInNeededAria")}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-sm font-semibold text-foreground hover:bg-accent-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  title={email ?? "로그인이 필요합니다"}
+                  title={email ?? t("layout.signInNeeded")}
                   to="/settings"
                 >
                   {avatarInitial(email)}
