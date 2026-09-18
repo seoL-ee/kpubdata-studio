@@ -15,7 +15,8 @@
     "screenshots": "node scripts/capture-screenshots.mjs",
     "test:e2e": "playwright test",
     "test:e2e:real": "node scripts/run-real-e2e.mjs",
-    "i18n:coverage": "node scripts/i18n-coverage.mjs"
+    "i18n:coverage": "node scripts/i18n-coverage.mjs",
+    "i18n:check": "node scripts/i18n-coverage.mjs --check"
   },
   "dependencies": {
     "i18next": "^26.4.2",

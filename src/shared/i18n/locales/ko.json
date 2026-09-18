@@ -1082,7 +1082,8 @@
       "urlUserInfo": "URL에 사용자 정보(예: user:pass@host)를 포함할 수 없습니다. Endpoint에 자격 증명을 넣지 마세요.",
       "specBuildFailed": "빌드 스펙을 생성하지 못했습니다.",
       "unresolvedPlaceholder": "저장된 초안에 복원할 수 없는 secret placeholder가 있습니다. 원본 credential을 다시 입력해 주세요.",
-      "specInvalid": "빌드 스펙이 올바르지 않습니다."
+      "specInvalid": "빌드 스펙이 올바르지 않습니다.",
+      "httpsOnly": "https:// 로 시작하는 URL만 지원합니다."
     },
     "identity": {
       "fromCatalog": "{{provider}}/{{name}} 데이터셋입니다.",
@@ -1866,7 +1867,10 @@
       "mockDisabled": "mock 모드에서는 생성 기능이 비활성화됩니다 (ST-A8, #211)",
       "noValidate": "Builder /validate 연결이 없어 BuildSpec 생성을 중단했습니다.",
       "noCatalog": "카탈로그를 조회할 수 없어 BuildSpec 생성을 중단했습니다.",
-      "emptyOutput": "빈 출력이 반환되었습니다."
+      "emptyOutput": "빈 출력이 반환되었습니다.",
+      "restoreFailed": "시크릿 복원에 실패했습니다.",
+      "validateRequestFailed": "Builder 검증 요청에 실패했습니다.",
+      "validationFailed": "검증 실패"
     },
     "provider": {
       "auth": "LLM API 인증에 실패했습니다. API Key를 다시 확인하세요.",

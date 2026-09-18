@@ -48,6 +48,11 @@ jobs:
       - name: Type check (tsc --noEmit)
         run: npm run typecheck
 
+      # 새 한국어 UI 문자열이 로케일을 거치지 않고 들어오는 걸 막는다 (#338).
+      # 주석·mock 데이터·LLM 프롬프트는 세지 않으므로 기준선은 0이다.
+      - name: i18n extraction gate
+        run: npm run i18n:check
+
       - name: Test (Vitest)
         run: npm test
 

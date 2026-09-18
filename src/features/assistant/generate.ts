@@ -131,6 +131,7 @@ export async function generateBuildSpec(
     .map((provider) => `${provider.name}: ${provider.datasets.map((dataset) => dataset.name).join(", ")}`)
     .join("\n");
 
+  // i18n-ignore: LLM 시스템 프롬프트 — 어시스턴트 출력 언어는 별개 결정이다(#350).
   const systemPrompt = `당신은 한국 공공데이터 BuildSpec 생성기입니다.
 사용자의 자연어 요청을 BuildSpec YAML로 변환하세요.
 사용 가능한 provider/dataset:\n${catalogContext}\n
@@ -148,10 +149,12 @@ YAML만 출력하세요. 설명은 출력하지 마세요.`;
     if (lastProblems.length > 0) {
       messages.push({
         role: "assistant",
+        // i18n-ignore: 모델에 되먹이는 대화 스캐폴딩 — 화면에 뜨지 않는다.
         content: "이전 출력에 오류가 있었습니다. 수정하겠습니다.",
       });
       messages.push({
         role: "user",
+        // i18n-ignore: 모델에 되먹이는 재시도 지시문 — 화면에 뜨지 않는다.
         content: `오류:\n${lastProblems.join("\n")}\n\n이 오류를 수정한 YAML을 다시 출력하세요.`,
       });
     }
@@ -194,7 +197,7 @@ YAML만 출력하세요. 설명은 출력하지 마세요.`;
         status: "error",
         attempts,
         remaining_problems: [
-          error instanceof Error ? error.message : "시크릿 복원에 실패했습니다.",
+          error instanceof Error ? error.message : t("restoreFailed"),
         ],
       };
     }
@@ -210,7 +213,7 @@ YAML만 출력하세요. 설명은 출력하지 마세요.`;
         status: "error",
         attempts,
         remaining_problems: [
-          error instanceof Error ? error.message : "Builder 검증 요청에 실패했습니다.",
+          error instanceof Error ? error.message : t("validateRequestFailed"),
         ],
       };
     }
@@ -218,7 +221,7 @@ YAML만 출력하세요. 설명은 출력하지 마세요.`;
       return { spec: restoredSpec, status: "ok", attempts, remaining_problems: [] };
     }
     if (validation.status === "invalid") {
-      lastProblems = validation.problems.length > 0 ? validation.problems : ["검증 실패"];
+      lastProblems = validation.problems.length > 0 ? validation.problems : [t("validationFailed")];
       continue;
     }
     return {
