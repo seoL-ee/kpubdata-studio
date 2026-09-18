@@ -12,6 +12,10 @@ import { collectPageErrors, expectNoPageErrors, prepareCleanPage } from "./helpe
  * 검증 경로: Studio UI → fetch → Builder HTTP → dispatch → orchestrator →
  * kpubdata ingestion(file) → Bronze/Silver/Gold → manifest → 응답 → UI 렌더링.
  * file source는 외부 네트워크 없이 결정적으로 동작한다.
+ *
+ * Public API source(= kpubdata provider 경로)는 kpubdata의 replay 전송으로 덮는다 —
+ * 기록된 fixture를 재생하므로 여기도 외부 네트워크와 서비스키가 필요 없다. 러너가
+ * kpubdata 레포를 찾았을 때만(REAL_BUILDER_REPLAY) 실행된다.
  */
 const BUILDER_URL = process.env.REAL_BUILDER_URL ?? "http://localhost:8000";
 
@@ -101,6 +105,76 @@ test("File Upload → Preview → Build → Builds 이력 전체 경로 @real-bu
   // 6) Builds 이력 화면(실 GET /builds)에 방금 제출한 run이 반영된다(실패 포함).
   await navigateViaShell(page, /Builds|빌드/);
   await expect(page.getByRole("heading", { name: /빌드|Build/i }).first()).toBeVisible();
+
+  await expectNoPageErrors(errors);
+});
+
+/**
+ * Public API source BuildSpec. kpubdata의 replay fixture와 파라미터가 정확히
+ * 일치해야 한다(fixture는 `datago.air_station` 예제 `gangnam_full_page`).
+ * totalCount 22 ≤ page_size 100이라 한 페이지로 끝난다 — Builder Bronze는
+ * `list_all()`로 페이지를 끝까지 도는데 2페이지 fixture가 없으면 replay가 실패한다.
+ */
+const PUBLIC_API_SPEC = [
+  "dataset_id: dataset.cross_repo_public_api",
+  "title: Cross-repo Public API smoke",
+  "description: kpubdata replay fixture를 실 Builder HTTP로 빌드한다",
+  "sources:",
+  "  - provider: datago",
+  "    dataset: air_station",
+  "    alias: measurements",
+  "    params:",
+  "      station: 강남구",
+  "      term: daily",
+  "      page: 1",
+  "      page_size: 100",
+  "exports:",
+  "  - kind: jsonl",
+  "    output_path: out/data.jsonl",
+].join("\n");
+
+test("Public API source가 kpubdata를 거쳐 성공 빌드로 끝난다 @real-builder", async ({
+  page,
+  request,
+}) => {
+  // Builder가 replay 모드로 떠 있을 때만 결정적이다 — 러너가 kpubdata 레포를
+  // 찾으면 REAL_BUILDER_REPLAY를 설정한다.
+  test.skip(
+    !process.env.REAL_BUILDER_REPLAY,
+    "kpubdata replay fixture 필요 — scripts/run-real-e2e.mjs가 kpubdata 레포를 찾지 못했습니다",
+  );
+
+  const errors: string[] = [];
+  collectPageErrors(page, errors);
+
+  // 1) 브라우저 컨텍스트에서 실 Builder로 Public API BuildSpec을 제출한다.
+  //    file source 시나리오가 이미 위저드 UI 경로를 덮으므로, 여기서는 지금까지
+  //    어느 스펙도 태우지 못한 구간 — Builder → kpubdata Client → provider spec
+  //    실행기 → Bronze/Silver/Gold — 을 실 HTTP로 검증한다.
+  const runId = `ui-public-api-${Date.now()}`;
+  const response = await request.post(`${BUILDER_URL}/build`, {
+    data: { spec: PUBLIC_API_SPEC, run_id: runId },
+    timeout: 60_000,
+  });
+  expect(response.ok()).toBeTruthy();
+  const body = (await response.json()) as {
+    status?: string;
+    outcomes?: Array<{ status?: string; stages_completed?: string[]; error?: string | null }>;
+  };
+  expect(body.status).toBe("ok");
+  const outcome = body.outcomes?.[0];
+  expect(outcome?.error ?? null).toBeNull();
+  // kpubdata가 돌려준 레코드가 세 단계를 모두 통과해야 한다.
+  expect(outcome?.stages_completed).toEqual(["bronze", "silver", "gold"]);
+
+  // 2) 그 run을 Studio가 실제로 렌더한다(실 GET /builds/{run_id} 경로).
+  await page.goto(`/builds/${runId}`);
+  await expect(
+    page
+      .getByText(runId)
+      .first()
+      .or(page.getByText(/Cross-repo Public API smoke/).first()),
+  ).toBeVisible({ timeout: 30_000 });
 
   await expectNoPageErrors(errors);
 });
